@@ -1,40 +1,33 @@
 <?php
 
-
-
-// // Datos
-
-$token = 'apis-token-9261.xB1hHERpBHmMXkoEqotp7E8MrfEWZuYEs';
 $dni = $_POST['dni'];
+$token = 'sk_11678.HdeHGplwfvrLVqBOrFwH2fspxdwFoTOT'; // Tu token real
 
-// Iniciar llamada a API
+if(strlen($dni) != 8){
+    echo json_encode(1); // Validación de 8 dígitos
+    exit;
+}
+
 $curl = curl_init();
-
-// Buscar dni
 curl_setopt_array($curl, array(
-  CURLOPT_URL => 'https://api.apis.net.pe/v2/reniec/dni?numero=' . $dni,
-  CURLOPT_SSL_VERIFYPEER=>0,
+  CURLOPT_URL => 'https://api.decolecta.com/v1/reniec/dni?numero=' . $dni,
   CURLOPT_RETURNTRANSFER => true,
-  CURLOPT_SSL_VERIFYPEER => 0,
-  CURLOPT_ENCODING => '',
-  CURLOPT_MAXREDIRS => 2,
-  CURLOPT_TIMEOUT => 0,
-  CURLOPT_FOLLOWLOCATION => true,
+  CURLOPT_SSL_VERIFYPEER => false,
   CURLOPT_CUSTOMREQUEST => 'GET',
   CURLOPT_HTTPHEADER => array(
-    'Referer: https://apis.net.pe/consulta-dni-api',
+    'Content-Type: application/json',
     'Authorization: Bearer ' . $token
   ),
 ));
 
-
 $response = curl_exec($curl);
+
 if(curl_errno($curl)){
-    echo 'Error del scraper:'.curl_error($curl);
+    echo json_encode(['error' => curl_error($curl)]);
     exit;
 }
 
 curl_close($curl);
 
-// Datos listos para usar
+// Mostrar la respuesta como JSON
 echo $response;

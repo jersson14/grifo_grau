@@ -180,9 +180,9 @@ function listar_usuario(){
         {"data":"usu_estatus",
             render: function(data,type,row){
                     if(data=='ACTIVO'){
-                    return "<button class='editar btn btn-primary btn-sm' title='Editar datos de usuario'><i class='fa fa-edit'></i></button>&nbsp;<button class='contra btn btn-warning btn-sm' title='Cambiar contraseña de usuario'><i class='fas fa-key'></i></button>&nbsp;<button class='btn btn-success btn-sm' disabled title='Activar usuario'><i class='fa fa-check-circle'></i></button>&nbsp;<button class='desactivar btn btn-danger btn-sm' title='Desactivar usuario'><i class='fa fa-times-circle'></i></button>";
+                    return "<button class='editar btn btn-warning btn-sm' title='Editar'><i class='fa fa-edit'></i></button>&nbsp;<button class='contra btn btn-info btn-sm' title='Cambiar contraseña'><i class='fas fa-key'></i></button>&nbsp;<button class='desactivar btn btn-danger btn-sm' title='Desactivar'><i class='fa fa-times-circle'></i></button>";
                     }else{
-                    return "<button class='editar btn btn-primary btn-sm' title='Editar datos de usuario'><i class='fa fa-edit'></i></button>&nbsp;<button class='contra btn btn-warning btn-sm' title='Cambiar contraseña de usuario'><i class='fas fa-key'></i></button>&nbsp;<button class='activar btn btn-success btn-sm' title='Activar usuario'><i class='fa fa-check-circle'></i></button>&nbsp;<button class='btn btn-danger btn-sm' disabled title='Desactivar usuario'><i class='fa fa-times-circle'></i></button>";
+                    return "<button class='editar btn btn-warning btn-sm' title='Editar'><i class='fa fa-edit'></i></button>&nbsp;<button class='contra btn btn-info btn-sm' title='Cambiar contraseña'><i class='fas fa-key'></i></button>&nbsp;<button class='activar btn btn-success btn-sm' title='Activar'><i class='fa fa-check-circle'></i></button>";
                     }
             }   
         }
@@ -268,13 +268,14 @@ $('#tabla_usuario').on('click','.desactivar',function(){
       var data = tbl_usuario.row(this).data();
   }
     Swal.fire({
-      title: 'Desea desactivar al usuario '+data.USUARIO+'?',
-      text: "Una vez desactivado el usuario no tendra acceso al sistema",
+      title: '¿Desactivar usuario?',
+      text: "El usuario "+data.USUARIO+" no tendrá acceso al sistema",
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#005CA5',
+      confirmButtonColor: '#023D77',
       cancelButtonColor: '#d33',
-      confirmButtonText: 'Si, Desactivar'
+      confirmButtonText: 'Sí, desactivar',
+      cancelButtonText: 'Cancelar'
     }).then((result) => {
       if (result.isConfirmed) {
         Modificar_Estatus_Usuario(parseInt(data.id_usuario),'INACTIVO',data.USUARIO);
@@ -291,13 +292,14 @@ $('#tabla_usuario').on('click','.activar',function(){
       var data = tbl_usuario.row(this).data();
   }
     Swal.fire({
-      title: 'Desea activar al usuario '+data.USUARIO+'?',
-      text: "Una vez activado el usuario tendra acceso al sistema",
+      title: '¿Activar usuario?',
+      text: "El usuario "+data.USUARIO+" tendrá acceso al sistema",
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#005CA5',
+      confirmButtonColor: '#023D77',
       cancelButtonColor: '#d33',
-      confirmButtonText: 'Si, Activar'
+      confirmButtonText: 'Sí, activar',
+      cancelButtonText: 'Cancelar'
     }).then((result) => {
       if (result.isConfirmed) {
         Modificar_Estatus_Usuario(parseInt(data.id_usuario),'ACTIVO',data.USUARIO);
@@ -321,12 +323,21 @@ function Modificar_Estatus_Usuario(id,estatus,user){
     }
   }).done(function(resp){
     if(resp>0){
-        Swal.fire("Mensaje de Confirmación","Se "+esta+" con exito El Usuario "+user,"success").then((value)=>{
+        Swal.fire({
+          icon: 'success',
+          title: 'Éxito',
+          text: 'Estado actualizado correctamente',
+          confirmButtonColor: '#023D77'
+        }).then((value)=>{
           tbl_usuario.ajax.reload();
         });
     }else{
-      return Swal.fire("Mensaje de Error","No se completo la actualización","error");
-
+      return Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se pudo actualizar el estado',
+        confirmButtonColor: '#023D77'
+      });
     }
   })
 }
@@ -352,10 +363,20 @@ function Registrar_Usuario(){
 
   
   if(dni.length==0|| apelli.length==0||correo.length==0||dire.length==0||nombre.length==0){
-    return Swal.fire("Mensaje de Advertencia","Tiene campos en el registro del docente","warning");
+    return Swal.fire({
+      icon: 'warning',
+      title: 'Advertencia',
+      text: 'Complete todos los campos obligatorios del usuario',
+      confirmButtonColor: '#023D77'
+    });
   }
   if(usu.length==0||contra.length==0||rol.length==0){
-    return Swal.fire("Mensaje de Advertencia","Los datos del usuario son oblgatorios","warning");
+    return Swal.fire({
+      icon: 'warning',
+      title: 'Advertencia',
+      text: 'Los datos de acceso son obligatorios',
+      confirmButtonColor: '#023D77'
+    });
   }
 
     let extension = foto.split('.').pop();
@@ -391,34 +412,40 @@ function Registrar_Usuario(){
       success:function(resp){
         if(resp.length>0){
         if(resp==1){
-          Swal.fire("Mensaje de Confirmación","Se registro correctamente al usuario con el DNI N° <b>"+dni+"</b>","success").then((value)=>{
-            // Limpiar todos los campos
+          Swal.fire({
+            icon: 'success',
+            title: 'Éxito',
+            text: 'Usuario registrado correctamente',
+            confirmButtonColor: '#023D77'
+          }).then((value)=>{
+            clearPhoto();
             document.getElementById('txt_dni').value = "";
             document.getElementById('txt_nomb').value = "";
             document.getElementById('txt_apelli').value = "";
             document.getElementById('txt_correo').value = "";
             document.getElementById('txt_tele').value = "";
             document.getElementById('txt_direc').value = "";
-
-
-            // Limpiar la vista previa de la imagen
-            document.getElementById('preview').src = '#';
-            document.getElementById('preview').alt = 'Vista previa';
-
             document.getElementById('txt_usu').value = "";
             document.getElementById('txt_contra').value = "";
-            document.getElementById('select_rol_editar').option = "Seleccione";
-
-            // Cerrar el modal
+            document.getElementById('select_rol_editar').value = "";
             $("#modal_registro").modal('hide');
             tbl_usuario.ajax.reload();
-
           });
             }else{
-            Swal.fire("Mensaje de Advertencia","El DNI o el USUARIO que intentas registrar ya se encuentra en la base de datos, revise por favor","warning");
+            Swal.fire({
+              icon: 'warning',
+              title: 'Advertencia',
+              text: 'El DNI o USUARIO ya existe en la base de datos',
+              confirmButtonColor: '#023D77'
+            });
             }
         }else{
-          Swal.fire("Mensaje de Advertencia","No se pudo registrar al usuario","warning");
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'No se pudo registrar el usuario',
+            confirmButtonColor: '#023D77'
+          });
         }
       }
     });
@@ -447,10 +474,20 @@ function Modificar_Usuario(){
 
   
   if(id.length==0||dni.length==0|| apelli.length==0||correo.length==0||dire.length==0||nombre.length==0){
-    return Swal.fire("Mensaje de Advertencia","Tiene campos en el registro del docente","warning");
+    return Swal.fire({
+      icon: 'warning',
+      title: 'Advertencia',
+      text: 'Complete todos los campos obligatorios',
+      confirmButtonColor: '#023D77'
+    });
   }
   if(usu.length==0||rol.length==0){
-    return Swal.fire("Mensaje de Advertencia","Los datos del usuario son oblgatorios","warning");
+    return Swal.fire({
+      icon: 'warning',
+      title: 'Advertencia',
+      text: 'Los datos de acceso son obligatorios',
+      confirmButtonColor: '#023D77'
+    });
   }
 
     let extension = foto.split('.').pop();
@@ -487,18 +524,31 @@ function Modificar_Usuario(){
       success:function(resp){
         if(resp.length>0){
         if(resp==1){
-          Swal.fire("Mensaje de Confirmación","Se actualizo correctamente al usuario con el DNI N° <b>"+dni+"</b>","success").then((value)=>{
-            // Cerrar el modal
+          Swal.fire({
+            icon: 'success',
+            title: 'Éxito',
+            text: 'Usuario actualizado correctamente',
+            confirmButtonColor: '#023D77'
+          }).then((value)=>{
             $("#modal_editar").modal('hide');
             tbl_usuario.ajax.reload();
-            document.getElementById('txt_foto_editar').value="";
-
+            clearPhoto2();
           });
             }else{
-            Swal.fire("Mensaje de Advertencia","El DNI o USUARIO que intentas actualizar ya se encuentra en la base de datos, revise por favor","warning");
+            Swal.fire({
+              icon: 'warning',
+              title: 'Advertencia',
+              text: 'El DNI o USUARIO ya existe en la base de datos',
+              confirmButtonColor: '#023D77'
+            });
             }
         }else{
-          Swal.fire("Mensaje de Advertencia","No se pudo actualizar al usuario","warning");
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'No se pudo actualizar el usuario',
+            confirmButtonColor: '#023D77'
+          });
         }
       }
     });
@@ -511,7 +561,12 @@ function Modificar_Contra(){
   let con = document.getElementById('txt_contra_nueva').value;
 
   if(id.length==0 || con.length==0){
-      return Swal.fire("Mensaje de Advertencia","Tiene campos vacios","warning");
+      return Swal.fire({
+        icon: 'warning',
+        title: 'Advertencia',
+        text: 'Ingrese la nueva contraseña',
+        confirmButtonColor: '#023D77'
+      });
   }
   $.ajax({
     "url":"../controller/usuario/controlador_modificar_usuario_contra.php",
@@ -522,13 +577,22 @@ function Modificar_Contra(){
     }
   }).done(function(resp){
     if(resp>0){
-        Swal.fire("Mensaje de Confirmación","Contraseña del Usuario Actualizada","success").then((value)=>{
-          tbl_usuario.ajax.reload();
-        $("#modal_contra").modal('hide');
+        Swal.fire({
+          icon: 'success',
+          title: 'Éxito',
+          text: 'Contraseña actualizada correctamente',
+          confirmButtonColor: '#023D77'
+        }).then((value)=>{
+          $("#modal_contra").modal('hide');
+          document.getElementById('txt_contra_nueva').value = '';
         });
     }else{
-      return Swal.fire("Mensaje de Error","No se completo la actualización","error");
-
+      return Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se pudo actualizar la contraseña',
+        confirmButtonColor: '#023D77'
+      });
     }
   })
 }
@@ -774,4 +838,167 @@ function Total_gastos_mensual(){
     
   })
   
+}
+
+// FUNCIONES PARA BÚSQUEDA DNI
+function Buscar_DNI_Usuario() {
+    var dni = $("#txt_dni").val().trim();
+    
+    if (dni.length == 0) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Advertencia',
+            text: 'Ingrese un DNI',
+            confirmButtonColor: '#023D77'
+        });
+        return;
+    }
+    
+    if (dni.length != 8) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Advertencia',
+            text: 'El DNI debe tener 8 dígitos',
+            confirmButtonColor: '#023D77'
+        });
+        return;
+    }
+    
+    Swal.fire({
+        title: 'Buscando...',
+        text: 'Consultando datos en RENIEC',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+    
+    $.ajax({
+        url: '../consulta-dni-ajax.php',
+        type: 'POST',
+        data: { dni: dni }
+    }).done(function(resp) {
+        try {
+            var data = JSON.parse(resp);
+            
+            if (data.success === true && data.data) {
+                var nombres = data.data.nombres || '';
+                var apellido_paterno = data.data.apellido_paterno || '';
+                var apellido_materno = data.data.apellido_materno || '';
+                
+                $("#txt_nomb").val(nombres);
+                $("#txt_apelli").val((apellido_paterno + ' ' + apellido_materno).trim());
+                
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Datos encontrados',
+                    text: 'Información obtenida de RENIEC',
+                    confirmButtonColor: '#023D77',
+                    timer: 2000
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'No encontrado',
+                    text: data.message || 'No se encontraron datos para este DNI',
+                    confirmButtonColor: '#023D77'
+                });
+            }
+        } catch (e) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Error al procesar la respuesta',
+                confirmButtonColor: '#023D77'
+            });
+        }
+    }).fail(function() {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Error al consultar RENIEC',
+            confirmButtonColor: '#023D77'
+        });
+    });
+}
+
+function Buscar_DNI_Usuario_Editar() {
+    var dni = $("#txt_dni_editar").val().trim();
+    
+    if (dni.length == 0) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Advertencia',
+            text: 'Ingrese un DNI',
+            confirmButtonColor: '#023D77'
+        });
+        return;
+    }
+    
+    if (dni.length != 8) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Advertencia',
+            text: 'El DNI debe tener 8 dígitos',
+            confirmButtonColor: '#023D77'
+        });
+        return;
+    }
+    
+    Swal.fire({
+        title: 'Buscando...',
+        text: 'Consultando datos en RENIEC',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+    
+    $.ajax({
+        url: '../consulta-dni-ajax.php',
+        type: 'POST',
+        data: { dni: dni }
+    }).done(function(resp) {
+        try {
+            var data = JSON.parse(resp);
+            
+            if (data.success === true && data.data) {
+                var nombres = data.data.nombres || '';
+                var apellido_paterno = data.data.apellido_paterno || '';
+                var apellido_materno = data.data.apellido_materno || '';
+                
+                $("#txt_nomb_editar").val(nombres);
+                $("#txt_apelli_editar").val((apellido_paterno + ' ' + apellido_materno).trim());
+                
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Datos encontrados',
+                    text: 'Información obtenida de RENIEC',
+                    confirmButtonColor: '#023D77',
+                    timer: 2000
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'No encontrado',
+                    text: data.message || 'No se encontraron datos para este DNI',
+                    confirmButtonColor: '#023D77'
+                });
+            }
+        } catch (e) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Error al procesar la respuesta',
+                confirmButtonColor: '#023D77'
+            });
+        }
+    }).fail(function() {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Error al consultar RENIEC',
+            confirmButtonColor: '#023D77'
+        });
+    });
 }
