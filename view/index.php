@@ -12,7 +12,7 @@ if (!isset($_SESSION['S_ID'])) {
   <title>Sistema de Gestión - Grifo</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
   <link rel="stylesheet" href="../plantilla/plugins/fontawesome-free/css/all.min.css">
-  <link rel="shortcut icon" href="../img/incoca.png" type="image/jpg">
+  <link rel="shortcut icon" href="../img/grau.png" type="image/jpg">
   <link rel="stylesheet" href="../plantilla/dist/css/adminlte.min.css">
   <link href="../utilitario/DataTables/datatables.min.css" type="text/css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
@@ -48,7 +48,7 @@ if (!isset($_SESSION['S_ID'])) {
     <!-- Main Sidebar -->
     <aside class="main-sidebar sidebar-dark-primary elevation-4">
       <a href="index.php" class="brand-link">
-        <img src="../img/incocat.jpeg" alt="<?php echo $_SESSION['S_RAZON']; ?>" width="100%" height="auto">
+        <img src="../img/grau.png" alt="<?php echo $_SESSION['S_RAZON']; ?>" width="100%" height="auto">
       </a>
 
       <div class="sidebar">
@@ -146,11 +146,27 @@ if (!isset($_SESSION['S_ID'])) {
                 <b>CONFIGURACIÓN</b>
               </li>
 
+              <!-- CLIENTES -->
+              <li class="nav-item">
+                <a href="#" onclick="cargar_contenido('contenido_principal','clientes/view_clientes.php')" class="nav-link">
+                  <i class="nav-icon fas fa-user-friends"></i>
+                  <p style="color:white">Clientes</p>
+                </a>
+              </li>
+
               <!-- PRODUCTOS -->
               <li class="nav-item">
                 <a href="#" onclick="cargar_contenido('contenido_principal','productos/view_productos.php')" class="nav-link">
                   <i class="nav-icon fas fa-gas-pump"></i>
-                  <p style="color:white">Productos</p>
+                  <p style="color:white">Productos (Combustibles)</p>
+                </a>
+              </li>
+
+              <!-- SURTIDORES -->
+              <li class="nav-item">
+                <a href="#" onclick="cargar_contenido('contenido_principal','surtidores/view_surtidores.php')" class="nav-link">
+                  <i class="nav-icon fas fa-tint"></i>
+                  <p style="color:white">Surtidores</p>
                 </a>
               </li>
 
@@ -159,30 +175,6 @@ if (!isset($_SESSION['S_ID'])) {
                 <a onclick="cargar_contenido('contenido_principal','usuario/view_usuario.php')" class="nav-link">
                   <i class="nav-icon fas fa-users"></i>
                   <p style="color:white">Usuarios</p>
-                </a>
-              </li>
-
-              <!-- TURNOS CONFIG -->
-              <li class="nav-item">
-                <a href="#" onclick="cargar_contenido('contenido_principal','configuracion/view_turnos.php')" class="nav-link">
-                  <i class="nav-icon fas fa-calendar-alt"></i>
-                  <p style="color:white">Configurar Turnos</p>
-                </a>
-              </li>
-
-              <!-- SURTIDORES -->
-              <li class="nav-item">
-                <a href="#" onclick="cargar_contenido('contenido_principal','surtidores/view_surtidores.php')" class="nav-link">
-                  <i class="nav-icon fas fa-gas-pump"></i>
-                  <p style="color:white">Surtidores</p>
-                </a>
-              </li>
-
-              <!-- CLIENTES -->
-              <li class="nav-item">
-                <a href="#" onclick="cargar_contenido('contenido_principal','clientes/view_clientes.php')" class="nav-link">
-                  <i class="nav-icon fas fa-user-friends"></i>
-                  <p style="color:white">Clientes</p>
                 </a>
               </li>
 
@@ -333,15 +325,55 @@ if (!isset($_SESSION['S_ID'])) {
               </div>
             </div>
 
-            <!-- GRÁFICO DE VENTAS -->
+            <!-- GRÁFICOS -->
             <div class="row">
-              <div class="col-md-12">
+              <!-- GRÁFICO DE VENTAS ÚLTIMOS 7 DÍAS -->
+              <div class="col-md-8">
                 <div class="card">
                   <div class="card-header" style="background: linear-gradient(135deg, #023D77, #0266C8)">
                     <h3 class="card-title" style="color:white"><i class="fas fa-chart-line"></i> Ventas de los Últimos 7 Días</h3>
                   </div>
                   <div class="card-body">
-                    <canvas id="grafico_ventas_semana" style="height: 300px;"></canvas>
+                    <canvas id="grafico_ventas_semana" style="height: 250px;"></canvas>
+                  </div>
+                </div>
+              </div>
+
+              <!-- GRÁFICO DE PRODUCTOS MÁS VENDIDOS -->
+              <div class="col-md-4">
+                <div class="card">
+                  <div class="card-header" style="background: linear-gradient(135deg, #28a745, #218838)">
+                    <h3 class="card-title" style="color:white"><i class="fas fa-chart-pie"></i> Productos Más Vendidos</h3>
+                  </div>
+                  <div class="card-body">
+                    <canvas id="grafico_productos" style="height: 250px;"></canvas>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- GRÁFICOS ADICIONALES -->
+            <div class="row">
+              <!-- GRÁFICO DE CRÉDITOS -->
+              <div class="col-md-6">
+                <div class="card">
+                  <div class="card-header" style="background: linear-gradient(135deg, #ffc107, #ff9800)">
+                    <h3 class="card-title" style="color:white"><i class="fas fa-chart-bar"></i> Estado de Créditos</h3>
+                  </div>
+                  <div class="card-body">
+                    <canvas id="grafico_creditos" style="height: 200px;"></canvas>
+                  </div>
+                </div>
+              </div>
+
+              <!-- GRÁFICO DE TURNOS -->
+              <div class="col-md-6">
+                <div class="card">
+                  <div class="card-header" style="background: linear-gradient(135deg, #17a2b8, #138496)">
+                    <h3 class="card-title" style="color:white"><i class="fas fa-chart-area"></i> Turnos del Mes</h3>
+                  </div>
+                  <div class="card-body">
+                    <canvas id="grafico_turnos" style="height: 200px;"></canvas>
                   </div>
                 </div>
               </div>
@@ -520,42 +552,268 @@ if (!isset($_SESSION['S_ID'])) {
     });
 
     function cargar_dashboard_admin() {
-      // Aquí irán las llamadas AJAX para cargar los datos del dashboard
       // Total turnos activos
       $.ajax({
-        url: '../controller/turnos/controlador_total_turnos_activos.php',
+        url: '../controller/dashboard/controlador_total_turnos_activos.php',
         type: 'POST',
         success: function(resp) {
-          $('#total_turnos_activos').html(resp);
+          $('#total_turnos_activos').html(resp || '0');
+        },
+        error: function() {
+          $('#total_turnos_activos').html('0');
         }
       });
       
       // Total ventas del día
       $.ajax({
-        url: '../controller/reportes/controlador_total_ventas_dia.php',
+        url: '../controller/dashboard/controlador_total_ventas_dia.php',
         type: 'POST',
         success: function(resp) {
-          $('#total_ventas_dia').html('S/ ' + resp);
+          $('#total_ventas_dia').html('S/ ' + (resp || '0.00'));
+        },
+        error: function() {
+          $('#total_ventas_dia').html('S/ 0.00');
         }
       });
       
       // Créditos pendientes
       $.ajax({
-        url: '../controller/creditos/controlador_total_creditos_pendientes.php',
+        url: '../controller/dashboard/controlador_total_creditos_pendientes.php',
         type: 'POST',
         success: function(resp) {
-          $('#total_creditos_pendientes').html(resp);
+          $('#total_creditos_pendientes').html(resp || '0');
+        },
+        error: function() {
+          $('#total_creditos_pendientes').html('0');
         }
       });
       
       // Reportes pendientes de validación
       $.ajax({
-        url: '../controller/reportes/controlador_total_reportes_pendientes.php',
+        url: '../controller/dashboard/controlador_total_reportes_pendientes.php',
         type: 'POST',
         success: function(resp) {
-          $('#total_reportes_pendientes').html(resp);
+          $('#total_reportes_pendientes').html(resp || '0');
+        },
+        error: function() {
+          $('#total_reportes_pendientes').html('0');
         }
       });
+      
+      // Inicializar gráficos con datos reales
+      inicializar_graficos();
+    }
+
+    var graficoVentas, graficoProductos, graficoCreditos, graficoTurnos;
+
+    function inicializar_graficos() {
+      // GRÁFICO DE VENTAS ÚLTIMOS 7 DÍAS - CON DATOS REALES
+      const ctx1 = document.getElementById('grafico_ventas_semana');
+      if (ctx1) {
+        graficoVentas = new Chart(ctx1, {
+          type: 'line',
+          data: {
+            labels: ['Cargando...'],
+            datasets: [{
+              label: 'Ventas (S/.)',
+              data: [0],
+              borderColor: '#023D77',
+              backgroundColor: 'rgba(2, 61, 119, 0.1)',
+              tension: 0.4,
+              fill: true
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: true,
+                position: 'top'
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  callback: function(value) {
+                    return 'S/ ' + value.toFixed(2);
+                  }
+                }
+              }
+            }
+          }
+        });
+        
+        // Cargar datos reales
+        $.ajax({
+          url: '../controller/dashboard/controlador_ventas_semana_grafico.php',
+          type: 'POST',
+          dataType: 'json',
+          success: function(data) {
+            graficoVentas.data.labels = data.labels;
+            graficoVentas.data.datasets[0].data = data.values;
+            graficoVentas.update();
+          },
+          error: function() {
+            graficoVentas.data.labels = ['Sin datos'];
+            graficoVentas.data.datasets[0].data = [0];
+            graficoVentas.update();
+          }
+        });
+      }
+
+      // GRÁFICO DE PRODUCTOS MÁS VENDIDOS - CON DATOS REALES
+      const ctx2 = document.getElementById('grafico_productos');
+      if (ctx2) {
+        graficoProductos = new Chart(ctx2, {
+          type: 'doughnut',
+          data: {
+            labels: ['Cargando...'],
+            datasets: [{
+              data: [0],
+              backgroundColor: [
+                '#023D77',
+                '#0266C8',
+                '#28a745',
+                '#ffc107',
+                '#dc3545'
+              ]
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'bottom'
+              }
+            }
+          }
+        });
+        
+        // Cargar datos reales
+        $.ajax({
+          url: '../controller/dashboard/controlador_productos_mas_vendidos.php',
+          type: 'POST',
+          dataType: 'json',
+          success: function(data) {
+            graficoProductos.data.labels = data.labels;
+            graficoProductos.data.datasets[0].data = data.values;
+            graficoProductos.update();
+          },
+          error: function() {
+            graficoProductos.data.labels = ['Sin datos'];
+            graficoProductos.data.datasets[0].data = [0];
+            graficoProductos.update();
+          }
+        });
+      }
+
+      // GRÁFICO DE ESTADO DE CRÉDITOS - CON DATOS REALES
+      const ctx3 = document.getElementById('grafico_creditos');
+      if (ctx3) {
+        graficoCreditos = new Chart(ctx3, {
+          type: 'bar',
+          data: {
+            labels: ['Pendientes', 'Pagados', 'Vencidos'],
+            datasets: [{
+              label: 'Cantidad',
+              data: [0, 0, 0],
+              backgroundColor: [
+                '#ffc107',
+                '#28a745',
+                '#dc3545'
+              ]
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: false
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  stepSize: 1
+                }
+              }
+            }
+          }
+        });
+        
+        // Cargar datos reales
+        $.ajax({
+          url: '../controller/dashboard/controlador_estado_creditos.php',
+          type: 'POST',
+          dataType: 'json',
+          success: function(data) {
+            graficoCreditos.data.datasets[0].data = data.values;
+            graficoCreditos.update();
+          },
+          error: function() {
+            graficoCreditos.data.datasets[0].data = [0, 0, 0];
+            graficoCreditos.update();
+          }
+        });
+      }
+
+      // GRÁFICO DE TURNOS DEL MES - CON DATOS REALES
+      const ctx4 = document.getElementById('grafico_turnos');
+      if (ctx4) {
+        graficoTurnos = new Chart(ctx4, {
+          type: 'line',
+          data: {
+            labels: ['Cargando...'],
+            datasets: [{
+              label: 'Turnos Completados',
+              data: [0],
+              borderColor: '#17a2b8',
+              backgroundColor: 'rgba(23, 162, 184, 0.2)',
+              tension: 0.4,
+              fill: true
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: true
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  stepSize: 1
+                }
+              }
+            }
+          }
+        });
+        
+        // Cargar datos reales
+        $.ajax({
+          url: '../controller/dashboard/controlador_turnos_mes.php',
+          type: 'POST',
+          dataType: 'json',
+          success: function(data) {
+            graficoTurnos.data.labels = data.labels;
+            graficoTurnos.data.datasets[0].data = data.values;
+            graficoTurnos.update();
+          },
+          error: function() {
+            graficoTurnos.data.labels = ['Sin datos'];
+            graficoTurnos.data.datasets[0].data = [0];
+            graficoTurnos.update();
+          }
+        });
+      }
     }
 
     function cargar_dashboard_grifero() {

@@ -881,10 +881,27 @@ function Buscar_DNI_Usuario() {
         try {
             var data = JSON.parse(resp);
             
+            // Verificar si la respuesta tiene datos (puede venir en diferentes formatos)
             if (data.success === true && data.data) {
-                var nombres = data.data.nombres || '';
-                var apellido_paterno = data.data.apellido_paterno || '';
-                var apellido_materno = data.data.apellido_materno || '';
+                var nombres = data.data.nombres || data.data.first_name || '';
+                var apellido_paterno = data.data.apellido_paterno || data.data.first_last_name || '';
+                var apellido_materno = data.data.apellido_materno || data.data.second_last_name || '';
+                
+                $("#txt_nomb").val(nombres);
+                $("#txt_apelli").val((apellido_paterno + ' ' + apellido_materno).trim());
+                
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Datos encontrados',
+                    text: 'Información obtenida de RENIEC',
+                    confirmButtonColor: '#023D77',
+                    timer: 2000
+                });
+            } else if (data.first_name) {
+                // Formato alternativo (directo sin success/data)
+                var nombres = data.first_name || '';
+                var apellido_paterno = data.first_last_name || '';
+                var apellido_materno = data.second_last_name || '';
                 
                 $("#txt_nomb").val(nombres);
                 $("#txt_apelli").val((apellido_paterno + ' ' + apellido_materno).trim());
@@ -962,10 +979,27 @@ function Buscar_DNI_Usuario_Editar() {
         try {
             var data = JSON.parse(resp);
             
+            // Verificar si la respuesta tiene datos (puede venir en diferentes formatos)
             if (data.success === true && data.data) {
-                var nombres = data.data.nombres || '';
-                var apellido_paterno = data.data.apellido_paterno || '';
-                var apellido_materno = data.data.apellido_materno || '';
+                var nombres = data.data.nombres || data.data.first_name || '';
+                var apellido_paterno = data.data.apellido_paterno || data.data.first_last_name || '';
+                var apellido_materno = data.data.apellido_materno || data.data.second_last_name || '';
+                
+                $("#txt_nomb_editar").val(nombres);
+                $("#txt_apelli_editar").val((apellido_paterno + ' ' + apellido_materno).trim());
+                
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Datos encontrados',
+                    text: 'Información obtenida de RENIEC',
+                    confirmButtonColor: '#023D77',
+                    timer: 2000
+                });
+            } else if (data.first_name) {
+                // Formato alternativo (directo sin success/data)
+                var nombres = data.first_name || '';
+                var apellido_paterno = data.first_last_name || '';
+                var apellido_materno = data.second_last_name || '';
                 
                 $("#txt_nomb_editar").val(nombres);
                 $("#txt_apelli_editar").val((apellido_paterno + ' ' + apellido_materno).trim());

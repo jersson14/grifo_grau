@@ -9,7 +9,7 @@ if (isset($_SESSION['S_ID'])) {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Iniciar Sesión - INCOCAT</title>
+  <title>Iniciar Sesión - Estación Goyo</title>
 
   <!-- Google Font -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -22,14 +22,16 @@ if (isset($_SESSION['S_ID'])) {
   <link rel="stylesheet" href="plantilla/plugins/icheck-bootstrap/icheck-bootstrap.min.css">
   <!-- Theme style -->
   <link rel="stylesheet" href="plantilla/dist/css/adminlte.min.css">
-  <link rel="icon" href="img/incoca.png" type="image/jpg">
+  <link rel="icon" href="img/grau.png" type="image/jpg">
   <style>
     :root {
-      --primary-color: #0a2463;
-      --secondary-color: #3e92cc;
-      --accent-color: #d8315b;
-      --light-color: #fffaff;
-      --dark-color: #1e1b18;
+      --primary-color: #ff4500;
+      --secondary-color: #00bfff;
+      --accent-color: #ffd700;
+      --light-color: #ffffff;
+      --dark-color: #1a1a2e;
+      --neon-orange: #ff6b35;
+      --neon-blue: #00d4ff;
     }
     
     * {
@@ -39,15 +41,16 @@ if (isset($_SESSION['S_ID'])) {
     }
     
     body {
-      background-image: url('img/img1.jpg');
-      background-size: cover;
-      background-position: center;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      background-size: 400% 400%;
+      animation: gradientShift 15s ease infinite;
       position: relative;
       min-height: 100vh;
       font-family: 'Poppins', sans-serif;
       overflow-x: hidden;
     }
     
+    /* Patrón de fondo con efecto de gasolinera */
     body::before {
       content: '';
       position: absolute;
@@ -55,8 +58,40 @@ if (isset($_SESSION['S_ID'])) {
       left: 0;
       width: 100%;
       height: 100%;
-      background: linear-gradient(135deg, rgba(10, 36, 99, 0.85) 0%, rgba(216, 49, 91, 0.75) 100%);
+      background-image: 
+        repeating-linear-gradient(
+          45deg,
+          transparent,
+          transparent 35px,
+          rgba(255, 255, 255, 0.02) 35px,
+          rgba(255, 255, 255, 0.02) 70px
+        );
       z-index: 0;
+    }
+    
+    /* Efecto de luces de neón */
+    body::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 20% 50%, rgba(255, 69, 0, 0.1) 0%, transparent 50%),
+                  radial-gradient(circle at 80% 50%, rgba(0, 191, 255, 0.1) 0%, transparent 50%);
+      z-index: 0;
+      animation: neonPulse 4s ease-in-out infinite;
+    }
+    
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    
+    @keyframes neonPulse {
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 0.8; }
     }
     
     .glass-container {
@@ -74,35 +109,118 @@ if (isset($_SESSION['S_ID'])) {
     .header-section {
       width: 100%;
       text-align: center;
-      padding: 1rem;
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(10px);
-      border-radius: 20px;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-      margin-bottom: 1.5rem;
-      animation: fadeInDown 1s ease-out;
+      padding: 2rem 1rem;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(15px);
+      border-radius: 25px;
+      border: 2px solid rgba(255, 69, 0, 0.3);
+      box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.3),
+        0 0 20px rgba(255, 69, 0, 0.2),
+        inset 0 0 20px rgba(255, 69, 0, 0.05);
+      margin-bottom: 2rem;
+      animation: fadeInDown 1s ease-out, neonGlow 3s ease-in-out infinite;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .header-section::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(
+        45deg,
+        transparent,
+        rgba(255, 69, 0, 0.1),
+        transparent
+      );
+      animation: shine 3s infinite;
+    }
+    
+    @keyframes shine {
+      0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+      100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+    }
+    
+    @keyframes neonGlow {
+      0%, 100% {
+        box-shadow: 
+          0 8px 32px rgba(0, 0, 0, 0.3),
+          0 0 20px rgba(255, 69, 0, 0.2),
+          inset 0 0 20px rgba(255, 69, 0, 0.05);
+      }
+      50% {
+        box-shadow: 
+          0 8px 32px rgba(0, 0, 0, 0.3),
+          0 0 40px rgba(255, 69, 0, 0.4),
+          inset 0 0 30px rgba(255, 69, 0, 0.1);
+      }
+    }
+    
+    .title-container {
+      position: relative;
+      z-index: 1;
     }
     
     .title-container h1 {
       color: var(--light-color);
       font-family: 'Playfair Display', serif;
-      font-size: clamp(28px, 4vw, 44px);
+      font-size: clamp(32px, 5vw, 52px);
       font-weight: 700;
-      letter-spacing: 0.05em;
-      text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+      letter-spacing: 0.08em;
+      text-shadow: 
+        0 0 10px rgba(255, 69, 0, 0.8),
+        0 0 20px rgba(255, 69, 0, 0.6),
+        0 0 30px rgba(255, 69, 0, 0.4),
+        2px 2px 8px rgba(0, 0, 0, 0.8);
       margin-bottom: 15px;
-      line-height: 1.2;
+      line-height: 1.3;
+      animation: textGlow 2s ease-in-out infinite;
+    }
+    
+    @keyframes textGlow {
+      0%, 100% {
+        text-shadow: 
+          0 0 10px rgba(255, 69, 0, 0.8),
+          0 0 20px rgba(255, 69, 0, 0.6),
+          0 0 30px rgba(255, 69, 0, 0.4),
+          2px 2px 8px rgba(0, 0, 0, 0.8);
+      }
+      50% {
+        text-shadow: 
+          0 0 20px rgba(255, 69, 0, 1),
+          0 0 30px rgba(255, 69, 0, 0.8),
+          0 0 40px rgba(255, 69, 0, 0.6),
+          2px 2px 8px rgba(0, 0, 0, 0.8);
+      }
     }
     
     .title-container h2 {
-      color: var(--light-color);
+      color: var(--accent-color);
       font-family: 'Poppins', sans-serif;
-      font-size: clamp(16px, 2vw, 24px);
+      font-size: clamp(18px, 2.5vw, 28px);
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-shadow: 
+        0 0 10px rgba(255, 215, 0, 0.8),
+        0 0 20px rgba(255, 215, 0, 0.4),
+        1px 1px 4px rgba(0, 0, 0, 0.8);
+      opacity: 1;
+      margin-top: 10px;
+    }
+    
+    .subtitle-location {
+      color: var(--secondary-color);
+      font-size: clamp(14px, 1.8vw, 20px);
       font-weight: 400;
       letter-spacing: 0.05em;
-      text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.3);
-      opacity: 0.9;
+      text-shadow: 
+        0 0 10px rgba(0, 191, 255, 0.6),
+        1px 1px 4px rgba(0, 0, 0, 0.6);
+      margin-top: 8px;
     }
 
     .login-box {
@@ -266,7 +384,7 @@ if (isset($_SESSION['S_ID'])) {
     
     .btn-login {
       border: none;
-      background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+      background: linear-gradient(45deg, var(--primary-color), var(--neon-orange));
       color: white;
       padding: 0.8rem 1.5rem;
       border-radius: 12px;
@@ -274,7 +392,9 @@ if (isset($_SESSION['S_ID'])) {
       font-family: 'Poppins', sans-serif;
       letter-spacing: 0.5px;
       transition: all 0.3s ease;
-      box-shadow: 0 5px 15px rgba(10, 36, 99, 0.3);
+      box-shadow: 
+        0 5px 15px rgba(255, 69, 0, 0.4),
+        0 0 20px rgba(255, 69, 0, 0.2);
       position: relative;
       overflow: hidden;
       z-index: 1;
@@ -287,7 +407,7 @@ if (isset($_SESSION['S_ID'])) {
       left: 0;
       width: 0%;
       height: 100%;
-      background: linear-gradient(45deg, var(--secondary-color), var(--accent-color));
+      background: linear-gradient(45deg, var(--secondary-color), var(--neon-blue));
       transition: width 0.5s ease;
       z-index: -1;
     }
@@ -298,7 +418,9 @@ if (isset($_SESSION['S_ID'])) {
     
     .btn-login:hover {
       transform: translateY(-3px);
-      box-shadow: 0 8px 25px rgba(10, 36, 99, 0.4);
+      box-shadow: 
+        0 8px 25px rgba(255, 69, 0, 0.6),
+        0 0 30px rgba(255, 69, 0, 0.4);
     }
     
     .btn-login:active {
@@ -312,16 +434,18 @@ if (isset($_SESSION['S_ID'])) {
 
     footer {
       width: 100%;
-      background: rgba(0, 0, 0, 0.5);
-      backdrop-filter: blur(5px);
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(10px);
       color: white;
       text-align: center;
       padding: 15px 0;
       font-family: 'Poppins', sans-serif;
       font-size: 14px;
       letter-spacing: 1px;
-      border-top: 1px solid rgba(255, 255, 255, 0.2);
-      box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.1);
+      border-top: 2px solid rgba(255, 69, 0, 0.3);
+      box-shadow: 
+        0 -5px 20px rgba(0, 0, 0, 0.3),
+        0 0 15px rgba(255, 69, 0, 0.2);
       animation: fadeInUp 1s ease-out;
     }
     
@@ -444,8 +568,9 @@ if (isset($_SESSION['S_ID'])) {
     <!-- Títulos -->
     <div class="header-section">
       <div class="title-container">
-        <h1><b>Empresa de Saneamiento de Títulos de Propiedad INCOCAT S.R.L.</b></h1>
-        <h2><b>"SISTEMA WEB DE SANEAMIENTO DE TÍTULOS DE PROPIEDAD"</b></h2>
+        <h1><b>⛽ ESTACIÓN GOYO ⛽</b></h1>
+        <h2><b>ULLPUTO - CHUQUI</b></h2>
+        <p class="subtitle-location"><i class="fas fa-map-marker-alt"></i> Sistema de Gestión de Grifo</p>
       </div>
     </div>
 
@@ -454,7 +579,7 @@ if (isset($_SESSION['S_ID'])) {
       <div class="card">
         <div class="login-card-body">
           <div class="logo-container">
-            <img src="img/incocat.jpeg" alt="INCOCAT Logo" class="img-fluid" style="width:100%">
+            <img src="img/grau.png" alt="INCOCAT Logo" class="img-fluid" style="width:100%">
           </div>
           
           <p class="login-box-msg">
@@ -504,7 +629,7 @@ if (isset($_SESSION['S_ID'])) {
 
     <!-- Footer -->
     <footer>
-      Empresa de Saneamiento de Títulos de Propiedad INCOCAT S.R.L. &copy; 2025
+      <i class="fas fa-gas-pump"></i> Estación Goyo - Ullputo, Chuqui &copy; 2025 | Sistema de Gestión de Grifo
     </footer>
   </div>
 

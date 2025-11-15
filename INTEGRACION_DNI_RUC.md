@@ -4,10 +4,12 @@
 Se ha integrado la funcionalidad de consulta automática de DNI (RENIEC) y RUC (SUNAT) en los módulos que requieren datos de personas o empresas.
 
 ## Archivos Base Utilizados
-- **consulta-dni-ajax.php**: Consulta datos de RENIEC por DNI (8 dígitos)
-- **consultar-ruc-ajax.php**: Consulta datos de SUNAT por RUC (11 dígitos)
+- **view/consulta-dni-ajax.php**: Consulta datos de RENIEC por DNI (8 dígitos)
+- **view/consultar-ruc-ajax.php**: Consulta datos de SUNAT por RUC (11 dígitos)
 
 Ambos archivos utilizan la API de Decolecta con el token configurado.
+
+**IMPORTANTE**: Los archivos están ubicados en la carpeta `view/` para que sean accesibles desde los módulos con la ruta relativa `../`
 
 ## Módulos Integrados
 
@@ -103,6 +105,12 @@ Los siguientes módulos no necesitan búsqueda DNI/RUC porque:
 - El token de API está configurado en los archivos PHP
 - Las respuestas se procesan en formato JSON
 - Se manejan errores de conexión y respuestas vacías
+- **IMPORTANTE**: Las rutas de los archivos PHP son relativas a la ubicación de las vistas:
+  - Desde `view/clientes/`: usar `../consulta-dni-ajax.php` y `../consultar-ruc-ajax.php`
+  - Desde `view/usuario/`: usar `../consulta-dni-ajax.php`
+  - Los archivos están en `view/` (un nivel arriba de los módulos)
+- Se incluyen console.log para depuración en desarrollo
+- Token API: `sk_11678.HdeHGplwfvrLVqBOrFwH2fspxdwFoTOT`
 
 ## Próximas Mejoras Sugeridas
 

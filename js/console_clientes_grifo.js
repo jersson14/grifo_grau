@@ -394,13 +394,33 @@ function Buscar_DNI(dni) {
         type: 'POST',
         data: { dni: dni }
     }).done(function(resp) {
+        console.log('Respuesta DNI:', resp);
         try {
             var data = JSON.parse(resp);
+            console.log('Data parseada:', data);
             
+            // Verificar si la respuesta tiene datos (puede venir en diferentes formatos)
             if (data.success === true && data.data) {
-                var nombres = data.data.nombres || '';
-                var apellido_paterno = data.data.apellido_paterno || '';
-                var apellido_materno = data.data.apellido_materno || '';
+                // Formato de decolecta API
+                var nombres = data.data.nombres || data.data.first_name || '';
+                var apellido_paterno = data.data.apellido_paterno || data.data.first_last_name || '';
+                var apellido_materno = data.data.apellido_materno || data.data.second_last_name || '';
+                var nombre_completo = (nombres + ' ' + apellido_paterno + ' ' + apellido_materno).trim();
+                
+                $("#txt_nombre").val(nombre_completo);
+                
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Datos encontrados',
+                    text: 'Información obtenida de RENIEC',
+                    confirmButtonColor: '#023D77',
+                    timer: 2000
+                });
+            } else if (data.first_name) {
+                // Formato alternativo (directo sin success/data)
+                var nombres = data.first_name || '';
+                var apellido_paterno = data.first_last_name || '';
+                var apellido_materno = data.second_last_name || '';
                 var nombre_completo = (nombres + ' ' + apellido_paterno + ' ' + apellido_materno).trim();
                 
                 $("#txt_nombre").val(nombre_completo);
@@ -421,18 +441,21 @@ function Buscar_DNI(dni) {
                 });
             }
         } catch (e) {
+            console.error('Error al parsear:', e);
+            console.error('Respuesta recibida:', resp);
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
-                text: 'Error al procesar la respuesta',
+                text: 'Error al procesar la respuesta: ' + e.message,
                 confirmButtonColor: '#023D77'
             });
         }
-    }).fail(function() {
+    }).fail(function(xhr, status, error) {
+        console.error('Error AJAX:', status, error);
         Swal.fire({
             icon: 'error',
             title: 'Error',
-            text: 'Error al consultar RENIEC',
+            text: 'Error al consultar RENIEC: ' + error,
             confirmButtonColor: '#023D77'
         });
     });
@@ -453,12 +476,32 @@ function Buscar_RUC(ruc) {
         type: 'POST',
         data: { ruc: ruc }
     }).done(function(resp) {
+        console.log('Respuesta RUC:', resp);
         try {
             var data = JSON.parse(resp);
+            console.log('Data RUC parseada:', data);
             
+            // Verificar si la respuesta tiene datos (puede venir en diferentes formatos)
             if (data.success === true && data.data) {
                 var razon_social = data.data.razon_social || '';
                 var direccion = data.data.direccion_completa || data.data.direccion || '';
+                
+                $("#txt_nombre").val(razon_social);
+                if (direccion) {
+                    $("#txt_direccion").val(direccion);
+                }
+                
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Datos encontrados',
+                    text: 'Información obtenida de SUNAT',
+                    confirmButtonColor: '#023D77',
+                    timer: 2000
+                });
+            } else if (data.razon_social) {
+                // Formato alternativo (directo sin success/data)
+                var razon_social = data.razon_social || '';
+                var direccion = data.direccion || '';
                 
                 $("#txt_nombre").val(razon_social);
                 if (direccion) {
@@ -481,18 +524,20 @@ function Buscar_RUC(ruc) {
                 });
             }
         } catch (e) {
+            console.error('Error al parsear RUC:', e);
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
-                text: 'Error al procesar la respuesta',
+                text: 'Error al procesar la respuesta: ' + e.message,
                 confirmButtonColor: '#023D77'
             });
         }
-    }).fail(function() {
+    }).fail(function(xhr, status, error) {
+        console.error('Error AJAX RUC:', status, error);
         Swal.fire({
             icon: 'error',
             title: 'Error',
-            text: 'Error al consultar SUNAT',
+            text: 'Error al consultar SUNAT: ' + error,
             confirmButtonColor: '#023D77'
         });
     });
@@ -543,10 +588,27 @@ function Buscar_DNI_Editar(dni) {
         try {
             var data = JSON.parse(resp);
             
+            // Verificar si la respuesta tiene datos (puede venir en diferentes formatos)
             if (data.success === true && data.data) {
-                var nombres = data.data.nombres || '';
-                var apellido_paterno = data.data.apellido_paterno || '';
-                var apellido_materno = data.data.apellido_materno || '';
+                var nombres = data.data.nombres || data.data.first_name || '';
+                var apellido_paterno = data.data.apellido_paterno || data.data.first_last_name || '';
+                var apellido_materno = data.data.apellido_materno || data.data.second_last_name || '';
+                var nombre_completo = (nombres + ' ' + apellido_paterno + ' ' + apellido_materno).trim();
+                
+                $("#txt_nombre_editar").val(nombre_completo);
+                
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Datos encontrados',
+                    text: 'Información obtenida de RENIEC',
+                    confirmButtonColor: '#023D77',
+                    timer: 2000
+                });
+            } else if (data.first_name) {
+                // Formato alternativo (directo sin success/data)
+                var nombres = data.first_name || '';
+                var apellido_paterno = data.first_last_name || '';
+                var apellido_materno = data.second_last_name || '';
                 var nombre_completo = (nombres + ' ' + apellido_paterno + ' ' + apellido_materno).trim();
                 
                 $("#txt_nombre_editar").val(nombre_completo);
@@ -602,9 +664,27 @@ function Buscar_RUC_Editar(ruc) {
         try {
             var data = JSON.parse(resp);
             
+            // Verificar si la respuesta tiene datos (puede venir en diferentes formatos)
             if (data.success === true && data.data) {
                 var razon_social = data.data.razon_social || '';
                 var direccion = data.data.direccion_completa || data.data.direccion || '';
+                
+                $("#txt_nombre_editar").val(razon_social);
+                if (direccion) {
+                    $("#txt_direccion_editar").val(direccion);
+                }
+                
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Datos encontrados',
+                    text: 'Información obtenida de SUNAT',
+                    confirmButtonColor: '#023D77',
+                    timer: 2000
+                });
+            } else if (data.razon_social) {
+                // Formato alternativo (directo sin success/data)
+                var razon_social = data.razon_social || '';
+                var direccion = data.direccion || '';
                 
                 $("#txt_nombre_editar").val(razon_social);
                 if (direccion) {
