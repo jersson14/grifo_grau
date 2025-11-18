@@ -118,7 +118,7 @@
                     <div class="col-md-6 form-group text-center">
                         <label>Vista Previa</label>
                         <div style="border: 2px dashed #ccc; padding: 10px; min-height: 150px; display: flex; align-items: center; justify-content: center;">
-                            <img id="preview" src="../img/vacio.png" alt="Vista previa" style="max-width: 100%; max-height: 150px;">
+                            <img id="preview" src="../img/avatar.png" alt="Vista previa" style="max-width: 100%; max-height: 150px;">
                         </div>
                     </div>
 
@@ -219,7 +219,7 @@
                     <div class="col-md-6 form-group text-center">
                         <label>Vista Previa</label>
                         <div style="border: 2px dashed #ccc; padding: 10px; min-height: 150px; display: flex; align-items: center; justify-content: center;">
-                            <img id="preview2" src="../img/vacio.png" alt="Vista previa" style="max-width: 100%; max-height: 150px;">
+                            <img id="preview2" src="../img/avatar.png" alt="Vista previa" style="max-width: 100%; max-height: 150px;">
                         </div>
                     </div>
 
@@ -335,7 +335,7 @@ function previewImage(event) {
 function clearPhoto() {
     document.getElementById('txt_foto').value = '';
     document.getElementById('label_txt_foto').textContent = 'Seleccione foto...';
-    document.getElementById('preview').src = '../img/vacio.png';
+    document.getElementById('preview').src = '../img/avatar.png';
 }
 
 function previewImage2(event) {
@@ -356,6 +356,6 @@ function previewImage2(event) {
 function clearPhoto2() {
     document.getElementById('txt_foto_editar').value = '';
     document.getElementById('label_txt_foto_editar').textContent = 'Seleccione foto...';
-    document.getElementById('preview2').src = '../img/vacio.png';
+    document.getElementById('preview2').src = '../img/avatar.png';
 }
 </script>

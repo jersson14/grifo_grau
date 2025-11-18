@@ -35,6 +35,9 @@ if (!isset($_SESSION['S_ID'])) {
             <i class="fas fa-caret-down"></i>
           </a>
           <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
+            <a href="#" onclick="cargar_contenido('contenido_principal','usuario/view_mi_perfil.php')" class="dropdown-item">
+              <i class="fas fa-user-circle mr-2"></i><b>Mi Perfil</b>
+            </a>
             <div class="dropdown-divider"></div>
             <a href="../controller/usuario/controlador_cerrar_sesion.php" class="dropdown-item">
               <i class="fas fa-power-off mr-2"></i><u><b>Cerrar Sesión</b></u>
@@ -47,7 +50,7 @@ if (!isset($_SESSION['S_ID'])) {
 
     <!-- Main Sidebar -->
     <aside class="main-sidebar sidebar-dark-primary elevation-4">
-      <a href="index.php" class="brand-link">
+      <a href="#"  onclick="cargar_contenido('contenido_principal','reportes/view_dashboard.php')" class="brand-link">
         <img src="../img/grau.png" alt="<?php echo $_SESSION['S_RAZON']; ?>" width="100%" height="auto">
       </a>
 
@@ -79,7 +82,7 @@ if (!isset($_SESSION['S_ID'])) {
             <?php if ($_SESSION['S_ROL'] == "ADMINISTRADOR") { ?>
               
               <!-- GESTIÓN DE TURNOS (Solo Admin) -->
-              <li class="nav-item">
+              <li class="nav-item has-treeview">
                 <a href="#" class="nav-link">
                   <i class="nav-icon fas fa-clock"></i>
                   <p style="color:white">
@@ -95,7 +98,7 @@ if (!isset($_SESSION['S_ID'])) {
                     </a>
                   </li>
                   <li class="nav-item">
-                    <a href="#" onclick="cargar_contenido('contenido_principal','turnos/view_turnos_activos.php')" class="nav-link">
+                    <a href="#" onclick="cargar_contenido('contenido_principal','turnos/view_abrir_turno.php')" class="nav-link">
                       <i class="nav-icon far fa-circle"></i>
                       <p style="color:white">Turnos Activos</p>
                     </a>
@@ -118,7 +121,7 @@ if (!isset($_SESSION['S_ID'])) {
               </li>
 
               <!-- REPORTES -->
-              <li class="nav-item">
+              <li class="nav-item has-treeview">
                 <a href="#" class="nav-link">
                   <i class="nav-icon fas fa-file-alt"></i>
                   <p style="color:white">
@@ -221,7 +224,7 @@ if (!isset($_SESSION['S_ID'])) {
               <b>MI CUENTA</b>
             </li>
             <li class="nav-item">
-              <a href="#" onclick="cargar_contenido('contenido_principal','perfil/view_mi_perfil.php')" class="nav-link">
+              <a href="#" onclick="cargar_contenido('contenido_principal','usuario/view_mi_perfil.php')" class="nav-link">
                 <i class="nav-icon fas fa-user-circle"></i>
                 <p style="color:white">Mi Perfil</p>
               </a>
@@ -238,8 +241,19 @@ if (!isset($_SESSION['S_ID'])) {
 
     <!-- Content Wrapper -->
     <div class="content-wrapper" id="contenido_principal">
-      
-      <!-- DASHBOARD ADMINISTRADOR -->
+      <div class="content-header">
+        <div class="container-fluid">
+          <div class="row mb-2">
+            <div class="col-sm-12 text-center">
+              <h1 class="m-0"><i class="fas fa-spinner fa-spin"></i> Cargando...</h1>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- DASHBOARD OCULTO PARA REEMPLAZO -->
+    <div style="display:none;">
       <?php if ($_SESSION['S_ROL'] == "ADMINISTRADOR") { ?>
         <div class="content-header">
           <div class="container-fluid">
@@ -540,14 +554,11 @@ if (!isset($_SESSION['S_ID'])) {
     }
 
     $(document).ready(function() {
+      // Cargar dashboard automáticamente según el rol
       <?php if ($_SESSION['S_ROL'] == "ADMINISTRADOR") { ?>
-        // Cargar datos del dashboard admin
-        cargar_dashboard_admin();
-      <?php } ?>
-      
-      <?php if ($_SESSION['S_ROL'] == "GRIFERO") { ?>
-        // Cargar datos del dashboard grifero
-        cargar_dashboard_grifero();
+        cargar_contenido('contenido_principal', 'reportes/view_dashboard.php');
+      <?php } else if ($_SESSION['S_ROL'] == "GRIFERO") { ?>
+        cargar_contenido('contenido_principal', 'turnos/view_abrir_turno.php');
       <?php } ?>
     });
 

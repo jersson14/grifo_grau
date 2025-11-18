@@ -222,19 +222,33 @@
                     <div class="card-header" style="background-color:#6c757d; color:white">
                         <h3 class="card-title"><i class="fas fa-bolt"></i> Accesos Rápidos</h3>
                     </div>
-                    <div class="card-body">
-                        <a href="#" onclick="cargar_contenido('contenido_principal','reportes/view_reporte_diario.php')" class="btn btn-app btn-lg">
-                            <i class="fas fa-calendar-day"></i> Reporte Diario
-                        </a>
-                        <a href="#" onclick="cargar_contenido('contenido_principal','reportes/view_reporte_mensual.php')" class="btn btn-app btn-lg">
-                            <i class="fas fa-calendar-alt"></i> Reporte Mensual
-                        </a>
-                        <a href="#" onclick="cargar_contenido('contenido_principal','turnos/view_historial.php')" class="btn btn-app btn-lg">
-                            <i class="fas fa-history"></i> Historial Turnos
-                        </a>
-                        <a href="#" onclick="cargar_contenido('contenido_principal','creditos/view_creditos_pendientes.php')" class="btn btn-app btn-lg">
-                            <i class="fas fa-credit-card"></i> Créditos
-                        </a>
+                    <div class="card-body text-center">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <a href="#" onclick="cargar_contenido('contenido_principal','turnos/view_abrir_turno.php')" class="btn btn-app btn-lg bg-gradient-success" style="width: 100%; height: 120px;">
+                                    <i class="fas fa-clock fa-3x"></i><br>
+                                    <span style="font-size: 16px;">Abrir Turno</span>
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a href="#" onclick="cargar_contenido('contenido_principal','reportes/view_listado_reportes.php')" class="btn btn-app btn-lg bg-gradient-primary" style="width: 100%; height: 120px;">
+                                    <i class="fas fa-file-alt fa-3x"></i><br>
+                                    <span style="font-size: 16px;">Todos los Reportes</span>
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a href="#" onclick="cargar_contenido('contenido_principal','creditos/view_creditos_pendientes.php')" class="btn btn-app btn-lg bg-gradient-warning" style="width: 100%; height: 120px;">
+                                    <i class="fas fa-credit-card fa-3x"></i><br>
+                                    <span style="font-size: 16px;">Créditos Pendientes</span>
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a href="#" onclick="cargar_contenido('contenido_principal','productos/view_productos.php')" class="btn btn-app btn-lg bg-gradient-info" style="width: 100%; height: 120px;">
+                                    <i class="fas fa-gas-pump fa-3x"></i><br>
+                                    <span style="font-size: 16px;">Productos</span>
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -245,5 +259,40 @@
 <script>
 $(document).ready(function() {
     Cargar_Dashboard();
+    Verificar_Creditos_Vencidos();
 });
+
+function Verificar_Creditos_Vencidos() {
+    $.ajax({
+        url: '../controller/creditos/controlador_creditos_vencidos.php',
+        type: 'POST',
+        dataType: 'json'
+    }).done(function(data) {
+        if (data.total > 0) {
+            var mensaje = '<div style="text-align: left;">';
+            mensaje += '<p><strong>Hay ' + data.total + ' crédito(s) vencido(s):</strong></p>';
+            mensaje += '<ul>';
+            data.creditos.forEach(function(credito) {
+                mensaje += '<li><strong>' + credito.cliente + '</strong> - Vale: ' + credito.numero_vale + ' - Monto: S/. ' + parseFloat(credito.saldo_pendiente).toFixed(2) + ' - Vencido: ' + credito.dias_vencido + ' días</li>';
+            });
+            mensaje += '</ul>';
+            mensaje += '</div>';
+            
+            Swal.fire({
+                icon: 'warning',
+                title: '⚠️ Créditos Vencidos',
+                html: mensaje,
+                confirmButtonColor: '#023D77',
+                confirmButtonText: 'Ver Créditos',
+                showCancelButton: true,
+                cancelButtonText: 'Cerrar',
+                width: '600px'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    cargar_contenido('contenido_principal', 'creditos/view_creditos_pendientes.php');
+                }
+            });
+        }
+    });
+}
 </script>

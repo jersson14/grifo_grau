@@ -220,20 +220,89 @@ function Actualizar_Lectura_Turno(id_lectura, lectura_actual) {
 }
 
 function Calcular_Totales_Turno() {
-    var total_diesel = 0;
-    var total_regular = 0;
-    var total_premium = 0;
-    var galones_diesel = 0;
-    var galones_regular = 0;
-    var galones_premium = 0;
+    var id_reporte = $("#txt_id_reporte").val();
+    console.log('Calculando totales para reporte:', id_reporte);
     
-    // Aquí deberías calcular los totales desde el servidor
-    // Por ahora solo actualiza la vista
+    if (!id_reporte || id_reporte == '') {
+        console.error('ID de reporte no válido');
+        return;
+    }
     
-    $("#total_diesel").text('S/. 0.00');
-    $("#total_regular").text('S/. 0.00');
-    $("#total_premium").text('S/. 0.00');
-    $("#total_ventas").text('S/. 0.00');
+    // Obtener totales del servidor
+    $.ajax({
+        url: '../controller/turnos/controlador_calcular_totales_turno.php',
+        type: 'POST',
+        data: { id_reporte: id_reporte },
+        dataType: 'json'
+    }).done(function(data) {
+        console.log('Totales recibidos:', data);
+        // Actualizar tarjetas de resumen por combustible
+        $("#total_diesel").text('S/. ' + parseFloat(data.total_diesel || 0).toFixed(2));
+        $("#total_regular").text('S/. ' + parseFloat(data.total_regular || 0).toFixed(2));
+        $("#total_premium").text('S/. ' + parseFloat(data.total_premium || 0).toFixed(2));
+        $("#total_ventas").text('S/. ' + parseFloat(data.total_ventas || 0).toFixed(2));
+        
+        // Actualizar cuadre de caja
+        Actualizar_Cuadre_Caja();
+    }).fail(function(xhr, status, error) {
+        console.error('Error al calcular totales:', error);
+        console.error('Respuesta:', xhr.responseText);
+        $("#total_diesel").text('S/. 0.00');
+        $("#total_regular").text('S/. 0.00');
+        $("#total_premium").text('S/. 0.00');
+        $("#total_ventas").text('S/. 0.00');
+    });
+}
+
+function Actualizar_Cuadre_Caja() {
+    var id_reporte = $("#txt_id_reporte").val();
+    var descuentos = parseFloat($("#txt_descuentos").val() || 0);
+    var otros_gastos = parseFloat($("#txt_otros_gastos").val() || 0);
+    
+    console.log('Actualizando cuadre de caja para reporte:', id_reporte);
+    
+    if (!id_reporte || id_reporte == '') {
+        console.error('ID de reporte no válido para cuadre');
+        return;
+    }
+    
+    $.ajax({
+        url: '../controller/turnos/controlador_cuadre_caja.php',
+        type: 'POST',
+        data: { 
+            id_reporte: id_reporte,
+            descuentos: descuentos,
+            otros_gastos: otros_gastos
+        },
+        dataType: 'json'
+    }).done(function(data) {
+        console.log('Cuadre de caja recibido:', data);
+        $("#cuadre_total_ventas").text('S/. ' + parseFloat(data.total_ventas || 0).toFixed(2));
+        $("#cuadre_total_pagos").text('S/. ' + parseFloat(data.total_pagos || 0).toFixed(2));
+        $("#cuadre_total_creditos").text('S/. ' + parseFloat(data.total_creditos || 0).toFixed(2));
+        $("#cuadre_descuentos").text('S/. ' + parseFloat(data.descuentos || 0).toFixed(2));
+        $("#cuadre_otros_gastos").text('S/. ' + parseFloat(data.otros_gastos || 0).toFixed(2));
+        
+        var faltante = parseFloat(data.faltante || 0);
+        var faltante_text = 'S/. ' + Math.abs(faltante).toFixed(2);
+        
+        if (faltante < 0) {
+            $("#cuadre_faltante").html('<span class="text-danger">' + faltante_text + ' (FALTANTE)</span>');
+        } else if (faltante > 0) {
+            $("#cuadre_faltante").html('<span class="text-success">' + faltante_text + ' (SOBRANTE)</span>');
+        } else {
+            $("#cuadre_faltante").html('<span class="text-success">S/. 0.00 (CUADRADO)</span>');
+        }
+    }).fail(function(xhr, status, error) {
+        console.error('Error al actualizar cuadre:', error);
+        console.error('Respuesta:', xhr.responseText);
+        $("#cuadre_total_ventas").text('S/. 0.00');
+        $("#cuadre_total_pagos").text('S/. 0.00');
+        $("#cuadre_total_creditos").text('S/. 0.00');
+        $("#cuadre_descuentos").text('S/. 0.00');
+        $("#cuadre_otros_gastos").text('S/. 0.00');
+        $("#cuadre_faltante").text('S/. 0.00');
+    });
 }
 
 // PAGOS
@@ -336,6 +405,7 @@ function Agregar_Pago() {
             $("#modal_agregar_pago").modal('hide');
             Listar_Pagos_Turno(id_reporte);
             Limpiar_Modal_Pago();
+            Actualizar_Cuadre_Caja();
         } else {
             Swal.fire({
                 icon: 'error',
@@ -380,6 +450,7 @@ function Eliminar_Pago(id_pago) {
                     });
                     var id_reporte = $("#txt_id_reporte").val();
                     Listar_Pagos_Turno(id_reporte);
+                    Actualizar_Cuadre_Caja();
                 }
             });
         }
@@ -483,6 +554,7 @@ function Agregar_Credito() {
             $("#modal_agregar_credito").modal('hide');
             Listar_Creditos_Turno(id_reporte);
             Limpiar_Modal_Credito();
+            Actualizar_Cuadre_Caja();
         } else {
             Swal.fire({
                 icon: 'error',
@@ -528,11 +600,17 @@ function Eliminar_Credito(id_credito) {
                     });
                     var id_reporte = $("#txt_id_reporte").val();
                     Listar_Creditos_Turno(id_reporte);
+                    Actualizar_Cuadre_Caja();
                 }
             });
         }
     });
 }
+
+// Actualizar cuadre cuando cambian los descuentos u otros gastos
+$(document).on('change', '#txt_descuentos, #txt_otros_gastos', function() {
+    Actualizar_Cuadre_Caja();
+});
 
 // CERRAR TURNO
 function Cerrar_Turno_Final() {
@@ -580,4 +658,199 @@ function Cerrar_Turno_Final() {
             });
         }
     });
+}
+
+
+// FUNCIÓN PARA VER DETALLE DEL TURNO (MODAL)
+function Ver_Detalle_Turno(id_reporte) {
+    console.log('Ver_Detalle_Turno llamado con ID:', id_reporte);
+    
+    // Cargar información general del turno
+    $.ajax({
+        url: '../controller/turnos/controlador_detalle_turno.php',
+        type: 'POST',
+        data: { id_reporte: id_reporte },
+        dataType: 'json'
+    }).done(function(data) {
+        console.log('Datos del turno:', data);
+        $("#detalle_numero_documento").text(data.numero_documento || '-');
+        $("#detalle_fecha").text(data.fecha || '-');
+        $("#detalle_turno").text(data.turno || '-');
+        $("#detalle_grifero").text(data.grifero || '-');
+        
+        // Totales en tarjetas
+        $("#detalle_total_diesel").text('S/. ' + parseFloat(data.total_diesel || 0).toFixed(2));
+        $("#detalle_total_regular").text('S/. ' + parseFloat(data.total_regular || 0).toFixed(2));
+        $("#detalle_total_premium").text('S/. ' + parseFloat(data.total_premium || 0).toFixed(2));
+        $("#detalle_total_ventas").text('S/. ' + parseFloat(data.total_ventas || 0).toFixed(2));
+        
+        // Totales en Soles
+        $("#detalle_soles_diesel").text('S/. ' + parseFloat(data.total_diesel || 0).toFixed(2));
+        $("#detalle_soles_regular").text('S/. ' + parseFloat(data.total_regular || 0).toFixed(2));
+        $("#detalle_soles_premium").text('S/. ' + parseFloat(data.total_premium || 0).toFixed(2));
+        $("#detalle_soles_total").text('S/. ' + parseFloat(data.total_ventas || 0).toFixed(2));
+        
+        // Totales en Galones
+        $("#detalle_galones_diesel").text(parseFloat(data.galones_diesel || 0).toFixed(3) + ' gal');
+        $("#detalle_galones_regular").text(parseFloat(data.galones_regular || 0).toFixed(3) + ' gal');
+        $("#detalle_galones_premium").text(parseFloat(data.galones_premium || 0).toFixed(3) + ' gal');
+        $("#detalle_galones_total").text(parseFloat(data.total_galones || 0).toFixed(3) + ' gal');
+    }).fail(function(xhr, status, error) {
+        console.error('Error al cargar datos del turno:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'No se pudieron cargar los datos del turno',
+            confirmButtonColor: '#023D77'
+        });
+    });
+    
+    // Cargar lecturas
+    $.ajax({
+        url: '../controller/turnos/controlador_detalle_lecturas.php',
+        type: 'POST',
+        data: { id_reporte: id_reporte },
+        dataType: 'json'
+    }).done(function(data) {
+        console.log('Lecturas:', data);
+        var html = '';
+        if (data && data.length > 0) {
+            data.forEach(function(item) {
+                html += '<tr>';
+                html += '<td>' + item.numero_maquina + '</td>';
+                html += '<td>' + item.codigo + '</td>';
+                html += '<td>' + item.producto + '</td>';
+                html += '<td>' + parseFloat(item.lectura_anterior).toFixed(3) + '</td>';
+                html += '<td>' + parseFloat(item.lectura_actual).toFixed(3) + '</td>';
+                html += '<td>' + parseFloat(item.galones_vendidos).toFixed(3) + '</td>';
+                html += '<td>S/. ' + parseFloat(item.precio).toFixed(2) + '</td>';
+                html += '<td>S/. ' + parseFloat(item.total).toFixed(2) + '</td>';
+                html += '</tr>';
+            });
+        } else {
+            html = '<tr><td colspan="8" class="text-center">No hay lecturas registradas</td></tr>';
+        }
+        $("#tabla_detalle_lecturas tbody").html(html);
+    }).fail(function(xhr, status, error) {
+        console.error('Error al cargar lecturas:', error);
+        $("#tabla_detalle_lecturas tbody").html('<tr><td colspan="8" class="text-center text-danger">Error al cargar lecturas</td></tr>');
+    });
+    
+    $("#modal_detalle_turno").modal('show');
+}
+
+// FUNCIÓN PARA IMPRIMIR REPORTE
+function Imprimir_Reporte(id_reporte) {
+    window.open('../view/MPDF/REPORTE/reporte_turno.php?id=' + id_reporte, '_blank');
+}
+
+
+// ============================================
+// HISTORIAL DE TURNOS / TODOS LOS REPORTES
+// ============================================
+
+var tabla_historial_turnos;
+
+function Listar_Historial_Turnos() {
+    var filtro_fecha_inicio = $("#filtro_fecha_inicio").val();
+    var filtro_fecha_fin = $("#filtro_fecha_fin").val();
+    var filtro_usuario = $("#filtro_usuario").val() || null;
+    var filtro_estado = $("#filtro_estado").val() || null;
+    
+    if (tabla_historial_turnos) {
+        tabla_historial_turnos.destroy();
+    }
+    
+    tabla_historial_turnos = $("#tabla_historial_turnos").DataTable({
+        "ordering": true,
+        "bLengthChange": true,
+        "searching": { "regex": false },
+        "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+        "pageLength": 10,
+        "destroy": true,
+        "processing": true,
+        "ajax": {
+            "url": "../controller/turnos/controlador_listar_turnos.php",
+            type: 'POST',
+            data: {
+                filtro_fecha_inicio: filtro_fecha_inicio,
+                filtro_fecha_fin: filtro_fecha_fin,
+                filtro_usuario: filtro_usuario,
+                filtro_estado: filtro_estado
+            }
+        },
+        "columns": [
+            { "data": "numero_documento" },
+            { 
+                "data": "fecha_reporte",
+                "render": function(data) {
+                    var fecha = new Date(data);
+                    return fecha.toLocaleDateString('es-PE');
+                }
+            },
+            { 
+                "data": "turno",
+                "render": function(data) {
+                    if (data == 'DIA') {
+                        return '<span class="badge badge-warning">DÍA</span>';
+                    } else {
+                        return '<span class="badge badge-dark">NOCHE</span>';
+                    }
+                }
+            },
+            { "data": "grifero_nombre" },
+            { 
+                "data": "total_ventas",
+                "render": function(data) {
+                    return 'S/. ' + parseFloat(data || 0).toFixed(2);
+                }
+            },
+            { 
+                "data": "monto_faltante",
+                "render": function(data) {
+                    var faltante = parseFloat(data || 0);
+                    if (faltante < 0) {
+                        return '<span class="badge badge-danger">S/. ' + Math.abs(faltante).toFixed(2) + '</span>';
+                    } else if (faltante > 0) {
+                        return '<span class="badge badge-success">S/. ' + faltante.toFixed(2) + '</span>';
+                    } else {
+                        return '<span class="badge badge-info">S/. 0.00</span>';
+                    }
+                }
+            },
+            { 
+                "data": "estado",
+                "render": function(data) {
+                    if (data == 'ABIERTO') {
+                        return '<span class="badge badge-success">ABIERTO</span>';
+                    } else {
+                        return '<span class="badge badge-secondary">CERRADO</span>';
+                    }
+                }
+            },
+            {
+                "data": "id_reporte",
+                "render": function(data) {
+                    return "<button class='ver btn btn-info btn-sm' title='Ver Detalle'><i class='fas fa-eye'></i></button>&nbsp;<button class='imprimir btn btn-primary btn-sm' title='Imprimir'><i class='fas fa-print'></i></button>";
+                }
+            }
+        ],
+        "language": idioma_espanol,
+        select: true
+    });
+
+    document.getElementById("tabla_historial_turnos").addEventListener("click", function(e) {
+        if (e.target.closest(".ver")) {
+            var data = tabla_historial_turnos.row(e.target.closest("tr")).data();
+            Ver_Detalle_Turno(data.id_reporte);
+        }
+        if (e.target.closest(".imprimir")) {
+            var data = tabla_historial_turnos.row(e.target.closest("tr")).data();
+            Imprimir_Reporte(data.id_reporte);
+        }
+    });
+}
+
+function Filtrar_Turnos() {
+    Listar_Historial_Turnos();
 }

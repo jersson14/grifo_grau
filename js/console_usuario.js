@@ -156,7 +156,7 @@ function listar_usuario(){
         {"data":"usu_foto",
           render: function(data,type,row){
                   if(data=='controller/usuario/fotos/'){
-                    return '<img src="../img/vacio.png" class="img img-responsive" style="width:40px">';
+                    return '<img src="../img/avatar.png" class="img img-responsive" style="width:40px">';
                   }else{
                     return '<img src="../'+data+'" class="img img-responsive" style="width:40px">';
                   }
@@ -229,7 +229,7 @@ $('#tabla_usuario').on('click','.editar',function(){
       if (data.usu_foto && data.usu_foto.trim() !== '') {
           imgElement.src = "../" + data.usu_foto; // Ruta relativa
       } else {
-          imgElement.src = '../img/vacio.png'; // Ruta por defecto
+          imgElement.src = '../img/avatar.png'; // Ruta por defecto
       }
   
       imgElement.style.display = 'block'; // Mostrar siempre la imagen
@@ -237,7 +237,7 @@ $('#tabla_usuario').on('click','.editar',function(){
       // Manejar errores de carga
       imgElement.onerror = function () {
           console.error("Error al cargar la imagen desde la ruta: " + imgElement.src);
-          imgElement.src = '../img/vacio.png'; // Ruta por defecto
+          imgElement.src = '../img/avatar.png'; // Ruta por defecto
       };
   } else {
       console.error('Elemento img con id preview2 no encontrado');
@@ -1034,5 +1034,263 @@ function Buscar_DNI_Usuario_Editar() {
             text: 'Error al consultar RENIEC',
             confirmButtonColor: '#023D77'
         });
+    });
+}
+
+// ============================================
+// MI PERFIL
+// ============================================
+
+function Cargar_Datos_Perfil() {
+    // Obtener ID del usuario desde el input oculto del index
+    var id_usuario = $("#txtprincipalid").val();
+    
+    console.log('ID Usuario:', id_usuario);
+    
+    if (!id_usuario || id_usuario == '') {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'No se pudo obtener el ID del usuario',
+            confirmButtonColor: '#023D77'
+        });
+        return;
+    }
+    
+    $("#txt_id_usuario").val(id_usuario);
+    
+    $.ajax({
+        url: '../controller/usuario/controlador_obtener_perfil.php',
+        type: 'POST',
+        data: { id_usuario: id_usuario },
+        dataType: 'json'
+    }).done(function(data) {
+        console.log('Datos recibidos:', data);
+        
+        if (data.error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: data.error,
+                confirmButtonColor: '#023D77'
+            });
+            return;
+        }
+        
+        // Llenar formulario
+        $("#txt_dni").val(data.dni_usuario || '');
+        $("#txt_usuario").val(data.usu_usuario || '');
+        $("#txt_nombre").val(data.usu_nombre || '');
+        $("#txt_apellido").val(data.usu_apellido || '');
+        $("#txt_email").val(data.usu_email || '');
+        $("#txt_telefono").val(data.usu_telefono || '');
+        $("#txt_direccion").val(data.usu_direccion || '');
+        
+        // Actualizar tarjeta de perfil
+        $("#perfil_nombre_completo").text((data.usu_nombre || '') + ' ' + (data.usu_apellido || ''));
+        $("#perfil_rol").text(data.usu_rol || '');
+        
+        // Actualizar foto
+        if (data.usu_foto && data.usu_foto != '') {
+            $("#perfil_foto_preview").attr('src', '../' + data.usu_foto);
+        } else {
+            $("#perfil_foto_preview").attr('src', '../img/avatar.png');
+        }
+    }).fail(function(xhr, status, error) {
+        console.error('Error AJAX:', error);
+        console.error('Respuesta:', xhr.responseText);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'No se pudieron cargar los datos del perfil: ' + error,
+            confirmButtonColor: '#023D77'
+        });
+    });
+}
+
+function Actualizar_Mi_Perfil() {
+    var id_usuario = $("#txt_id_usuario").val();
+    var nombre = $("#txt_nombre").val();
+    var apellido = $("#txt_apellido").val();
+    var email = $("#txt_email").val();
+    var telefono = $("#txt_telefono").val();
+    var direccion = $("#txt_direccion").val();
+    
+    if (nombre.length == 0 || apellido.length == 0) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Advertencia',
+            text: 'Complete los campos obligatorios',
+            confirmButtonColor: '#023D77'
+        });
+        return;
+    }
+    
+    $.ajax({
+        url: '../controller/usuario/controlador_actualizar_perfil.php',
+        type: 'POST',
+        data: {
+            id_usuario: id_usuario,
+            nombre: nombre,
+            apellido: apellido,
+            email: email,
+            telefono: telefono,
+            direccion: direccion
+        }
+    }).done(function(resp) {
+        if (resp > 0) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Éxito',
+                text: 'Perfil actualizado correctamente',
+                confirmButtonColor: '#023D77'
+            }).then(() => {
+                location.reload();
+            });
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'No se pudo actualizar el perfil',
+                confirmButtonColor: '#023D77'
+            });
+        }
+    });
+}
+
+function Abrir_Modal_Cambiar_Foto() {
+    $("#modal_cambiar_foto").modal('show');
+    $("#preview_nueva_foto").attr('src', '../img/avatar.png');
+    $("#txt_foto").val('');
+}
+
+function Preview_Foto(event) {
+    var reader = new FileReader();
+    reader.onload = function() {
+        $("#preview_nueva_foto").attr('src', reader.result);
+    }
+    reader.readAsDataURL(event.target.files[0]);
+}
+
+function Cambiar_Foto_Perfil() {
+    var id_usuario = $("#txt_id_usuario").val();
+    var foto = $("#txt_foto")[0].files[0];
+    
+    if (!foto) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Advertencia',
+            text: 'Seleccione una foto',
+            confirmButtonColor: '#023D77'
+        });
+        return;
+    }
+    
+    var formData = new FormData();
+    formData.append('id_usuario', id_usuario);
+    formData.append('foto', foto);
+    
+    $.ajax({
+        url: '../controller/usuario/controlador_cambiar_foto.php',
+        type: 'POST',
+        data: formData,
+        contentType: false,
+        processData: false
+    }).done(function(resp) {
+        if (resp > 0) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Éxito',
+                text: 'Foto actualizada correctamente',
+                confirmButtonColor: '#023D77'
+            }).then(() => {
+                location.reload();
+            });
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'No se pudo actualizar la foto',
+                confirmButtonColor: '#023D77'
+            });
+        }
+    });
+}
+
+function Abrir_Modal_Cambiar_Contrasena() {
+    $("#modal_cambiar_contrasena").modal('show');
+    $("#txt_contrasena_actual").val('');
+    $("#txt_contrasena_nueva").val('');
+    $("#txt_contrasena_confirmar").val('');
+}
+
+function Cambiar_Contrasena() {
+    var id_usuario = $("#txt_id_usuario").val();
+    var contrasena_actual = $("#txt_contrasena_actual").val();
+    var contrasena_nueva = $("#txt_contrasena_nueva").val();
+    var contrasena_confirmar = $("#txt_contrasena_confirmar").val();
+    
+    if (contrasena_actual.length == 0 || contrasena_nueva.length == 0 || contrasena_confirmar.length == 0) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Advertencia',
+            text: 'Complete todos los campos',
+            confirmButtonColor: '#023D77'
+        });
+        return;
+    }
+    
+    if (contrasena_nueva.length < 6) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Advertencia',
+            text: 'La contraseña debe tener al menos 6 caracteres',
+            confirmButtonColor: '#023D77'
+        });
+        return;
+    }
+    
+    if (contrasena_nueva != contrasena_confirmar) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Advertencia',
+            text: 'Las contraseñas no coinciden',
+            confirmButtonColor: '#023D77'
+        });
+        return;
+    }
+    
+    $.ajax({
+        url: '../controller/usuario/controlador_cambiar_contrasena.php',
+        type: 'POST',
+        data: {
+            id_usuario: id_usuario,
+            contrasena_actual: contrasena_actual,
+            contrasena_nueva: contrasena_nueva
+        }
+    }).done(function(resp) {
+        if (resp == 1) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Éxito',
+                text: 'Contraseña actualizada correctamente',
+                confirmButtonColor: '#023D77'
+            });
+            $("#modal_cambiar_contrasena").modal('hide');
+        } else if (resp == 2) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'La contraseña actual es incorrecta',
+                confirmButtonColor: '#023D77'
+            });
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'No se pudo cambiar la contraseña',
+                confirmButtonColor: '#023D77'
+            });
+        }
     });
 }

@@ -302,12 +302,52 @@ function Listar_Historial_Turnos() {
 }
 
 function Ver_Detalle_Turno(id_reporte) {
-    // Aquí cargarías los detalles del turno
+    // Cargar información general del turno
+    $.ajax({
+        url: '../controller/turnos/controlador_detalle_turno.php',
+        type: 'POST',
+        data: { id_reporte: id_reporte },
+        dataType: 'json'
+    }).done(function(data) {
+        $("#detalle_numero_documento").text(data.numero_documento);
+        $("#detalle_fecha").text(data.fecha);
+        $("#detalle_turno").text(data.turno);
+        $("#detalle_grifero").text(data.grifero);
+        
+        $("#detalle_total_diesel").text('S/. ' + parseFloat(data.total_diesel || 0).toFixed(2));
+        $("#detalle_total_regular").text('S/. ' + parseFloat(data.total_regular || 0).toFixed(2));
+        $("#detalle_total_premium").text('S/. ' + parseFloat(data.total_premium || 0).toFixed(2));
+        $("#detalle_total_ventas").text('S/. ' + parseFloat(data.total_ventas || 0).toFixed(2));
+    });
+    
+    // Cargar lecturas
+    $.ajax({
+        url: '../controller/turnos/controlador_detalle_lecturas.php',
+        type: 'POST',
+        data: { id_reporte: id_reporte },
+        dataType: 'json'
+    }).done(function(data) {
+        var html = '';
+        data.forEach(function(item) {
+            html += '<tr>';
+            html += '<td>' + item.numero_maquina + '</td>';
+            html += '<td>' + item.codigo + '</td>';
+            html += '<td>' + item.producto + '</td>';
+            html += '<td>' + parseFloat(item.lectura_anterior).toFixed(3) + '</td>';
+            html += '<td>' + parseFloat(item.lectura_actual).toFixed(3) + '</td>';
+            html += '<td>' + parseFloat(item.galones_vendidos).toFixed(3) + '</td>';
+            html += '<td>S/. ' + parseFloat(item.precio).toFixed(2) + '</td>';
+            html += '<td>S/. ' + parseFloat(item.total).toFixed(2) + '</td>';
+            html += '</tr>';
+        });
+        $("#tabla_detalle_lecturas tbody").html(html);
+    });
+    
     $("#modal_detalle_turno").modal('show');
 }
 
 function Imprimir_Reporte(id_reporte) {
-    window.open('../reportes/reporte_turno.php?id=' + id_reporte, '_blank');
+    window.open('../MPDF/REPORTE/reporte_turno.php?id=' + id_reporte, '_blank');
 }
 
 function Filtrar_Turnos() {
