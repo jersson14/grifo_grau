@@ -354,7 +354,7 @@
                 <div class="row">
                     <div class="col-md-6 form-group">
                         <label>Cliente <span class="text-danger">*</span></label>
-                        <select class="form-control" id="txt_cliente_credito">
+                        <select class="js-example-basic-single form-control" id="txt_cliente_credito" style="width:100%">
                             <option value="">-- Seleccione --</option>
                         </select>
                     </div>

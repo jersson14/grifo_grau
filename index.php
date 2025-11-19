@@ -1,4 +1,7 @@
 <?php
+// Configurar zona horaria de Lima, Perú (UTC-5)
+date_default_timezone_set('America/Lima');
+
 session_start();
 if (isset($_SESSION['S_ID'])) {
     header('Location: view/index.php');
@@ -33,6 +36,241 @@ if (isset($_SESSION['S_ID'])) {
       --neon-orange: #ff6b35;
       --neon-blue: #00d4ff;
     }
+
+    /* Partículas brillantes mejoradas */
+    .particles-container {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      z-index: 1;
+      overflow: hidden;
+    }
+
+    .particle {
+      position: absolute;
+      border-radius: 50%;
+      animation: floatParticle linear infinite;
+      opacity: 0;
+      box-shadow: 0 0 10px currentColor;
+    }
+
+    .particle:nth-child(1) {
+      left: 10%;
+      width: 12px;
+      height: 12px;
+      background: radial-gradient(circle, #FFD700, #FFA500);
+      animation-duration: 8s;
+      animation-delay: 0s;
+    }
+
+    .particle:nth-child(2) {
+      left: 25%;
+      width: 15px;
+      height: 15px;
+      background: radial-gradient(circle, #FF6B35, #FF4500);
+      animation-duration: 12s;
+      animation-delay: 2s;
+    }
+
+    .particle:nth-child(3) {
+      left: 40%;
+      width: 10px;
+      height: 10px;
+      background: radial-gradient(circle, #00D4FF, #0080FF);
+      animation-duration: 10s;
+      animation-delay: 4s;
+    }
+
+    .particle:nth-child(4) {
+      left: 55%;
+      width: 14px;
+      height: 14px;
+      background: radial-gradient(circle, #FF1493, #FF69B4);
+      animation-duration: 14s;
+      animation-delay: 1s;
+    }
+
+    .particle:nth-child(5) {
+      left: 70%;
+      width: 11px;
+      height: 11px;
+      background: radial-gradient(circle, #9D4EDD, #7209B7);
+      animation-duration: 11s;
+      animation-delay: 3s;
+    }
+
+    .particle:nth-child(6) {
+      left: 85%;
+      width: 13px;
+      height: 13px;
+      background: radial-gradient(circle, #FFD700, #FFED4E);
+      animation-duration: 9s;
+      animation-delay: 5s;
+    }
+
+    .particle:nth-child(7) {
+      left: 15%;
+      width: 9px;
+      height: 9px;
+      background: radial-gradient(circle, #00FFF5, #00CED1);
+      animation-duration: 13s;
+      animation-delay: 6s;
+    }
+
+    .particle:nth-child(8) {
+      left: 65%;
+      width: 16px;
+      height: 16px;
+      background: radial-gradient(circle, #FF6B35, #FFB627);
+      animation-duration: 15s;
+      animation-delay: 7s;
+    }
+
+    @keyframes floatParticle {
+      0% {
+        bottom: -10%;
+        opacity: 0;
+        transform: translateX(0) rotate(0deg) scale(0.5);
+      }
+      10% {
+        opacity: 1;
+      }
+      50% {
+        transform: translateX(50px) rotate(180deg) scale(1.2);
+      }
+      90% {
+        opacity: 1;
+      }
+      100% {
+        bottom: 110%;
+        opacity: 0;
+        transform: translateX(-50px) rotate(360deg) scale(0.5);
+      }
+    }
+
+    /* Ondas vibrantes mejoradas */
+    .waves-container {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 250px;
+      z-index: 1;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .wave {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 200%;
+      height: 100%;
+      opacity: 0.4;
+    }
+
+    .wave:nth-child(1) {
+      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120'%3E%3Cpath d='M0,50 Q300,0 600,50 T1200,50 L1200,120 L0,120 Z' fill='%23FF6B35'/%3E%3C/svg%3E");
+      background-size: 50% 100%;
+      animation: waveMove 15s linear infinite;
+      opacity: 0.3;
+    }
+
+    .wave:nth-child(2) {
+      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120'%3E%3Cpath d='M0,70 Q300,20 600,70 T1200,70 L1200,120 L0,120 Z' fill='%2300D4FF'/%3E%3C/svg%3E");
+      background-size: 50% 100%;
+      animation: waveMove 20s linear infinite reverse;
+      opacity: 0.25;
+    }
+
+    .wave:nth-child(3) {
+      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120'%3E%3Cpath d='M0,60 Q300,10 600,60 T1200,60 L1200,120 L0,120 Z' fill='%23FFD700'/%3E%3C/svg%3E");
+      background-size: 50% 100%;
+      animation: waveMove 18s linear infinite;
+      opacity: 0.2;
+    }
+
+    @keyframes waveMove {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    /* Círculos flotantes decorativos */
+    .circles-container {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .circle {
+      position: absolute;
+      border-radius: 50%;
+      opacity: 0.15;
+      animation: floatCircle linear infinite;
+    }
+
+    .circle:nth-child(1) {
+      width: 80px;
+      height: 80px;
+      left: 10%;
+      top: 20%;
+      background: linear-gradient(135deg, #FF6B35, #FFB627);
+      animation-duration: 20s;
+      animation-delay: 0s;
+    }
+
+    .circle:nth-child(2) {
+      width: 120px;
+      height: 120px;
+      right: 15%;
+      top: 60%;
+      background: linear-gradient(135deg, #00D4FF, #0080FF);
+      animation-duration: 25s;
+      animation-delay: 5s;
+    }
+
+    .circle:nth-child(3) {
+      width: 60px;
+      height: 60px;
+      left: 50%;
+      top: 80%;
+      background: linear-gradient(135deg, #FFD700, #FFA500);
+      animation-duration: 18s;
+      animation-delay: 3s;
+    }
+
+    .circle:nth-child(4) {
+      width: 100px;
+      height: 100px;
+      right: 40%;
+      top: 10%;
+      background: linear-gradient(135deg, #9D4EDD, #7209B7);
+      animation-duration: 22s;
+      animation-delay: 7s;
+    }
+
+    @keyframes floatCircle {
+      0% {
+        transform: translateY(0) translateX(0) scale(1);
+        opacity: 0.15;
+      }
+      50% {
+        transform: translateY(-50px) translateX(50px) scale(1.2);
+        opacity: 0.25;
+      }
+      100% {
+        transform: translateY(0) translateX(0) scale(1);
+        opacity: 0.15;
+      }
+    }
     
     * {
       margin: 0;
@@ -41,16 +279,23 @@ if (isset($_SESSION['S_ID'])) {
     }
     
     body {
-      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      background: linear-gradient(135deg, 
+        #0a0e27 0%, 
+        #1a1147 15%,
+        #2d1b69 30%,
+        #1e3a8a 50%,
+        #134e4a 70%,
+        #1e293b 85%,
+        #0f172a 100%);
       background-size: 400% 400%;
-      animation: gradientShift 15s ease infinite;
+      animation: gradientShift 20s ease infinite;
       position: relative;
       min-height: 100vh;
       font-family: 'Poppins', sans-serif;
       overflow-x: hidden;
     }
     
-    /* Patrón de fondo con efecto de gasolinera */
+    /* Capa de estrellas brillantes */
     body::before {
       content: '';
       position: absolute;
@@ -59,17 +304,21 @@ if (isset($_SESSION['S_ID'])) {
       width: 100%;
       height: 100%;
       background-image: 
-        repeating-linear-gradient(
-          45deg,
-          transparent,
-          transparent 35px,
-          rgba(255, 255, 255, 0.02) 35px,
-          rgba(255, 255, 255, 0.02) 70px
-        );
+        radial-gradient(2px 2px at 20% 30%, white, transparent),
+        radial-gradient(2px 2px at 60% 70%, white, transparent),
+        radial-gradient(1px 1px at 50% 50%, white, transparent),
+        radial-gradient(1px 1px at 80% 10%, white, transparent),
+        radial-gradient(2px 2px at 90% 60%, white, transparent),
+        radial-gradient(1px 1px at 33% 80%, white, transparent),
+        radial-gradient(2px 2px at 15% 90%, white, transparent);
+      background-size: 200% 200%;
+      background-position: 0% 0%;
+      animation: starsMove 60s linear infinite, starsTwinkle 3s ease-in-out infinite;
       z-index: 0;
+      opacity: 0.6;
     }
     
-    /* Efecto de luces de neón */
+    /* Rayos de luz dinámicos */
     body::after {
       content: '';
       position: absolute;
@@ -77,21 +326,43 @@ if (isset($_SESSION['S_ID'])) {
       left: 0;
       width: 100%;
       height: 100%;
-      background: radial-gradient(circle at 20% 50%, rgba(255, 69, 0, 0.1) 0%, transparent 50%),
-                  radial-gradient(circle at 80% 50%, rgba(0, 191, 255, 0.1) 0%, transparent 50%);
+      background: 
+        radial-gradient(ellipse at 10% 20%, rgba(255, 69, 0, 0.3) 0%, transparent 40%),
+        radial-gradient(ellipse at 90% 80%, rgba(0, 191, 255, 0.3) 0%, transparent 40%),
+        radial-gradient(ellipse at 50% 50%, rgba(255, 215, 0, 0.2) 0%, transparent 50%),
+        radial-gradient(ellipse at 30% 70%, rgba(138, 43, 226, 0.25) 0%, transparent 45%),
+        radial-gradient(ellipse at 70% 30%, rgba(255, 20, 147, 0.2) 0%, transparent 40%);
       z-index: 0;
-      animation: neonPulse 4s ease-in-out infinite;
+      animation: lightPulse 8s ease-in-out infinite;
     }
     
     @keyframes gradientShift {
       0% { background-position: 0% 50%; }
+      25% { background-position: 50% 100%; }
       50% { background-position: 100% 50%; }
+      75% { background-position: 50% 0%; }
       100% { background-position: 0% 50%; }
     }
     
-    @keyframes neonPulse {
-      0%, 100% { opacity: 0.5; }
-      50% { opacity: 0.8; }
+    @keyframes starsMove {
+      0% { background-position: 0% 0%; }
+      100% { background-position: 100% 100%; }
+    }
+    
+    @keyframes starsTwinkle {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+    
+    @keyframes lightPulse {
+      0%, 100% { 
+        opacity: 0.6;
+        transform: scale(1);
+      }
+      50% { 
+        opacity: 1;
+        transform: scale(1.1);
+      }
     }
     
     .glass-container {
@@ -564,6 +835,33 @@ if (isset($_SESSION['S_ID'])) {
   </style>
 </head>
 <body>
+  <!-- Círculos flotantes decorativos -->
+  <div class="circles-container">
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+  </div>
+
+  <!-- Partículas brillantes -->
+  <div class="particles-container">
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+  </div>
+
+  <!-- Ondas vibrantes -->
+  <div class="waves-container">
+    <div class="wave"></div>
+    <div class="wave"></div>
+    <div class="wave"></div>
+  </div>
+
   <div class="glass-container">
     <!-- Títulos -->
     <div class="header-section">

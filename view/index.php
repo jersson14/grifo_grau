@@ -1,4 +1,7 @@
 <?php
+// Configurar zona horaria de Lima, Perú (UTC-5)
+date_default_timezone_set('America/Lima');
+
 session_start();
 if (!isset($_SESSION['S_ID'])) {
   header('Location: ../index.php');

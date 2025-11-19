@@ -70,7 +70,7 @@
                         <div class="row">
                             <div class="col-md-4 form-group">
                                 <label>Cliente</label>
-                                <select class="form-control" id="filtro_cliente">
+                                <select class="js-example-basic-single form-control" id="filtro_cliente" style="width:100%">
                                     <option value="">Todos los clientes</option>
                                 </select>
                             </div>

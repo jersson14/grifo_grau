@@ -268,6 +268,10 @@ class Modelo_Turnos extends conexionBD {
                     total_galones = ?,
                     monto_descuentos = ?,
                     monto_otros_gastos = ?,
+                    monto_yape = ?,
+                    monto_bcp = ?,
+                    monto_visa = ?,
+                    monto_efectivo = ?,
                     monto_credito = ?,
                     total_pagos = ?,
                     monto_faltante = ?,
@@ -287,6 +291,10 @@ class Modelo_Turnos extends conexionBD {
             $totales['total_galones'],
             $descuentos,
             $otros_gastos,
+            $totales['monto_yape'],
+            $totales['monto_bcp'],
+            $totales['monto_visa'],
+            $totales['monto_efectivo'],
             $totales['total_creditos'],
             $totales['total_pagos'],
             $totales['faltante'],
@@ -346,12 +354,42 @@ class Modelo_Turnos extends conexionBD {
         $totales['total_ventas'] = $totales['total_diesel'] + $totales['total_regular'] + $totales['total_premium'];
         $totales['total_galones'] = $totales['galones_diesel'] + $totales['galones_regular'] + $totales['galones_premium'];
         
-        // Total de pagos
-        $sql_pagos = "SELECT COALESCE(SUM(monto), 0) as total FROM pagos_reporte WHERE id_reporte = ?";
+        // Total de pagos por método
+        $sql_pagos = "SELECT 
+                        tp.codigo,
+                        COALESCE(SUM(pr.monto), 0) as total
+                      FROM pagos_reporte pr
+                      INNER JOIN tipos_pago tp ON pr.id_tipo_pago = tp.id_tipo_pago
+                      WHERE pr.id_reporte = ?
+                      GROUP BY tp.codigo";
         $query_pagos = $c->prepare($sql_pagos);
         $query_pagos->execute(array($id_reporte));
-        $pagos = $query_pagos->fetch(PDO::FETCH_ASSOC);
-        $totales['total_pagos'] = $pagos['total'];
+        $pagos = $query_pagos->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Inicializar montos por método de pago
+        $totales['monto_efectivo'] = 0;
+        $totales['monto_yape'] = 0;
+        $totales['monto_bcp'] = 0;
+        $totales['monto_visa'] = 0;
+        $totales['total_pagos'] = 0;
+        
+        // Asignar montos según el código del tipo de pago
+        foreach ($pagos as $pago) {
+            $codigo = strtoupper($pago['codigo']);
+            $monto = $pago['total'];
+            
+            if ($codigo == 'EFECTIVO') {
+                $totales['monto_efectivo'] = $monto;
+            } elseif ($codigo == 'YAPE') {
+                $totales['monto_yape'] = $monto;
+            } elseif ($codigo == 'BCP') {
+                $totales['monto_bcp'] = $monto;
+            } elseif ($codigo == 'VISA') {
+                $totales['monto_visa'] = $monto;
+            }
+            
+            $totales['total_pagos'] += $monto;
+        }
         
         // Total de créditos
         $sql_creditos = "SELECT COALESCE(SUM(monto), 0) as total FROM ventas_credito WHERE id_reporte = ?";
@@ -380,13 +418,20 @@ class Modelo_Turnos extends conexionBD {
     }
 
     // LISTAR TURNOS
-    public function Listar_Turnos($filtro_fecha_inicio = null, $filtro_fecha_fin = null, $filtro_usuario = null, $filtro_estado = null) {
+    public function Listar_Turnos($filtro_fecha_inicio = null, $filtro_fecha_fin = null, $filtro_usuario = null, $filtro_estado = null, $filtro_validacion = null) {
         $c = conexionBD::conexionPDO();
         $sql = "SELECT 
                     rt.*,
-                    CONCAT(u.usu_nombre, ' ', u.usu_apellido) as grifero_nombre
+                    CONCAT(u.usu_nombre, ' ', u.usu_apellido) as grifero_nombre,
+                    CASE 
+                        WHEN rt.id_administrador IS NOT NULL AND rt.fecha_aprobacion IS NOT NULL THEN 'VALIDADO'
+                        WHEN rt.estado = 'CERRADO' THEN 'PENDIENTE'
+                        ELSE 'N/A'
+                    END as estado_validacion,
+                    CONCAT(adm.usu_nombre, ' ', adm.usu_apellido) as validado_por
                 FROM reportes_turno rt
                 INNER JOIN usuario u ON rt.id_usuario = u.id_usuario
+                LEFT JOIN usuario adm ON rt.id_administrador = adm.id_usuario
                 WHERE 1=1";
         
         $params = array();
@@ -405,6 +450,16 @@ class Modelo_Turnos extends conexionBD {
         if ($filtro_estado) {
             $sql .= " AND rt.estado = ?";
             $params[] = $filtro_estado;
+        }
+        
+        if ($filtro_validacion) {
+            if ($filtro_validacion == 'VALIDADO') {
+                $sql .= " AND rt.id_administrador IS NOT NULL AND rt.fecha_aprobacion IS NOT NULL";
+            } elseif ($filtro_validacion == 'PENDIENTE') {
+                $sql .= " AND rt.estado = 'CERRADO' AND (rt.id_administrador IS NULL OR rt.fecha_aprobacion IS NULL)";
+            } elseif ($filtro_validacion == 'N/A') {
+                $sql .= " AND rt.estado = 'ABIERTO'";
+            }
         }
         
         $sql .= " ORDER BY rt.fecha_reporte DESC, rt.turno DESC";

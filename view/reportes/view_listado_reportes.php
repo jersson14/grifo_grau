@@ -27,20 +27,29 @@
                     <div class="card-body">
                         <!-- FILTROS -->
                         <div class="row mb-3">
-                            <div class="col-md-3 form-group">
+                            <div class="col-md-2 form-group">
                                 <label>Fecha Inicio</label>
                                 <input type="date" class="form-control" id="filtro_fecha_inicio">
                             </div>
-                            <div class="col-md-3 form-group">
+                            <div class="col-md-2 form-group">
                                 <label>Fecha Fin</label>
                                 <input type="date" class="form-control" id="filtro_fecha_fin">
                             </div>
-                            <div class="col-md-3 form-group">
-                                <label>Estado</label>
+                            <div class="col-md-2 form-group">
+                                <label>Estado Turno</label>
                                 <select class="form-control" id="filtro_estado">
                                     <option value="">Todos</option>
                                     <option value="ABIERTO">ABIERTO</option>
                                     <option value="CERRADO">CERRADO</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 form-group">
+                                <label>Estado Validación</label>
+                                <select class="form-control" id="filtro_validacion">
+                                    <option value="">Todos</option>
+                                    <option value="VALIDADO">VALIDADO</option>
+                                    <option value="PENDIENTE">PENDIENTE</option>
+                                    <option value="N/A">N/A (Abiertos)</option>
                                 </select>
                             </div>
                             <div class="col-md-3 form-group">
@@ -62,6 +71,7 @@
                                     <th>Total Ventas</th>
                                     <th>Faltante</th>
                                     <th>Estado</th>
+                                    <th>Validación</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>

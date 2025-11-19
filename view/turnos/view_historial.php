@@ -347,7 +347,10 @@ function Ver_Detalle_Turno(id_reporte) {
 }
 
 function Imprimir_Reporte(id_reporte) {
-    window.open('../MPDF/REPORTE/reporte_turno.php?id=' + id_reporte, '_blank');
+    // Construir la URL del PDF de forma correcta
+    var urlPDF = window.location.origin + '/grifo_grau/view/MPDF/REPORTE/reporte_turno.php?id=' + id_reporte;
+    console.log('Abriendo PDF con URL:', urlPDF);
+    window.open(urlPDF, '_blank');
 }
 
 function Filtrar_Turnos() {

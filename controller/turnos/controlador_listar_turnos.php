@@ -7,8 +7,9 @@ $filtro_fecha_inicio = isset($_POST['filtro_fecha_inicio']) ? $_POST['filtro_fec
 $filtro_fecha_fin = isset($_POST['filtro_fecha_fin']) ? $_POST['filtro_fecha_fin'] : null;
 $filtro_usuario = isset($_POST['filtro_usuario']) ? $_POST['filtro_usuario'] : null;
 $filtro_estado = isset($_POST['filtro_estado']) ? $_POST['filtro_estado'] : null;
+$filtro_validacion = isset($_POST['filtro_validacion']) ? $_POST['filtro_validacion'] : null;
 
-$consulta = $MTurnos->Listar_Turnos($filtro_fecha_inicio, $filtro_fecha_fin, $filtro_usuario, $filtro_estado);
+$consulta = $MTurnos->Listar_Turnos($filtro_fecha_inicio, $filtro_fecha_fin, $filtro_usuario, $filtro_estado, $filtro_validacion);
 
 if ($consulta) {
     echo json_encode($consulta);

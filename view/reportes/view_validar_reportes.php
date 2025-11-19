@@ -43,6 +43,7 @@
                                     <th>Grifero</th>
                                     <th>Total Ventas</th>
                                     <th>Faltante</th>
+                                    <th>Estado</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
@@ -288,6 +289,16 @@ function Listar_Reportes_Pendientes() {
                         return '<span class="badge badge-success">S/. ' + faltante.toFixed(2) + '</span>';
                     } else {
                         return '<span class="badge badge-info">S/. 0.00</span>';
+                    }
+                }
+            },
+            { 
+                "data": "estado_validacion",
+                "render": function(data) {
+                    if (data == 'VALIDADO') {
+                        return '<span class="badge badge-success"><i class="fas fa-check-circle"></i> VALIDADO</span>';
+                    } else {
+                        return '<span class="badge badge-warning"><i class="fas fa-clock"></i> PENDIENTE</span>';
                     }
                 }
             },

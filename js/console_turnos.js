@@ -511,6 +511,21 @@ function Cargar_Clientes_Activos() {
             opciones += '<option value="' + item.id_cliente + '">' + item.nombre_completo + '</option>';
         });
         $("#txt_cliente_credito").html(opciones);
+        
+        // Inicializar Select2
+        $('#txt_cliente_credito').select2({
+            dropdownParent: $('#modal_agregar_credito'),
+            placeholder: '-- Seleccione un cliente --',
+            allowClear: true,
+            language: {
+                noResults: function() {
+                    return "No se encontraron resultados";
+                },
+                searching: function() {
+                    return "Buscando...";
+                }
+            }
+        });
     });
 }
 
@@ -741,7 +756,14 @@ function Ver_Detalle_Turno(id_reporte) {
 
 // FUNCIÓN PARA IMPRIMIR REPORTE
 function Imprimir_Reporte(id_reporte) {
-    window.open('../view/MPDF/REPORTE/reporte_turno.php?id=' + id_reporte, '_blank');
+    // Construir la URL del PDF de forma simple y directa
+    // La ruta siempre será relativa desde donde está cargado el JavaScript
+    var urlPDF = window.location.origin + '/grifo_grau/view/MPDF/REPORTE/reporte_turno.php?id=' + id_reporte;
+    
+    console.log('Abriendo PDF con URL:', urlPDF);
+    console.log('ID del reporte:', id_reporte);
+    
+    window.open(urlPDF, '_blank');
 }
 
 
@@ -756,6 +778,7 @@ function Listar_Historial_Turnos() {
     var filtro_fecha_fin = $("#filtro_fecha_fin").val();
     var filtro_usuario = $("#filtro_usuario").val() || null;
     var filtro_estado = $("#filtro_estado").val() || null;
+    var filtro_validacion = $("#filtro_validacion").val() || null;
     
     if (tabla_historial_turnos) {
         tabla_historial_turnos.destroy();
@@ -776,7 +799,8 @@ function Listar_Historial_Turnos() {
                 filtro_fecha_inicio: filtro_fecha_inicio,
                 filtro_fecha_fin: filtro_fecha_fin,
                 filtro_usuario: filtro_usuario,
-                filtro_estado: filtro_estado
+                filtro_estado: filtro_estado,
+                filtro_validacion: filtro_validacion
             }
         },
         "columns": [
@@ -825,6 +849,19 @@ function Listar_Historial_Turnos() {
                         return '<span class="badge badge-success">ABIERTO</span>';
                     } else {
                         return '<span class="badge badge-secondary">CERRADO</span>';
+                    }
+                }
+            },
+            { 
+                "data": "estado_validacion",
+                "render": function(data, type, row) {
+                    if (data == 'VALIDADO') {
+                        var tooltip = row.validado_por ? 'Validado por: ' + row.validado_por : 'Validado';
+                        return '<span class="badge badge-success" title="' + tooltip + '"><i class="fas fa-check-circle"></i> VALIDADO</span>';
+                    } else if (data == 'PENDIENTE') {
+                        return '<span class="badge badge-warning"><i class="fas fa-clock"></i> PENDIENTE</span>';
+                    } else {
+                        return '<span class="badge badge-secondary">N/A</span>';
                     }
                 }
             },

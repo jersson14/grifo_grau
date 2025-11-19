@@ -429,5 +429,19 @@ function Cargar_Clientes_Filtro() {
             opciones += '<option value="' + item.id_cliente + '">' + item.nombre_completo + '</option>';
         });
         $("#filtro_cliente").html(opciones);
+        
+        // Inicializar Select2
+        $('#filtro_cliente').select2({
+            placeholder: 'Todos los clientes',
+            allowClear: true,
+            language: {
+                noResults: function() {
+                    return "No se encontraron resultados";
+                },
+                searching: function() {
+                    return "Buscando...";
+                }
+            }
+        });
     });
 }

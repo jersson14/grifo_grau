@@ -1,0 +1,450 @@
+/* Variables de colores */
+:root {
+  --primary: #FF6B35;
+  --secondary: #004E89;
+  --accent: #FFD23F;
+  --dark: #1A1A2E;
+  --light: #FFFFFF;
+  --glass: rgba(255, 255, 255, 0.1);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Animación de carretera */
+.road {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 150px;
+  background: linear-gradient(to bottom, transparent 0%, #1a1a1a 50%);
+  z-index: 1;
+}
+
+.road::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: repeating-linear-gradient(
+    to right,
+    #FFD23F 0px,
+    #FFD23F 40px,
+    transparent 40px,
+    transparent 80px
+  );
+  animation: roadMove 2s linear infinite;
+}
+
+@keyframes roadMove {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-80px); }
+}
+
+/* Carritos animados */
+.cars-container {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.car {
+  position: absolute;
+  font-size: 40px;
+  opacity: 0.6;
+  animation: driveCar 15s linear infinite;
+  filter: drop-shadow(0 0 10px rgba(255, 107, 53, 0.5));
+}
+
+.car:nth-child(1) {
+  top: 20%;
+  animation-duration: 12s;
+  animation-delay: 0s;
+}
+
+.car:nth-child(2) {
+  top: 40%;
+  animation-duration: 18s;
+  animation-delay: 3s;
+  font-size: 35px;
+}
+
+.car:nth-child(3) {
+  top: 60%;
+  animation-duration: 15s;
+  animation-delay: 6s;
+}
+
+.car:nth-child(4) {
+  top: 80%;
+  animation-duration: 20s;
+  animation-delay: 2s;
+  font-size: 45px;
+}
+
+@keyframes driveCar {
+  0% {
+    left: -100px;
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-10px) scale(1.05);
+  }
+  100% {
+    left: calc(100% + 100px);
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Partículas de gasolina */
+.particles {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: rgba(255, 210, 63, 0.6);
+  border-radius: 50%;
+  animation: float 8s ease-in-out infinite;
+}
+
+.particle:nth-child(odd) {
+  background: rgba(255, 107, 53, 0.6);
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0) translateX(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-100vh) translateX(50px);
+    opacity: 0;
+  }
+}
+
+/* Contenedor principal */
+.login-wrapper {
+  position: relative;
+  z-index: 10;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+/* Logo y título */
+.login-header {
+  text-align: center;
+  margin-bottom: 40px;
+  animation: fadeInDown 1s ease;
+}
+
+.logo-container {
+  margin-bottom: 20px;
+}
+
+.logo-container img {
+  width: 150px;
+  height: auto;
+  filter: drop-shadow(0 0 20px rgba(255, 107, 53, 0.5));
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.login-title {
+  font-size: 48px;
+  font-weight: 700;
+  color: var(--light);
+  text-shadow: 0 0 20px rgba(255, 107, 53, 0.8),
+               0 0 40px rgba(255, 107, 53, 0.5);
+  margin-bottom: 10px;
+  animation: glow 2s ease-in-out infinite;
+}
+
+@keyframes glow {
+  0%, 100% {
+    text-shadow: 0 0 20px rgba(255, 107, 53, 0.8),
+                 0 0 40px rgba(255, 107, 53, 0.5);
+  }
+  50% {
+    text-shadow: 0 0 30px rgba(255, 107, 53, 1),
+                 0 0 60px rgba(255, 107, 53, 0.8);
+  }
+}
+
+.login-subtitle {
+  font-size: 20px;
+  color: var(--accent);
+  font-weight: 500;
+  text-shadow: 0 0 10px rgba(255, 210, 63, 0.5);
+}
+
+/* Tarjeta de login */
+.login-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 30px;
+  padding: 50px 40px;
+  width: 100%;
+  max-width: 450px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5),
+              0 0 40px rgba(255, 107, 53, 0.3);
+  animation: fadeInUp 1s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.login-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  animation: shine 3s infinite;
+}
+
+@keyframes shine {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+.card-title {
+  text-align: center;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--secondary);
+  margin-bottom: 30px;
+  position: relative;
+}
+
+.card-title::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary), var(--accent));
+  border-radius: 2px;
+}
+
+/* Inputs */
+.input-group {
+  position: relative;
+  margin-bottom: 25px;
+}
+
+.input-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--secondary);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.input-wrapper {
+  position: relative;
+}
+
+.input-wrapper input {
+  width: 100%;
+  padding: 15px 50px 15px 20px;
+  border: 2px solid #e0e0e0;
+  border-radius: 15px;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.input-wrapper input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 20px rgba(255, 107, 53, 0.2);
+  transform: translateY(-2px);
+}
+
+.input-icon {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #999;
+  font-size: 18px;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.input-wrapper input:focus ~ .input-icon {
+  color: var(--primary);
+}
+
+/* Checkbox */
+.remember-group {
+  display: flex;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.remember-group input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  margin-right: 10px;
+  cursor: pointer;
+  accent-color: var(--primary);
+}
+
+.remember-group label {
+  color: #666;
+  font-size: 14px;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* Botón de login */
+.login-btn {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, var(--primary) 0%, #ff8c5a 100%);
+  border: none;
+  border-radius: 15px;
+  color: white;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 10px 30px rgba(255, 107, 53, 0.4);
+  position: relative;
+  overflow: hidden;
+}
+
+.login-btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.login-btn:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+.login-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 15px 40px rgba(255, 107, 53, 0.6);
+}
+
+.login-btn:active {
+  transform: translateY(-1px);
+}
+
+.login-btn span {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+/* Footer */
+.login-footer {
+  position: fixed;
+  bottom: 20px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+  z-index: 10;
+}
+
+/* Animaciones de entrada */
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .login-title {
+    font-size: 36px;
+  }
+  
+  .login-card {
+    padding: 40px 30px;
+  }
+  
+  .car {
+    font-size: 30px;
+  }
+}
