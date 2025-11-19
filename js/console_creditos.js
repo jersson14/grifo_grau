@@ -103,11 +103,24 @@ function Listar_Creditos_Pendientes() {
             {
                 "data": "estado",
                 "render": function(data, type, row) {
+                    var rol_usuario = $("#txtprincipalrol").val(); // Obtener el rol del usuario
+                    var botones = "";
+                    
                     if (data == 'PENDIENTE') {
-                        return "<button class='pagar btn btn-success btn-sm' title='Registrar Pago'><i class='fas fa-money-bill-wave'></i></button>&nbsp;<button class='historial btn btn-info btn-sm' title='Ver Historial'><i class='fas fa-history'></i></button>&nbsp;<button class='anular btn btn-danger btn-sm' title='Anular'><i class='fas fa-ban'></i></button>";
+                        // Botón de pagar (todos pueden)
+                        botones += "<button class='pagar btn btn-success btn-sm' title='Registrar Pago'><i class='fas fa-money-bill-wave'></i></button>&nbsp;";
+                        // Botón de historial (todos pueden)
+                        botones += "<button class='historial btn btn-info btn-sm' title='Ver Historial'><i class='fas fa-history'></i></button>";
+                        // Botón de anular (solo ADMINISTRADOR)
+                        if (rol_usuario == 'ADMINISTRADOR') {
+                            botones += "&nbsp;<button class='anular btn btn-danger btn-sm' title='Anular'><i class='fas fa-ban'></i></button>";
+                        }
                     } else {
-                        return "<button class='historial btn btn-info btn-sm' title='Ver Historial'><i class='fas fa-history'></i></button>";
+                        // Solo historial para créditos pagados o anulados
+                        botones = "<button class='historial btn btn-info btn-sm' title='Ver Historial'><i class='fas fa-history'></i></button>";
                     }
+                    
+                    return botones;
                 }
             }
         ],

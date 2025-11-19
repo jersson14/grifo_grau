@@ -190,7 +190,7 @@ if (!isset($_SESSION['S_ID'])) {
               
               <!-- MI TURNO (Solo Grifero) -->
               <li class="nav-item">
-                <a href="#" onclick="cargar_contenido('contenido_principal','ventas/view_mi_turno.php')" class="nav-link">
+                <a href="#" onclick="cargar_contenido('contenido_principal','turnos/view_abrir_turno.php')" class="nav-link">
                   <i class="nav-icon fas fa-tasks"></i>
                   <p style="color:white">Mi Turno</p>
                 </a>
@@ -198,7 +198,7 @@ if (!isset($_SESSION['S_ID'])) {
 
               <!-- MIS CRÉDITOS -->
               <li class="nav-item">
-                <a href="#" onclick="cargar_contenido('contenido_principal','creditos/view_mis_creditos.php')" class="nav-link">
+                <a href="#" onclick="cargar_contenido('contenido_principal','creditos/view_creditos_pendientes.php')" class="nav-link">
                   <i class="nav-icon fas fa-credit-card"></i>
                   <p style="color:white">Mis Créditos</p>
                 </a>
