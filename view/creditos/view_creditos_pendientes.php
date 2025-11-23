@@ -68,53 +68,48 @@
                     </div>
                     <div class="card-body">
                         <div class="row">
-                            <div class="col-md-4 form-group">
-                                <label>Cliente</label>
-                                <select class="js-example-basic-single form-control" id="filtro_cliente" style="width:100%">
-                                    <option value="">Todos los clientes</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4 form-group">
+                            <div class="col-md-6 form-group">
                                 <label>Estado</label>
                                 <select class="form-control" id="filtro_estado">
-                                    <option value="">Todos</option>
                                     <option value="PENDIENTE" selected>PENDIENTE</option>
                                     <option value="PAGADO">PAGADO</option>
-                                    <option value="ANULADO">ANULADO</option>
+                                    <option value="">TODOS</option>
                                 </select>
                             </div>
-                            <div class="col-md-4 form-group">
+                            <div class="col-md-6 form-group">
                                 <label>&nbsp;</label><br>
                                 <button class="btn btn-primary btn-block" onclick="Filtrar_Creditos()">
                                     <i class="fas fa-search"></i> Buscar
                                 </button>
                             </div>
                         </div>
+                        <div class="alert alert-info mt-2">
+                            <i class="fas fa-info-circle"></i> <strong>Nota:</strong> Usa el buscador de la tabla para filtrar por cliente, DNI o teléfono.
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- TABLA DE CRÉDITOS -->
+        <!-- TABLA DE CRÉDITOS AGRUPADOS POR CLIENTE -->
         <div class="row">
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-header" style="background: linear-gradient(135deg, #dc3545, #c82333)">
-                        <h3 class="card-title" style="color:white"><i class="fas fa-list"></i> Listado de Créditos</h3>
+                        <h3 class="card-title" style="color:white"><i class="fas fa-users"></i> Clientes con Créditos Pendientes</h3>
                     </div>
                     <div class="card-body">
-                        <table id="tabla_creditos_pendientes" class="table table-striped table-bordered table-hover" style="width:100%">
+                        <table id="tabla_creditos_por_cliente" class="table table-striped table-bordered table-hover" style="width:100%">
                             <thead style="background-color:#dc3545; color:white">
                                 <tr>
-                                    <th>N° Vale</th>
                                     <th>Cliente</th>
-                                    <th>Fecha</th>
-                                    <th>Turno</th>
+                                    <th>DNI/RUC</th>
+                                    <th>Teléfono</th>
+                                    <th>Total Vales</th>
                                     <th>Monto Total</th>
                                     <th>Pagado</th>
-                                    <th>Saldo</th>
+                                    <th>Saldo Pendiente</th>
                                     <th>Vencimiento</th>
-                                    <th>Estado</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
@@ -226,6 +221,75 @@
     </div>
 </div>
 
+<!-- MODAL VER VALES DEL CLIENTE -->
+<div class="modal fade" id="modal_vales_cliente" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, #6f42c1, #5a32a3); color:white">
+                <h5 class="modal-title"><i class="fas fa-file-invoice"></i> Vales del Cliente</h5>
+                <button type="button" class="close" data-dismiss="modal" style="color:white">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="txt_id_cliente_vales">
+                
+                <!-- INFORMACIÓN DEL CLIENTE -->
+                <div class="card card-primary">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-user"></i> Información del Cliente</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <p><strong>Cliente:</strong><br><span id="info_cliente_vales"></span></p>
+                            </div>
+                            <div class="col-md-3">
+                                <p><strong>DNI/RUC:</strong><br><span id="info_dni_vales"></span></p>
+                            </div>
+                            <div class="col-md-3">
+                                <p><strong>Total Vales:</strong><br><span id="info_total_vales" class="badge badge-info" style="font-size:16px"></span></p>
+                            </div>
+                            <div class="col-md-2">
+                                <p><strong>Saldo Total:</strong><br><span id="info_saldo_total_vales" class="text-danger" style="font-size:18px; font-weight:bold"></span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TABLA DE VALES -->
+                <div class="card">
+                    <div class="card-header" style="background-color:#6f42c1; color:white">
+                        <h3 class="card-title"><i class="fas fa-list"></i> Detalle de Vales</h3>
+                    </div>
+                    <div class="card-body">
+                        <table id="tabla_vales_cliente" class="table table-sm table-bordered table-hover" style="width:100%">
+                            <thead style="background-color:#6f42c1; color:white">
+                                <tr>
+                                    <th>N° Vale</th>
+                                    <th>Fecha</th>
+                                    <th>Turno</th>
+                                    <th>Monto</th>
+                                    <th>Pagado</th>
+                                    <th>Saldo</th>
+                                    <th>Vencimiento</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="fas fa-times"></i> Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- MODAL VER HISTORIAL -->
 <div class="modal fade" id="modal_historial_pagos" tabindex="-1" role="dialog">
     <div class="modal-dialog modal-xl" role="document">
@@ -295,8 +359,7 @@
 <script>
 $(document).ready(function() {
     Cargar_Resumen_Creditos();
-    Listar_Creditos_Pendientes();
+    Listar_Creditos_Por_Cliente();
     Cargar_Top_Deudores();
-    Cargar_Clientes_Filtro();
 });
 </script>

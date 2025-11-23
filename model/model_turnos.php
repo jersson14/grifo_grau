@@ -5,14 +5,72 @@ class Modelo_Turnos extends conexionBD {
     
     // VERIFICAR SI HAY TURNO ABIERTO DEL USUARIO
     public function Verificar_Turno_Abierto($id_usuario) {
-        $c = conexionBD::conexionPDO();
-        $sql = "SELECT COUNT(*) as total FROM reportes_turno 
-                WHERE id_usuario = ? AND estado = 'ABIERTO'";
-        $query = $c->prepare($sql);
-        $query->execute(array($id_usuario));
-        $resultado = $query->fetch(PDO::FETCH_ASSOC);
-        return $resultado['total'];
-        conexionBD::cerrar_conexion();
+        try {
+            $c = conexionBD::conexionPDO();
+            
+            if ($c === null) {
+                error_log("Error: No se pudo establecer conexión a la base de datos");
+                return 0;
+            }
+            
+            $sql = "SELECT COUNT(*) as total FROM reportes_turno 
+                    WHERE id_usuario = ? AND estado = 'ABIERTO'";
+            $query = $c->prepare($sql);
+            $query->execute(array($id_usuario));
+            $resultado = $query->fetch(PDO::FETCH_ASSOC);
+            
+            error_log("Verificar turno abierto - Usuario: $id_usuario, Total: " . $resultado['total']);
+            return $resultado['total'];
+        } catch (PDOException $e) {
+            error_log("Excepción al verificar turno abierto: " . $e->getMessage());
+            return 0;
+        }
+    }
+
+    // VERIFICAR SI HAY ALGÚN TURNO ABIERTO EN EL SISTEMA
+    public function Verificar_Turno_Abierto_Sistema() {
+        try {
+            $c = conexionBD::conexionPDO();
+            
+            if ($c === null) {
+                error_log("Error: No se pudo establecer conexión a la base de datos");
+                return 0;
+            }
+            
+            $sql = "SELECT COUNT(*) as total FROM reportes_turno WHERE estado = 'ABIERTO'";
+            $query = $c->prepare($sql);
+            $query->execute();
+            $resultado = $query->fetch(PDO::FETCH_ASSOC);
+            
+            error_log("Verificar turno abierto en sistema - Total: " . $resultado['total']);
+            return $resultado['total'];
+        } catch (PDOException $e) {
+            error_log("Excepción al verificar turno abierto en sistema: " . $e->getMessage());
+            return 0;
+        }
+    }
+
+    // OBTENER INFORMACIÓN DEL TURNO ABIERTO EN EL SISTEMA
+    public function Obtener_Info_Turno_Abierto_Sistema() {
+        try {
+            $c = conexionBD::conexionPDO();
+            
+            if ($c === null) {
+                return null;
+            }
+            
+            $sql = "SELECT rt.*, CONCAT(u.usu_nombre, ' ', u.usu_apellido) as grifero_nombre
+                    FROM reportes_turno rt
+                    INNER JOIN usuario u ON rt.id_usuario = u.id_usuario
+                    WHERE rt.estado = 'ABIERTO'
+                    LIMIT 1";
+            $query = $c->prepare($sql);
+            $query->execute();
+            return $query->fetch(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Excepción al obtener info de turno abierto: " . $e->getMessage());
+            return null;
+        }
     }
 
     // GENERAR NÚMERO DE DOCUMENTO AUTOMÁTICO
@@ -30,57 +88,90 @@ class Modelo_Turnos extends conexionBD {
 
     // ABRIR TURNO
     public function Abrir_Turno($numero_documento, $id_usuario, $turno, $fecha, $hora_inicio, $hora_fin) {
-        $c = conexionBD::conexionPDO();
-        
-        // Insertar el reporte de turno
-        $sql = "INSERT INTO reportes_turno (
-                    numero_documento, id_usuario, turno, fecha_reporte, 
-                    hora_inicio, hora_fin, estado, created_at
-                ) VALUES (?, ?, ?, ?, ?, ?, 'ABIERTO', NOW())";
-        $query = $c->prepare($sql);
-        $resultado = $query->execute(array($numero_documento, $id_usuario, $turno, $fecha, $hora_inicio, $hora_fin));
-        
-        if ($resultado) {
-            return $c->lastInsertId();
-        } else {
+        try {
+            $c = conexionBD::conexionPDO();
+            
+            if ($c === null) {
+                error_log("Error: No se pudo establecer conexión a la base de datos");
+                return 0;
+            }
+            
+            // Insertar el reporte de turno
+            $sql = "INSERT INTO reportes_turno (
+                        numero_documento, id_usuario, turno, fecha_reporte, 
+                        hora_inicio, hora_fin, estado, created_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, 'ABIERTO', NOW())";
+            $query = $c->prepare($sql);
+            $resultado = $query->execute(array($numero_documento, $id_usuario, $turno, $fecha, $hora_inicio, $hora_fin));
+            
+            if ($resultado) {
+                $lastId = $c->lastInsertId();
+                error_log("Turno insertado correctamente con ID: $lastId");
+                return $lastId;
+            } else {
+                $errorInfo = $query->errorInfo();
+                error_log("Error al insertar turno: " . print_r($errorInfo, true));
+                return 0;
+            }
+        } catch (PDOException $e) {
+            error_log("Excepción al abrir turno: " . $e->getMessage());
             return 0;
         }
-        conexionBD::cerrar_conexion();
     }
 
     // REGISTRAR LECTURAS INICIALES DEL TURNO
     public function Registrar_Lecturas_Iniciales($id_reporte) {
-        $c = conexionBD::conexionPDO();
-        
-        // Obtener todos los surtidores activos con sus lecturas actuales
-        $sql_surtidores = "SELECT s.id_surtidor, s.lectura_actual, p.precio_actual
-                          FROM surtidores s
-                          INNER JOIN productos p ON s.id_producto = p.id_producto
-                          WHERE s.estado = 'ACTIVO' AND p.estado = 'ACTIVO'
-                          ORDER BY s.numero_maquina, s.codigo";
-        $query = $c->prepare($sql_surtidores);
-        $query->execute();
-        $surtidores = $query->fetchAll(PDO::FETCH_ASSOC);
-        
-        // Insertar las lecturas iniciales
-        $sql_insert = "INSERT INTO lecturas_turno (
-                        id_reporte, id_surtidor, lectura_anterior, lectura_actual, 
-                        galones_vendidos, precio_galon, total_soles, created_at
-                      ) VALUES (?, ?, ?, ?, 0, ?, 0, NOW())";
-        
-        foreach ($surtidores as $surtidor) {
-            $query_insert = $c->prepare($sql_insert);
-            $query_insert->execute(array(
-                $id_reporte,
-                $surtidor['id_surtidor'],
-                $surtidor['lectura_actual'],
-                $surtidor['lectura_actual'],
-                $surtidor['precio_actual']
-            ));
+        try {
+            $c = conexionBD::conexionPDO();
+            
+            if ($c === null) {
+                error_log("Error: No se pudo establecer conexión a la base de datos");
+                return 0;
+            }
+            
+            // Obtener todos los surtidores activos con sus lecturas actuales
+            $sql_surtidores = "SELECT s.id_surtidor, s.lectura_actual, p.precio_actual
+                              FROM surtidores s
+                              INNER JOIN productos p ON s.id_producto = p.id_producto
+                              WHERE s.estado = 'ACTIVO' AND p.estado = 'ACTIVO'
+                              ORDER BY s.numero_maquina, s.codigo";
+            $query = $c->prepare($sql_surtidores);
+            $query->execute();
+            $surtidores = $query->fetchAll(PDO::FETCH_ASSOC);
+            
+            if (count($surtidores) == 0) {
+                error_log("Advertencia: No se encontraron surtidores activos");
+                return 1; // No es un error crítico
+            }
+            
+            // Insertar las lecturas iniciales
+            $sql_insert = "INSERT INTO lecturas_turno (
+                            id_reporte, id_surtidor, lectura_anterior, lectura_actual, 
+                            galones_vendidos, precio_galon, total_soles, created_at
+                          ) VALUES (?, ?, ?, ?, 0, ?, 0, NOW())";
+            
+            foreach ($surtidores as $surtidor) {
+                $query_insert = $c->prepare($sql_insert);
+                $resultado = $query_insert->execute(array(
+                    $id_reporte,
+                    $surtidor['id_surtidor'],
+                    $surtidor['lectura_actual'],
+                    $surtidor['lectura_actual'],
+                    $surtidor['precio_actual']
+                ));
+                
+                if (!$resultado) {
+                    $errorInfo = $query_insert->errorInfo();
+                    error_log("Error al insertar lectura inicial: " . print_r($errorInfo, true));
+                }
+            }
+            
+            error_log("Lecturas iniciales registradas: " . count($surtidores) . " surtidores");
+            return 1;
+        } catch (PDOException $e) {
+            error_log("Excepción al registrar lecturas iniciales: " . $e->getMessage());
+            return 0;
         }
-        
-        return 1;
-        conexionBD::cerrar_conexion();
     }
 
     // OBTENER TURNO ABIERTO DEL USUARIO

@@ -22,11 +22,11 @@
         <!-- VERIFICAR SI YA HAY TURNO ABIERTO -->
         <div id="alerta_turno_abierto" style="display:none">
             <div class="alert alert-warning">
-                <h5><i class="icon fas fa-exclamation-triangle"></i> Ya tienes un turno abierto</h5>
-                Debes cerrar tu turno actual antes de abrir uno nuevo.
+                <h5><i class="icon fas fa-exclamation-triangle"></i> Ya hay un turno abierto en el sistema</h5>
+                Solo puede haber un turno abierto a la vez. Debes cerrar el turno actual antes de abrir uno nuevo.
                 <br><br>
                 <button class="btn btn-primary" onclick="cargar_contenido('contenido_principal','turnos/view_cerrar_turno.php')">
-                    <i class="fas fa-tasks"></i> Ir a Mi Turno
+                    <i class="fas fa-tasks"></i> Ir al Turno Actual
                 </button>
             </div>
         </div>
@@ -58,8 +58,10 @@
                                     </select>
                                 </div>
                                 <div class="col-md-3 form-group">
-                                    <label>Grifero</label>
-                                    <input type="text" class="form-control" id="txt_grifero" readonly style="background-color:#f0f0f0">
+                                    <label>Grifero <span class="text-danger">*</span></label>
+                                    <select class="form-control" id="txt_grifero">
+                                        <option value="">-- Seleccione Grifero --</option>
+                                    </select>
                                 </div>
                                 <div class="col-md-3 form-group">
                                     <label>Hora Inicio <span class="text-danger">*</span></label>
@@ -143,13 +145,11 @@ $(document).ready(function() {
     Verificar_Turno_Abierto();
     Cargar_Numero_Documento();
     Cargar_Lecturas_Iniciales();
+    Cargar_Griferos(); // Cargar lista de griferos
     
     // Establecer fecha actual
     var hoy = new Date().toISOString().split('T')[0];
     $('#txt_fecha_turno').val(hoy);
-    
-    // Cargar nombre del grifero
-    $('#txt_grifero').val($('#txtprincipalusu').val());
     
     // Establecer horas por defecto según el turno
     $('#txt_tipo_turno').change(function() {

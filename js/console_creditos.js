@@ -1,4 +1,6 @@
 var tabla_creditos_pendientes;
+var tabla_creditos_por_cliente;
+var tabla_vales_cliente;
 var tabla_historial_pagos_credito;
 
 // CARGAR RESUMEN DE CRÉDITOS
@@ -13,6 +15,236 @@ function Cargar_Resumen_Creditos() {
         $('#total_saldo_pendiente').text('S/. ' + parseFloat(data.saldo_pendiente).toFixed(2));
         $('#total_monto_pagado').text('S/. ' + parseFloat(data.monto_pagado).toFixed(2));
     });
+}
+
+// LISTAR CRÉDITOS AGRUPADOS POR CLIENTE
+function Listar_Creditos_Por_Cliente() {
+    var filtro_estado = $('#filtro_estado').val() || 'PENDIENTE';
+    
+    if (tabla_creditos_por_cliente) {
+        tabla_creditos_por_cliente.destroy();
+    }
+    
+    tabla_creditos_por_cliente = $("#tabla_creditos_por_cliente").DataTable({
+        "ordering": true,
+        "bLengthChange": true,
+        "searching": true,
+        "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Todos"]],
+        "pageLength": 10,
+        "destroy": true,
+        "processing": true,
+        "ajax": {
+            "url": "../controller/creditos/controlador_listar_creditos_por_cliente.php",
+            type: 'POST',
+            data: {
+                filtro_estado: filtro_estado
+            }
+        },
+        "columns": [
+            { "data": "nombre_completo" },
+            { "data": "dni_ruc" },
+            { 
+                "data": "telefono",
+                "render": function(data) {
+                    return data ? data : '-';
+                }
+            },
+            { 
+                "data": "total_vales",
+                "render": function(data) {
+                    return '<span class="badge badge-info">' + data + '</span>';
+                }
+            },
+            { 
+                "data": "monto_total",
+                "render": function(data) {
+                    return 'S/. ' + parseFloat(data).toFixed(2);
+                }
+            },
+            { 
+                "data": "monto_pagado",
+                "render": function(data) {
+                    return 'S/. ' + parseFloat(data).toFixed(2);
+                }
+            },
+            { 
+                "data": "saldo_pendiente",
+                "render": function(data) {
+                    return '<strong class="text-danger">S/. ' + parseFloat(data).toFixed(2) + '</strong>';
+                }
+            },
+            { 
+                "data": "fecha_vencimiento_mas_antigua",
+                "render": function(data, type, row) {
+                    if (data) {
+                        var fecha = new Date(data);
+                        var dias = row.dias_vencido_max;
+                        var html = fecha.toLocaleDateString('es-PE');
+                        if (dias > 0) {
+                            html += '<br><span class="badge badge-danger">Vencido ' + dias + ' días</span>';
+                        } else if (dias < 0) {
+                            html += '<br><span class="badge badge-warning">Vence en ' + Math.abs(dias) + ' días</span>';
+                        }
+                        return html;
+                    }
+                    return '-';
+                }
+            },
+            {
+                "data": "id_cliente",
+                "render": function(data) {
+                    return "<button class='ver_vales btn btn-primary btn-sm' title='Ver Vales'><i class='fas fa-eye'></i> Ver Vales</button>";
+                }
+            }
+        ],
+        "language": idioma_espanol,
+        select: true
+    });
+
+    // Remover listeners anteriores y agregar nuevos
+    $('#tabla_creditos_por_cliente tbody').off('click');
+    $('#tabla_creditos_por_cliente tbody').on('click', '.ver_vales', function() {
+        var data = tabla_creditos_por_cliente.row($(this).closest('tr')).data();
+        Ver_Vales_Cliente(data.id_cliente, data.nombre_completo, data.dni_ruc, data.total_vales, data.saldo_pendiente);
+    });
+}
+
+// VER VALES DE UN CLIENTE
+function Ver_Vales_Cliente(id_cliente, nombre_cliente, dni, total_vales, saldo_total) {
+    $('#txt_id_cliente_vales').val(id_cliente);
+    $('#info_cliente_vales').text(nombre_cliente);
+    $('#info_dni_vales').text(dni);
+    $('#info_total_vales').text(total_vales);
+    $('#info_saldo_total_vales').text('S/. ' + parseFloat(saldo_total).toFixed(2));
+    
+    // Cargar tabla de vales
+    if (tabla_vales_cliente) {
+        tabla_vales_cliente.destroy();
+    }
+    
+    tabla_vales_cliente = $("#tabla_vales_cliente").DataTable({
+        "ordering": true,
+        "bLengthChange": false,
+        "searching": false,
+        "pageLength": 10,
+        "destroy": true,
+        "processing": true,
+        "rowCallback": function(row, data) {
+            // Resaltar vales pagados con fondo verde claro
+            if (data.estado == 'PAGADO') {
+                $(row).css('background-color', '#d4edda');
+            }
+        },
+        "ajax": {
+            "url": "../controller/creditos/controlador_listar_vales_cliente.php",
+            type: 'POST',
+            data: {
+                id_cliente: id_cliente,
+                filtro_estado: '' // Mostrar TODOS los vales (pendientes y pagados)
+            }
+        },
+        "columns": [
+            { "data": "numero_vale" },
+            { 
+                "data": "created_at",
+                "render": function(data) {
+                    var fecha = new Date(data);
+                    return fecha.toLocaleDateString('es-PE');
+                }
+            },
+            { 
+                "data": "turno",
+                "render": function(data, type, row) {
+                    return '<small>' + row.numero_documento + '<br>' + data + '</small>';
+                }
+            },
+            { 
+                "data": "monto",
+                "render": function(data) {
+                    return 'S/. ' + parseFloat(data).toFixed(2);
+                }
+            },
+            { 
+                "data": "monto_pagado",
+                "render": function(data) {
+                    return 'S/. ' + parseFloat(data).toFixed(2);
+                }
+            },
+            { 
+                "data": "saldo_pendiente",
+                "render": function(data) {
+                    return '<strong>S/. ' + parseFloat(data).toFixed(2) + '</strong>';
+                }
+            },
+            { 
+                "data": "fecha_vencimiento",
+                "render": function(data, type, row) {
+                    if (data) {
+                        var fecha = new Date(data);
+                        var dias = row.dias_vencido;
+                        var html = fecha.toLocaleDateString('es-PE');
+                        if (dias > 0) {
+                            html += '<br><span class="badge badge-danger">Vencido</span>';
+                        }
+                        return html;
+                    }
+                    return '-';
+                }
+            },
+            {
+                "data": "estado",
+                "render": function(data) {
+                    if (data == 'PENDIENTE') {
+                        return '<span class="badge badge-warning">PENDIENTE</span>';
+                    } else if (data == 'PAGADO') {
+                        return '<span class="badge badge-success">PAGADO</span>';
+                    } else {
+                        return '<span class="badge badge-danger">ANULADO</span>';
+                    }
+                }
+            },
+            {
+                "data": "id_credito",
+                "render": function(data, type, row) {
+                    var botones = "";
+                    if (row.estado == 'PENDIENTE') {
+                        // Solo mostrar botón de pagar si está pendiente
+                        botones = "<button class='pagar_vale btn btn-success btn-sm' title='Registrar Pago'><i class='fas fa-money-bill-wave'></i></button>&nbsp;";
+                    }
+                    // Siempre mostrar historial
+                    botones += "<button class='historial_vale btn btn-info btn-sm' title='Ver Historial'><i class='fas fa-history'></i></button>";
+                    return botones;
+                }
+            }
+        ],
+        "language": idioma_espanol
+    });
+
+    // Remover listeners anteriores y agregar nuevos
+    $('#tabla_vales_cliente tbody').off('click');
+    $('#tabla_vales_cliente tbody').on('click', '.pagar_vale', function() {
+        var data = tabla_vales_cliente.row($(this).closest('tr')).data();
+        $('#modal_vales_cliente').modal('hide');
+        setTimeout(function() {
+            Abrir_Modal_Pago(data.id_credito);
+        }, 300);
+    });
+    
+    $('#tabla_vales_cliente tbody').on('click', '.historial_vale', function() {
+        var data = tabla_vales_cliente.row($(this).closest('tr')).data();
+        $('#modal_vales_cliente').modal('hide');
+        setTimeout(function() {
+            Ver_Historial_Pagos(data.id_credito);
+        }, 300);
+    });
+    
+    $('#modal_vales_cliente').modal('show');
+}
+
+// FILTRAR CRÉDITOS
+function Filtrar_Creditos() {
+    Listar_Creditos_Por_Cliente();
+    Cargar_Resumen_Creditos();
 }
 
 // LISTAR CRÉDITOS PENDIENTES
@@ -236,7 +468,7 @@ function Registrar_Pago_Credito() {
                 confirmButtonColor: '#023D77'
             });
             $('#modal_registrar_pago').modal('hide');
-            Listar_Creditos_Pendientes();
+            Listar_Creditos_Por_Cliente();
             Cargar_Resumen_Creditos();
             Limpiar_Modal_Pago();
         } else if (resp == -1) {
@@ -383,7 +615,7 @@ function Anular_Credito(id_credito) {
                         text: 'Crédito anulado correctamente',
                         confirmButtonColor: '#023D77'
                     });
-                    Listar_Creditos_Pendientes();
+                    Listar_Creditos_Por_Cliente();
                     Cargar_Resumen_Creditos();
                 }
             });
@@ -427,7 +659,8 @@ function Filtrar_Por_Cliente(id_cliente) {
 
 // FILTRAR CRÉDITOS
 function Filtrar_Creditos() {
-    tabla_creditos_pendientes.ajax.reload();
+    Listar_Creditos_Por_Cliente();
+    Cargar_Resumen_Creditos();
 }
 
 // CARGAR CLIENTES PARA FILTRO

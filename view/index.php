@@ -101,9 +101,9 @@ if (!isset($_SESSION['S_ID'])) {
                     </a>
                   </li>
                   <li class="nav-item">
-                    <a href="#" onclick="cargar_contenido('contenido_principal','turnos/view_abrir_turno.php')" class="nav-link">
+                    <a href="#" onclick="cargar_contenido('contenido_principal','turnos/view_cerrar_turno.php')" class="nav-link">
                       <i class="nav-icon far fa-circle"></i>
-                      <p style="color:white">Turnos Activos</p>
+                      <p style="color:white">Gestionar Turno</p>
                     </a>
                   </li>
                   <li class="nav-item">
@@ -115,12 +115,23 @@ if (!isset($_SESSION['S_ID'])) {
                 </ul>
               </li>
 
-              <!-- CRÉDITOS PENDIENTES -->
-              <li class="nav-item">
-                <a href="#" onclick="cargar_contenido('contenido_principal','creditos/view_creditos_pendientes.php')" class="nav-link">
+              <!-- CRÉDITOS/VALES -->
+              <li class="nav-item has-treeview">
+                <a href="#" class="nav-link">
                   <i class="nav-icon fas fa-credit-card"></i>
-                  <p style="color:white">Créditos Pendientes</p>
+                  <p style="color:white">
+                    Créditos/Vales
+                    <i class="right fas fa-angle-left"></i>
+                  </p>
                 </a>
+                <ul class="nav nav-treeview">
+                  <li class="nav-item">
+                    <a href="#" onclick="cargar_contenido('contenido_principal','creditos/view_creditos_pendientes.php')" class="nav-link">
+                      <i class="nav-icon far fa-circle"></i>
+                      <p style="color:white">Gestionar Créditos</p>
+                    </a>
+                  </li>
+                </ul>
               </li>
 
               <!-- REPORTES -->
@@ -128,11 +139,17 @@ if (!isset($_SESSION['S_ID'])) {
                 <a href="#" class="nav-link">
                   <i class="nav-icon fas fa-file-alt"></i>
                   <p style="color:white">
-                    Reportes Diarios
+                    Reportes
                     <i class="right fas fa-angle-left"></i>
                   </p>
                 </a>
                 <ul class="nav nav-treeview">
+                  <li class="nav-item">
+                    <a href="#" onclick="cargar_contenido('contenido_principal','reportes/view_ventas_por_fecha.php')" class="nav-link">
+                      <i class="nav-icon far fa-circle"></i>
+                      <p style="color:white">Ventas por Fecha</p>
+                    </a>
+                  </li>
                   <li class="nav-item">
                     <a href="#" onclick="cargar_contenido('contenido_principal','reportes/view_listado_reportes.php')" class="nav-link">
                       <i class="nav-icon far fa-circle"></i>

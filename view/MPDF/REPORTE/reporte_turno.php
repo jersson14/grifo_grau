@@ -78,23 +78,48 @@ foreach ($lecturas as $lectura) {
     }
 }
 
-// Obtener pagos
+// Obtener pagos agrupados por tipo
 $sql_pagos = "SELECT 
+                tp.codigo as tipo_codigo,
                 tp.nombre as tipo_pago,
                 pr.codigo_operacion,
                 pr.monto
             FROM pagos_reporte pr
             INNER JOIN tipos_pago tp ON pr.id_tipo_pago = tp.id_tipo_pago
-            WHERE pr.id_reporte = ?";
+            WHERE pr.id_reporte = ?
+            ORDER BY tp.codigo";
 
 $stmt = $c->prepare($sql_pagos);
 $stmt->execute(array($id_turno));
 $pagos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+// Agrupar pagos por tipo
+$pagos_agrupados = array(
+    'YAPE' => array(),
+    'BCP' => array(),
+    'VISA' => array(),
+    'EFECTIVO' => array()
+);
+
 $total_pagos = 0;
 foreach ($pagos as $pago) {
+    $tipo = strtoupper($pago['tipo_codigo']);
+    if (isset($pagos_agrupados[$tipo])) {
+        $pagos_agrupados[$tipo][] = $pago;
+    }
     $total_pagos += floatval($pago['monto']);
 }
+
+// Calcular totales por tipo
+$total_yape = 0;
+$total_bcp = 0;
+$total_visa = 0;
+$total_efectivo = 0;
+
+foreach ($pagos_agrupados['YAPE'] as $p) $total_yape += floatval($p['monto']);
+foreach ($pagos_agrupados['BCP'] as $p) $total_bcp += floatval($p['monto']);
+foreach ($pagos_agrupados['VISA'] as $p) $total_visa += floatval($p['monto']);
+foreach ($pagos_agrupados['EFECTIVO'] as $p) $total_efectivo += floatval($p['monto']);
 
 // Obtener créditos
 $sql_creditos = "SELECT 
@@ -126,253 +151,326 @@ $mpdf = new \Mpdf\Mpdf([
 
 $html = '
 <style>
-    body { font-family: Arial, sans-serif; font-size: 10px; }
-    .header { text-align: center; margin-bottom: 20px; }
-    .header h2 { margin: 5px 0; color: #023D77; }
-    .info-box { border: 1px solid #ddd; padding: 10px; margin-bottom: 15px; }
-    .info-row { margin: 5px 0; }
-    .info-label { font-weight: bold; display: inline-block; width: 150px; }
-    table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
-    th { background-color: #023D77; color: white; padding: 8px; text-align: left; font-size: 9px; }
-    td { border: 1px solid #ddd; padding: 6px; font-size: 9px; }
+    body { font-family: Arial, sans-serif; font-size: 9px; }
+    .header { text-align: center; margin-bottom: 10px; }
+    .header-title { background-color: #90EE90; padding: 5px; text-align: right; font-weight: bold; font-size: 10px; }
+    .info-line { margin: 3px 0; font-size: 9px; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 10px; font-size: 8px; }
+    th { background-color: #FFA500; color: black; padding: 4px; text-align: center; font-weight: bold; border: 1px solid #000; }
+    td { border: 1px solid #000; padding: 3px; text-align: center; }
     .text-right { text-align: right; }
-    .text-center { text-align: center; }
-    .total-row { background-color: #f0f0f0; font-weight: bold; }
-    .section-title { background-color: #023D77; color: white; padding: 8px; margin-top: 15px; margin-bottom: 10px; font-weight: bold; }
-    .resumen-box { border: 2px solid #023D77; padding: 10px; margin: 10px 0; }
-    .resumen-item { margin: 5px 0; font-size: 11px; }
+    .text-left { text-align: left; }
+    .section-title { background-color: #FFA500; color: black; padding: 5px; margin-top: 10px; margin-bottom: 5px; font-weight: bold; text-align: center; border: 1px solid #000; }
+    .total-row { background-color: #FFA500; font-weight: bold; }
+    .green-header { background-color: #90EE90; font-weight: bold; }
+    .firma-box { text-align: center; padding: 10px; margin-top: 30px; }
+    .firma-line { border-top: 1px solid #000; margin: 0 30px; padding-top: 5px; }
 </style>
 
 <div class="header">
-    <div style="text-align: center;">
-        <img src="' . __DIR__ . '/../../../img/grau.png" style="width: 120px; height: auto; margin-bottom: 10px;">
-        <p style="margin: 5px 0;"><strong>ULLPUTO - CHUQUI</strong></p>
-        <h3 style="margin: 5px 0; color: #023D77;">REPORTE DE TURNO</h3>
-    </div>
-</div>
-
-<div class="info-box">
-    <div class="info-row">
-        <span class="info-label">N° Documento:</span>
-        <span>' . $turno['numero_documento'] . '</span>
-    </div>
-    <div class="info-row">
-        <span class="info-label">Fecha:</span>
-        <span>' . $turno['fecha_formateada'] . '</span>
-    </div>
-    <div class="info-row">
-        <span class="info-label">Turno:</span>
-        <span>' . $turno['turno'] . '</span>
-    </div>
-    <div class="info-row">
-        <span class="info-label">Horario:</span>
-        <span>' . $turno['hora_inicio_formateada'] . ' - ' . $turno['hora_fin_formateada'] . '</span>
-    </div>
-    <div class="info-row">
-        <span class="info-label">Grifero:</span>
-        <span>' . $turno['grifero_nombre'] . '</span>
-    </div>
-    <div class="info-row">
-        <span class="info-label">Estado:</span>
-        <span>' . $turno['estado'] . '</span>
-    </div>
-</div>
-
-<div class="section-title">LECTURAS DE SURTIDORES</div>
-<table>
-    <thead>
+    <table style="width: 100%; border: 1px solid #000; margin-bottom: 10px;">
         <tr>
-            <th>Máq.</th>
-            <th>Código</th>
-            <th>Producto</th>
-            <th class="text-right">Lect. Anterior</th>
-            <th class="text-right">Lect. Actual</th>
-            <th class="text-right">Galones</th>
-            <th class="text-right">Precio</th>
-            <th class="text-right">Total</th>
-        </tr>
-    </thead>
-    <tbody>';
-
-foreach ($lecturas as $lectura) {
-    $html .= '<tr>
-        <td class="text-center">' . $lectura['numero_maquina'] . '</td>
-        <td>' . $lectura['codigo'] . '</td>
-        <td>' . $lectura['nombre_producto'] . '</td>
-        <td class="text-right">' . number_format($lectura['lectura_anterior'], 3) . '</td>
-        <td class="text-right">' . number_format($lectura['lectura_actual'], 3) . '</td>
-        <td class="text-right">' . number_format($lectura['galones_vendidos'], 3) . '</td>
-        <td class="text-right">S/. ' . number_format($lectura['precio'], 2) . '</td>
-        <td class="text-right">S/. ' . number_format($lectura['total'], 2) . '</td>
-    </tr>';
-}
-
-$html .= '
-        <tr class="total-row">
-            <td colspan="7" class="text-right">TOTAL VENTAS:</td>
-            <td class="text-right">S/. ' . number_format($total_general, 2) . '</td>
-        </tr>
-    </tbody>
-</table>
-
-<div class="resumen-box">
-    <div class="resumen-item"><strong>DIESEL:</strong> S/. ' . number_format($total_diesel, 2) . '</div>
-    <div class="resumen-item"><strong>REGULAR:</strong> S/. ' . number_format($total_regular, 2) . '</div>
-    <div class="resumen-item"><strong>PREMIUM:</strong> S/. ' . number_format($total_premium, 2) . '</div>
-    <div class="resumen-item" style="font-size: 12px; color: #023D77;"><strong>TOTAL:</strong> S/. ' . number_format($total_general, 2) . '</div>
-</div>';
-
-if (count($pagos) > 0) {
-    $html .= '
-    <div class="section-title">MÉTODOS DE PAGO</div>
-    <table>
-        <thead>
-            <tr>
-                <th>Tipo de Pago</th>
-                <th>Código Operación</th>
-                <th class="text-right">Monto</th>
-            </tr>
-        </thead>
-        <tbody>';
-    
-    foreach ($pagos as $pago) {
-        $html .= '<tr>
-            <td>' . $pago['tipo_pago'] . '</td>
-            <td>' . ($pago['codigo_operacion'] ?: '-') . '</td>
-            <td class="text-right">S/. ' . number_format($pago['monto'], 2) . '</td>
-        </tr>';
-    }
-    
-    $html .= '
-            <tr class="total-row">
-                <td colspan="2" class="text-right">TOTAL PAGOS:</td>
-                <td class="text-right">S/. ' . number_format($total_pagos, 2) . '</td>
-            </tr>
-        </tbody>
-    </table>';
-}
-
-if (count($creditos) > 0) {
-    $html .= '
-    <div class="section-title">VENTAS A CRÉDITO</div>
-    <table>
-        <thead>
-            <tr>
-                <th>N° Vale</th>
-                <th>Cliente</th>
-                <th class="text-right">Monto</th>
-            </tr>
-        </thead>
-        <tbody>';
-    
-    foreach ($creditos as $credito) {
-        $html .= '<tr>
-            <td>' . $credito['numero_vale'] . '</td>
-            <td>' . $credito['cliente'] . '</td>
-            <td class="text-right">S/. ' . number_format($credito['monto'], 2) . '</td>
-        </tr>';
-    }
-    
-    $html .= '
-            <tr class="total-row">
-                <td colspan="2" class="text-right">TOTAL CRÉDITOS:</td>
-                <td class="text-right">S/. ' . number_format($total_creditos, 2) . '</td>
-            </tr>
-        </tbody>
-    </table>';
-}
-
-$faltante = $total_general - ($total_pagos + $total_creditos);
-$html .= '
-<div class="resumen-box" style="border-color: ' . ($faltante == 0 ? '#28a745' : ($faltante < 0 ? '#dc3545' : '#ffc107')) . ';">
-    <div class="resumen-item"><strong>Total Ventas:</strong> S/. ' . number_format($total_general, 2) . '</div>
-    <div class="resumen-item"><strong>Total Pagos:</strong> S/. ' . number_format($total_pagos, 2) . '</div>
-    <div class="resumen-item"><strong>Total Créditos:</strong> S/. ' . number_format($total_creditos, 2) . '</div>
-    <div class="resumen-item" style="font-size: 13px; color: ' . ($faltante == 0 ? '#28a745' : ($faltante < 0 ? '#dc3545' : '#ffc107')) . ';"><strong>FALTANTE/SOBRANTE:</strong> S/. ' . number_format(abs($faltante), 2) . ' ' . ($faltante < 0 ? '(FALTANTE)' : ($faltante > 0 ? '(SOBRANTE)' : '(CUADRADO)')) . '</div>
-</div>
-
-<!-- TOTALES GENERALES -->
-<div class="section-title" style="background-color: #ffc107; color: #000; margin-top: 20px;">TOTALES GENERALES</div>
-
-<table style="margin-bottom: 10px;">
-    <thead style="background-color: #ffc107; color: #000;">
-        <tr>
-            <th colspan="2" class="text-center">VENTAS EN SOLES</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td><strong>DIESEL</strong></td>
-            <td class="text-right"><strong>S/. ' . number_format($total_diesel, 2) . '</strong></td>
-        </tr>
-        <tr>
-            <td><strong>REGULAR</strong></td>
-            <td class="text-right"><strong>S/. ' . number_format($total_regular, 2) . '</strong></td>
-        </tr>
-        <tr>
-            <td><strong>PREMIUM</strong></td>
-            <td class="text-right"><strong>S/. ' . number_format($total_premium, 2) . '</strong></td>
-        </tr>
-        <tr class="total-row">
-            <td><strong>TOTAL EN SOLES</strong></td>
-            <td class="text-right"><strong>S/. ' . number_format($total_general, 2) . '</strong></td>
-        </tr>
-    </tbody>
-</table>
-
-<table style="margin-bottom: 20px;">
-    <thead style="background-color: #ffc107; color: #000;">
-        <tr>
-            <th colspan="2" class="text-center">VENTAS EN GALONES</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td><strong>DIESEL</strong></td>
-            <td class="text-right"><strong>' . number_format($galones_diesel, 3) . ' gal</strong></td>
-        </tr>
-        <tr>
-            <td><strong>REGULAR</strong></td>
-            <td class="text-right"><strong>' . number_format($galones_regular, 3) . ' gal</strong></td>
-        </tr>
-        <tr>
-            <td><strong>PREMIUM</strong></td>
-            <td class="text-right"><strong>' . number_format($galones_premium, 3) . ' gal</strong></td>
-        </tr>
-        <tr class="total-row">
-            <td><strong>TOTAL EN GALONES</strong></td>
-            <td class="text-right"><strong>' . number_format($total_galones, 3) . ' gal</strong></td>
-        </tr>
-    </tbody>
-</table>
-
-<!-- SECCIÓN DE FIRMAS -->
-<div style="margin-top: 50px; page-break-inside: avoid;">
-    <table style="border: none; width: 100%;">
-        <tr>
-            <td style="width: 50%; text-align: center; border: none; padding: 10px; vertical-align: bottom;">
-                <div style="height: 60px;"></div>
-                <div style="border-top: 2px solid #023D77; padding-top: 8px; margin: 0 40px;">
-                    <div style="font-size: 11px; font-weight: bold; color: #023D77; margin-bottom: 3px;">PERSONAL DEL GRIFO</div>
-                    <div style="font-size: 10px; color: #333; margin-bottom: 2px;">' . $turno['grifero_nombre'] . '</div>
-                    <div style="font-size: 9px; font-weight: bold; color: #666;">FIRMA</div>
-                </div>
+            <td style="width: 70%; border-right: 1px solid #000; padding: 5px;">
+                <div style="font-weight: bold; font-size: 11px; text-align: center;">REPORTE DE VENTAS DIARIAS - ' . strtoupper(date('F', strtotime($turno['fecha_reporte']))) . ' DE ' . date('Y', strtotime($turno['fecha_reporte'])) . '</div>
             </td>
-            <td style="width: 50%; text-align: center; border: none; padding: 10px; vertical-align: bottom;">
-                <div style="height: 60px;"></div>
-                <div style="border-top: 2px solid #023D77; padding-top: 8px; margin: 0 40px;">
-                    <div style="font-size: 11px; font-weight: bold; color: #023D77; margin-bottom: 3px;">ADMINISTRADORA</div>
-                    <div style="font-size: 10px; color: #333; margin-bottom: 2px;">Sra. Thalia Inés Palomino</div>
-                    <div style="font-size: 9px; font-weight: bold; color: #666;">FIRMA</div>
-                </div>
+            <td style="width: 30%; background-color: #90EE90; padding: 5px; text-align: center; font-weight: bold;">
+                ' . $turno['numero_documento'] . '
             </td>
         </tr>
     </table>
 </div>
 
-<div style="margin-top: 20px; text-align: center; font-size: 9px; color: #666;">
-    <p>Reporte generado el ' . date('d/m/Y H:i:s') . '</p>
-    <p>Estación Goyo - Ullputo, Chuqui</p>
+<div class="info-line"><strong>NOMBRE DEL GRIFERO:</strong> ' . strtoupper($turno['grifero_nombre']) . '</div>
+<div class="info-line"><strong>TURNO:</strong> ' . $turno['turno'] . ' (Del ' . $turno['hora_inicio_formateada'] . ' al ' . $turno['hora_fin_formateada'] . ')</div>
+<div class="info-line"><strong>FECHA DE REPORTE:</strong> ' . $turno['fecha_formateada'] . '</div>
+<div class="info-line"><strong>HORARIO:</strong> ' . $turno['hora_inicio_formateada'] . ' - ' . $turno['hora_fin_formateada'] . '</div>
+
+<!-- MÁQUINA 1 -->
+<div class="section-title">MAQUINA 1</div>
+<table>
+    <thead>
+        <tr>
+            <th>FECHA</th>
+            <th>PRODUCTO</th>
+            <th>LECTURA ANTERIOR</th>
+            <th>LECTURA ACTUAL</th>
+            <th>GALONES VENDIDOS</th>
+            <th>PRECIO S/.</th>
+            <th>TOTAL EN SOLES</th>
+        </tr>
+    </thead>
+    <tbody>';
+
+$total_maq1 = 0;
+foreach ($lecturas as $lectura) {
+    if ($lectura['numero_maquina'] == 1) {
+        $html .= '<tr>
+            <td>' . date('d/m/Y', strtotime($turno['fecha_reporte'])) . '</td>
+            <td class="text-left">' . $lectura['codigo'] . '-' . $lectura['nombre_producto'] . '</td>
+            <td>' . number_format($lectura['lectura_anterior'], 3) . '</td>
+            <td>' . number_format($lectura['lectura_actual'], 3) . '</td>
+            <td>' . number_format($lectura['galones_vendidos'], 3) . '</td>
+            <td>' . number_format($lectura['precio'], 2) . '</td>
+            <td>' . number_format($lectura['total'], 2) . '</td>
+        </tr>';
+        $total_maq1 += floatval($lectura['total']);
+    }
+}
+
+$html .= '
+        <tr class="total-row">
+            <td colspan="6" class="text-right">TOTAL 1</td>
+            <td>' . number_format($total_maq1, 2) . '</td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- MÁQUINA 2 -->
+<div class="section-title">MAQUINA 2</div>
+<table>
+    <thead>
+        <tr>
+            <th>FECHA</th>
+            <th>PRODUCTO</th>
+            <th>LECTURA ANTERIOR</th>
+            <th>LECTURA ACTUAL</th>
+            <th>GALONES VENDIDOS</th>
+            <th>PRECIO S/.</th>
+            <th>TOTAL EN SOLES</th>
+        </tr>
+    </thead>
+    <tbody>';
+
+$total_maq2 = 0;
+foreach ($lecturas as $lectura) {
+    if ($lectura['numero_maquina'] == 2) {
+        $html .= '<tr>
+            <td>' . date('d/m/Y', strtotime($turno['fecha_reporte'])) . '</td>
+            <td class="text-left">' . $lectura['codigo'] . '-' . $lectura['nombre_producto'] . '</td>
+            <td>' . number_format($lectura['lectura_anterior'], 3) . '</td>
+            <td>' . number_format($lectura['lectura_actual'], 3) . '</td>
+            <td>' . number_format($lectura['galones_vendidos'], 3) . '</td>
+            <td>' . number_format($lectura['precio'], 2) . '</td>
+            <td>' . number_format($lectura['total'], 2) . '</td>
+        </tr>';
+        $total_maq2 += floatval($lectura['total']);
+    }
+}
+
+$html .= '
+        <tr class="total-row">
+            <td colspan="6" class="text-right">TOTAL 2</td>
+            <td>' . number_format($total_maq2, 2) . '</td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- TOTALES GENERALES -->
+<div class="section-title">TOTALES (1+2)</div>
+<table style="margin-bottom: 5px;">
+    <tr class="total-row">
+        <td style="width: 70%;" class="text-right">TOTAL S/.</td>
+        <td style="width: 30%;">S/. ' . number_format($total_general, 2) . '</td>
+    </tr>
+</table>
+
+<!-- TOTALES POR COMBUSTIBLE -->
+<table style="margin-bottom: 5px;">
+    <tr class="green-header">
+        <td style="width: 25%;">DIESEL</td>
+        <td style="width: 25%;">GASOL_REGULAR</td>
+        <td style="width: 25%;">GASOL_PREMIUM</td>
+        <td style="width: 25%;">TOTAL EN SOLES</td>
+    </tr>
+    <tr>
+        <td>' . number_format($total_diesel, 2) . '</td>
+        <td>' . number_format($total_regular, 2) . '</td>
+        <td>' . number_format($total_premium, 2) . '</td>
+        <td style="background-color: #FFA500; font-weight: bold;">' . number_format($total_general, 2) . '</td>
+    </tr>
+</table>
+
+<!-- TOTALES EN GALONES -->
+<table style="margin-bottom: 10px;">
+    <tr class="green-header">
+        <td style="width: 25%;">DIESEL</td>
+        <td style="width: 25%;">GASOL_REGULAR</td>
+        <td style="width: 25%;">GASOL_PREMIUM</td>
+        <td style="width: 25%;">TOTAL EN GALONES</td>
+    </tr>
+    <tr>
+        <td>' . number_format($galones_diesel, 3) . '</td>
+        <td>' . number_format($galones_regular, 3) . '</td>
+        <td>' . number_format($galones_premium, 3) . '</td>
+        <td style="background-color: #FFA500; font-weight: bold;">' . number_format($total_galones, 3) . '</td>
+    </tr>
+</table>
+
+<!-- TABLA DE PAGOS Y CRÉDITOS -->
+<table>
+    <thead>
+        <tr>
+            <th colspan="2">YAPE</th>
+            <th colspan="2">BCP</th>
+            <th colspan="2">VISA</th>
+            <th>DESCUENTOS</th>
+            <th>EFECTIVO</th>
+            <th>OTROS GASTOS</th>
+            <th colspan="2">MONTO DE CRÉDITO</th>
+            <th>N° DE VALE</th>
+        </tr>
+        <tr>
+            <th>S/.</th>
+            <th>COD. OPERACIÓN</th>
+            <th>S/.</th>
+            <th>COD. OPERACIÓN</th>
+            <th>S/.</th>
+            <th>COD. OPERACIÓN</th>
+            <th>S/.</th>
+            <th>S/.</th>
+            <th>S/.</th>
+            <th>S/.</th>
+            <th>NOMBRE DEL CLIENTE</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>';
+
+// Determinar el número máximo de filas necesarias
+$max_rows = max(
+    count($pagos_agrupados['YAPE']),
+    count($pagos_agrupados['BCP']),
+    count($pagos_agrupados['VISA']),
+    count($pagos_agrupados['EFECTIVO']),
+    count($creditos),
+    1
+);
+
+// Generar filas
+for ($i = 0; $i < $max_rows; $i++) {
+    $html .= '<tr>';
+    
+    // YAPE
+    if (isset($pagos_agrupados['YAPE'][$i])) {
+        $html .= '<td>' . number_format($pagos_agrupados['YAPE'][$i]['monto'], 2) . '</td>';
+        $html .= '<td>' . ($pagos_agrupados['YAPE'][$i]['codigo_operacion'] ?: '') . '</td>';
+    } else {
+        $html .= '<td></td><td></td>';
+    }
+    
+    // BCP
+    if (isset($pagos_agrupados['BCP'][$i])) {
+        $html .= '<td>' . number_format($pagos_agrupados['BCP'][$i]['monto'], 2) . '</td>';
+        $html .= '<td>' . ($pagos_agrupados['BCP'][$i]['codigo_operacion'] ?: '') . '</td>';
+    } else {
+        $html .= '<td></td><td></td>';
+    }
+    
+    // VISA
+    if (isset($pagos_agrupados['VISA'][$i])) {
+        $html .= '<td>' . number_format($pagos_agrupados['VISA'][$i]['monto'], 2) . '</td>';
+        $html .= '<td>' . ($pagos_agrupados['VISA'][$i]['codigo_operacion'] ?: '') . '</td>';
+    } else {
+        $html .= '<td></td><td></td>';
+    }
+    
+    // DESCUENTOS (solo en la primera fila)
+    if ($i == 0 && floatval($turno['monto_descuentos']) > 0) {
+        $html .= '<td>' . number_format($turno['monto_descuentos'], 2) . '</td>';
+    } else {
+        $html .= '<td></td>';
+    }
+    
+    // EFECTIVO
+    if (isset($pagos_agrupados['EFECTIVO'][$i])) {
+        $html .= '<td>' . number_format($pagos_agrupados['EFECTIVO'][$i]['monto'], 2) . '</td>';
+    } else {
+        $html .= '<td></td>';
+    }
+    
+    // OTROS GASTOS (solo en la primera fila)
+    if ($i == 0 && floatval($turno['monto_otros_gastos']) > 0) {
+        $html .= '<td>' . number_format($turno['monto_otros_gastos'], 2) . '</td>';
+    } else {
+        $html .= '<td></td>';
+    }
+    
+    // CRÉDITOS
+    if (isset($creditos[$i])) {
+        $html .= '<td>' . number_format($creditos[$i]['monto'], 2) . '</td>';
+        $html .= '<td class="text-left">' . strtoupper($creditos[$i]['cliente']) . '</td>';
+        $html .= '<td>' . $creditos[$i]['numero_vale'] . '</td>';
+    } else {
+        $html .= '<td></td><td></td><td></td>';
+    }
+    
+    $html .= '</tr>';
+}
+
+// Fila de totales
+$descuentos = floatval($turno['monto_descuentos']);
+$otros_gastos = floatval($turno['monto_otros_gastos']);
+
+$html .= '
+        <tr class="total-row">
+            <td>' . number_format($total_yape, 2) . '</td>
+            <td></td>
+            <td>' . number_format($total_bcp, 2) . '</td>
+            <td></td>
+            <td>' . number_format($total_visa, 2) . '</td>
+            <td></td>
+            <td>' . number_format($descuentos, 2) . '</td>
+            <td>' . number_format($total_efectivo, 2) . '</td>
+            <td>' . number_format($otros_gastos, 2) . '</td>
+            <td>' . number_format($total_creditos, 2) . '</td>
+            <td colspan="2"></td>
+        </tr>
+    </tbody>
+</table>';
+
+// Resumen final
+$total_ventas = $total_general;
+$total_suma = $total_yape + $total_bcp + $total_visa + $total_efectivo + $total_creditos;
+$monto_faltante = $total_ventas - $total_suma - $descuentos - $otros_gastos;
+
+$html .= '
+<table style="width: 50%; margin-left: auto; margin-top: 10px;">
+    <tr style="background-color: #FFE4E1;">
+        <td class="text-right" style="font-weight: bold;">TOTAL S/.</td>
+        <td style="font-weight: bold;">S/. ' . number_format($total_ventas, 2) . '</td>
+    </tr>
+    <tr style="background-color: #E0FFE0;">
+        <td class="text-right" style="font-weight: bold;">Total venta</td>
+        <td style="font-weight: bold;">S/. ' . number_format($total_suma, 2) . '</td>
+    </tr>
+    <tr style="background-color: #FFE4E1;">
+        <td class="text-right" style="font-weight: bold;">MONTO FALTANTE</td>
+        <td style="font-weight: bold; color: ' . ($monto_faltante < 0 ? 'red' : 'green') . ';">S/. ' . number_format($monto_faltante, 2) . '</td>
+    </tr>
+</table>
+
+<!-- SECCIÓN DE FIRMAS -->
+<div style="margin-top: 40px; page-break-inside: avoid;">
+    <table style="border: none; width: 100%;">
+        <tr>
+            <td style="width: 50%; text-align: center; border: none; padding: 20px; vertical-align: bottom;">
+                <div style="height: 50px;"></div>
+                <div style="border-top: 1px solid #000; padding-top: 5px; margin: 0 50px;">
+                    <div style="font-size: 10px; font-weight: bold; margin-bottom: 2px;">PERSONAL DEL GRIFO</div>
+                    <div style="font-size: 9px; margin-bottom: 2px;">' . strtoupper($turno['grifero_nombre']) . '</div>
+                    <div style="font-size: 9px; font-weight: bold;">FIRMA</div>
+                </div>
+            </td>
+            <td style="width: 50%; text-align: center; border: none; padding: 20px; vertical-align: bottom;">
+                <div style="height: 50px;"></div>
+                <div style="border-top: 1px solid #000; padding-top: 5px; margin: 0 50px;">
+                    <div style="font-size: 10px; font-weight: bold; margin-bottom: 2px;">ADMINISTRADORA</div>
+                    <div style="font-size: 9px; margin-bottom: 2px;">Sra. Romee Azcarza Salazar</div>
+                    <div style="font-size: 9px; font-weight: bold;">FIRMA</div>
+                </div>
+            </td>
+        </tr>
+    </table>
 </div>';
 
 $mpdf->WriteHTML($html);

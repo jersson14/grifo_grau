@@ -4,12 +4,12 @@
     <div class="container-fluid">
         <div class="row mb-2">
             <div class="col-sm-6">
-                <h1 class="m-0"><i class="fas fa-tasks"></i> <b>MI TURNO ACTUAL</b></h1>
+                <h1 class="m-0"><i class="fas fa-tasks"></i> <b>GESTIONAR TURNO ACTUAL</b></h1>
             </div>
             <div class="col-sm-6">
                 <ol class="breadcrumb float-sm-right">
                     <li class="breadcrumb-item"><a href="../view/index.php">Inicio</a></li>
-                    <li class="breadcrumb-item active">Mi Turno</li>
+                    <li class="breadcrumb-item active">Gestionar Turno</li>
                 </ol>
             </div>
         </div>
@@ -22,8 +22,8 @@
         <!-- SIN TURNO ABIERTO -->
         <div id="sin_turno_abierto" style="display:none">
             <div class="alert alert-info">
-                <h5><i class="icon fas fa-info-circle"></i> No tienes un turno abierto</h5>
-                Debes abrir un turno para comenzar a registrar ventas.
+                <h5><i class="icon fas fa-info-circle"></i> No hay un turno abierto en el sistema</h5>
+                Debes abrir un turno para comenzar a gestionar las ventas.
                 <br><br>
                 <button class="btn btn-primary" onclick="cargar_contenido('contenido_principal','turnos/view_abrir_turno.php')">
                     <i class="fas fa-plus-circle"></i> Abrir Turno
@@ -53,10 +53,13 @@
                                 <div class="col-md-2">
                                     <p><strong>Turno:</strong><br><span id="info_turno" class="badge badge-info"></span></p>
                                 </div>
-                                <div class="col-md-3">
+                                <div class="col-md-2">
                                     <p><strong>Horario:</strong><br><span id="info_hora_inicio"></span> - <span id="info_hora_fin"></span></p>
                                 </div>
-                                <div class="col-md-3">
+                                <div class="col-md-2">
+                                    <p><strong>Grifero:</strong><br><span id="info_grifero" class="badge badge-success"></span></p>
+                                </div>
+                                <div class="col-md-2">
                                     <p><strong>Estado:</strong><br><span class="badge badge-warning">ABIERTO</span></p>
                                 </div>
                             </div>

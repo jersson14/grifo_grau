@@ -209,6 +209,128 @@ class Modelo_Creditos extends conexionBD {
         conexionBD::cerrar_conexion();
     }
 
+    // LISTAR CRÉDITOS AGRUPADOS POR CLIENTE
+    public function Listar_Creditos_Por_Cliente($filtro_estado = 'PENDIENTE') {
+        $c = conexionBD::conexionPDO();
+        
+        if ($filtro_estado == 'PENDIENTE') {
+            // Solo mostrar clientes con saldo pendiente
+            $sql = "SELECT 
+                        c.id_cliente,
+                        c.nombre_completo,
+                        c.dni_ruc,
+                        c.telefono,
+                        COUNT(vc.id_credito) as total_vales,
+                        COALESCE(SUM(vc.monto), 0) as monto_total,
+                        COALESCE(SUM(vc.saldo_pendiente), 0) as saldo_pendiente,
+                        COALESCE(SUM(vc.monto - vc.saldo_pendiente), 0) as monto_pagado,
+                        MIN(vc.fecha_vencimiento) as fecha_vencimiento_mas_antigua,
+                        MAX(DATEDIFF(CURDATE(), vc.fecha_vencimiento)) as dias_vencido_max
+                    FROM clientes c
+                    INNER JOIN ventas_credito vc ON c.id_cliente = vc.id_cliente
+                    WHERE vc.estado = 'PENDIENTE'
+                    GROUP BY c.id_cliente, c.nombre_completo, c.dni_ruc, c.telefono
+                    HAVING saldo_pendiente > 0
+                    ORDER BY dias_vencido_max DESC, saldo_pendiente DESC";
+            $query = $c->prepare($sql);
+            $query->execute();
+        } else if ($filtro_estado == 'PAGADO') {
+            // Mostrar clientes con créditos pagados
+            $sql = "SELECT 
+                        c.id_cliente,
+                        c.nombre_completo,
+                        c.dni_ruc,
+                        c.telefono,
+                        COUNT(vc.id_credito) as total_vales,
+                        COALESCE(SUM(vc.monto), 0) as monto_total,
+                        COALESCE(SUM(vc.saldo_pendiente), 0) as saldo_pendiente,
+                        COALESCE(SUM(vc.monto - vc.saldo_pendiente), 0) as monto_pagado,
+                        MIN(vc.fecha_vencimiento) as fecha_vencimiento_mas_antigua,
+                        0 as dias_vencido_max
+                    FROM clientes c
+                    INNER JOIN ventas_credito vc ON c.id_cliente = vc.id_cliente
+                    WHERE vc.estado = 'PAGADO'
+                    GROUP BY c.id_cliente, c.nombre_completo, c.dni_ruc, c.telefono
+                    ORDER BY c.nombre_completo ASC";
+            $query = $c->prepare($sql);
+            $query->execute();
+        } else {
+            // Mostrar todos los clientes con créditos
+            $sql = "SELECT 
+                        c.id_cliente,
+                        c.nombre_completo,
+                        c.dni_ruc,
+                        c.telefono,
+                        COUNT(vc.id_credito) as total_vales,
+                        COALESCE(SUM(vc.monto), 0) as monto_total,
+                        COALESCE(SUM(CASE WHEN vc.estado = 'PENDIENTE' THEN vc.saldo_pendiente ELSE 0 END), 0) as saldo_pendiente,
+                        COALESCE(SUM(vc.monto - vc.saldo_pendiente), 0) as monto_pagado,
+                        MIN(vc.fecha_vencimiento) as fecha_vencimiento_mas_antigua,
+                        MAX(DATEDIFF(CURDATE(), vc.fecha_vencimiento)) as dias_vencido_max
+                    FROM clientes c
+                    INNER JOIN ventas_credito vc ON c.id_cliente = vc.id_cliente
+                    GROUP BY c.id_cliente, c.nombre_completo, c.dni_ruc, c.telefono
+                    ORDER BY saldo_pendiente DESC, c.nombre_completo ASC";
+            $query = $c->prepare($sql);
+            $query->execute();
+        }
+        
+        $arreglo = array();
+        $resultado = $query->fetchAll(PDO::FETCH_ASSOC);
+        foreach ($resultado as $resp) {
+            $arreglo["data"][] = $resp;
+        }
+        return $arreglo;
+        conexionBD::cerrar_conexion();
+    }
+
+    // LISTAR VALES DE UN CLIENTE ESPECÍFICO
+    public function Listar_Vales_Cliente($id_cliente, $filtro_estado = null) {
+        $c = conexionBD::conexionPDO();
+        $sql = "SELECT 
+                    vc.id_credito,
+                    vc.numero_vale,
+                    vc.monto,
+                    vc.saldo_pendiente,
+                    (vc.monto - vc.saldo_pendiente) as monto_pagado,
+                    vc.estado,
+                    vc.fecha_vencimiento,
+                    vc.created_at,
+                    vc.observaciones,
+                    rt.numero_documento,
+                    rt.fecha_reporte,
+                    rt.turno,
+                    CONCAT(u.usu_nombre, ' ', u.usu_apellido) as grifero_nombre,
+                    DATEDIFF(CURDATE(), vc.fecha_vencimiento) as dias_vencido
+                FROM ventas_credito vc
+                INNER JOIN reportes_turno rt ON vc.id_reporte = rt.id_reporte
+                INNER JOIN usuario u ON rt.id_usuario = u.id_usuario
+                WHERE vc.id_cliente = ?";
+        
+        $params = array($id_cliente);
+        
+        // Si se especifica un estado, filtrar por él
+        if ($filtro_estado && $filtro_estado != '') {
+            $sql .= " AND vc.estado = ?";
+            $params[] = $filtro_estado;
+        }
+        
+        $sql .= " ORDER BY vc.estado ASC, vc.fecha_vencimiento ASC, vc.created_at DESC";
+        
+        $arreglo = array();
+        $query = $c->prepare($sql);
+        $query->execute($params);
+        $resultado = $query->fetchAll(PDO::FETCH_ASSOC);
+        
+        error_log("Listar_Vales_Cliente - ID Cliente: $id_cliente, Estado: $filtro_estado, Resultados: " . count($resultado));
+        
+        foreach ($resultado as $resp) {
+            $arreglo["data"][] = $resp;
+        }
+        return $arreglo;
+        conexionBD::cerrar_conexion();
+    }
+
     // TOP CLIENTES CON MÁS DEUDA
     public function Top_Clientes_Deuda($limite = 10) {
         $c = conexionBD::conexionPDO();

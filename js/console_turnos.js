@@ -1,14 +1,36 @@
-// VERIFICAR SI HAY TURNO ABIERTO
-function Verificar_Turno_Abierto() {
-    var id_usuario = $("#txtprincipalid").val();
-    
+// CARGAR LISTA DE GRIFEROS
+function Cargar_Griferos() {
     $.ajax({
-        url: '../controller/turnos/controlador_verificar_turno_abierto.php',
-        type: 'POST',
-        data: { id_usuario: id_usuario }
+        url: '../controller/usuario/controlador_listar_griferos.php',
+        type: 'POST'
+    }).done(function(resp) {
+        var data = JSON.parse(resp);
+        var opciones = '<option value="">-- Seleccione Grifero --</option>';
+        
+        data.forEach(function(item) {
+            opciones += '<option value="' + item.id_usuario + '">' + item.nombre_completo + '</option>';
+        });
+        
+        $("#txt_grifero").html(opciones);
+        
+        // Si el usuario logueado es grifero, seleccionarlo automáticamente
+        var rol_usuario = $("#txtprincipalrol").val();
+        if (rol_usuario == 'GRIFERO') {
+            var id_usuario = $("#txtprincipalid").val();
+            $("#txt_grifero").val(id_usuario);
+            $("#txt_grifero").prop('disabled', true); // Deshabilitar para que no pueda cambiar
+        }
+    });
+}
+
+// VERIFICAR SI HAY TURNO ABIERTO EN EL SISTEMA
+function Verificar_Turno_Abierto() {
+    $.ajax({
+        url: '../controller/turnos/controlador_verificar_turno_sistema.php',
+        type: 'POST'
     }).done(function(resp) {
         if (resp > 0) {
-            // Ya hay un turno abierto
+            // Ya hay un turno abierto en el sistema
             $("#alerta_turno_abierto").show();
             $("#formulario_abrir_turno").hide();
         } else {
@@ -66,13 +88,13 @@ function Abrir_Turno() {
     var turno = $("#txt_tipo_turno").val();
     var hora_inicio = $("#txt_hora_inicio").val();
     var hora_fin = $("#txt_hora_fin").val();
-    var id_usuario = $("#txtprincipalid").val();
+    var id_grifero = $("#txt_grifero").val();
     
-    if (fecha.length == 0 || turno.length == 0 || hora_inicio.length == 0 || hora_fin.length == 0) {
+    if (fecha.length == 0 || turno.length == 0 || hora_inicio.length == 0 || hora_fin.length == 0 || id_grifero.length == 0) {
         Swal.fire({
             icon: 'warning',
             title: 'Advertencia',
-            text: 'Complete todos los campos obligatorios',
+            text: 'Complete todos los campos obligatorios (incluyendo el grifero)',
             confirmButtonColor: '#023D77'
         });
         return;
@@ -92,32 +114,44 @@ function Abrir_Turno() {
             $.ajax({
                 url: '../controller/turnos/controlador_abrir_turno.php',
                 type: 'POST',
+                dataType: 'json',
                 data: {
                     numero_documento: numero_documento,
-                    id_usuario: id_usuario,
+                    id_usuario: id_grifero,
                     turno: turno,
                     fecha: fecha,
                     hora_inicio: hora_inicio,
                     hora_fin: hora_fin
                 }
             }).done(function(resp) {
-                if (resp > 0) {
+                console.log('Respuesta del servidor:', resp);
+                
+                if (resp.success) {
                     Swal.fire({
                         icon: 'success',
                         title: 'Éxito',
-                        text: 'Turno abierto correctamente',
+                        text: resp.message,
                         confirmButtonColor: '#023D77'
                     }).then(() => {
-                        cargar_contenido('contenido_principal', 'turnos/view_cerrar_turno.php');
+                        cargar_contenido('contenido_principal', 'turnos/view_abrir_turno.php');
                     });
                 } else {
                     Swal.fire({
                         icon: 'error',
                         title: 'Error',
-                        text: 'No se pudo abrir el turno',
+                        text: resp.message,
                         confirmButtonColor: '#023D77'
                     });
                 }
+            }).fail(function(xhr, status, error) {
+                console.error('Error en la petición:', error);
+                console.error('Respuesta del servidor:', xhr.responseText);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error de conexión',
+                    text: 'No se pudo conectar con el servidor.',
+                    confirmButtonColor: '#023D77'
+                });
             });
         }
     });
@@ -131,12 +165,10 @@ var tabla_pagos_turno;
 var tabla_creditos_turno;
 
 function Cargar_Turno_Actual() {
-    var id_usuario = $("#txtprincipalid").val();
-    
+    // El ADMINISTRADOR gestiona el turno abierto del sistema (sin importar el grifero)
     $.ajax({
-        url: '../controller/turnos/controlador_obtener_turno_abierto.php',
-        type: 'POST',
-        data: { id_usuario: id_usuario }
+        url: '../controller/turnos/controlador_obtener_turno_sistema.php',
+        type: 'POST'
     }).done(function(resp) {
         if (resp == '0') {
             $("#sin_turno_abierto").show();
@@ -152,6 +184,7 @@ function Cargar_Turno_Actual() {
             $("#info_turno").text(data.turno);
             $("#info_hora_inicio").text(data.hora_inicio);
             $("#info_hora_fin").text(data.hora_fin);
+            $("#info_grifero").text(data.grifero_nombre); // Mostrar nombre del grifero
             $("#txt_id_reporte").val(data.id_reporte);
             
             // Cargar lecturas
@@ -215,6 +248,8 @@ function Actualizar_Lectura_Turno(id_lectura, lectura_actual) {
             // Recargar lecturas
             var id_reporte = $("#txt_id_reporte").val();
             Cargar_Lecturas_Turno(id_reporte);
+            // Actualizar totales inmediatamente
+            Calcular_Totales_Turno();
         }
     });
 }

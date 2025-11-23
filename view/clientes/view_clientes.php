@@ -68,10 +68,6 @@
             <div class="modal-body">
                 <div class="row">
                     <div class="col-md-6 form-group">
-                        <label>Nombre Completo <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="txt_nombre" placeholder="Nombre completo del cliente">
-                    </div>
-                    <div class="col-md-6 form-group">
                         <label>DNI/RUC</label>
                         <div class="input-group">
                             <input type="text" class="form-control" id="txt_dni" placeholder="DNI o RUC" maxlength="11">
@@ -82,6 +78,11 @@
                             </div>
                         </div>
                     </div>
+                    <div class="col-md-6 form-group">
+                        <label>Nombre Completo <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="txt_nombre" placeholder="Nombre completo del cliente">
+                    </div>
+                    
                     <div class="col-md-6 form-group">
                         <label>Teléfono</label>
                         <input type="text" class="form-control" id="txt_telefono" placeholder="Teléfono" maxlength="15">
@@ -112,13 +113,6 @@
             </div>
             <div class="modal-body">
                 <div class="row">
-                    <div class="col-12 form-group" style="display:none">
-                        <input type="text" id="txt_id_cliente">
-                    </div>
-                    <div class="col-md-6 form-group">
-                        <label>Nombre Completo <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="txt_nombre_editar">
-                    </div>
                     <div class="col-md-6 form-group">
                         <label>DNI/RUC</label>
                         <div class="input-group">
@@ -130,6 +124,14 @@
                             </div>
                         </div>
                     </div>
+                    <div class="col-12 form-group" style="display:none">
+                        <input type="text" id="txt_id_cliente">
+                    </div>
+                    <div class="col-md-6 form-group">
+                        <label>Nombre Completo <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="txt_nombre_editar">
+                    </div>
+
                     <div class="col-md-6 form-group">
                         <label>Teléfono</label>
                         <input type="text" class="form-control" id="txt_telefono_editar" maxlength="15">
