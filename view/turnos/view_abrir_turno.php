@@ -89,6 +89,7 @@
                                     <h3 class="card-title"><i class="fas fa-cogs"></i> MÁQUINA 1</h3>
                                 </div>
                                 <div class="card-body">
+                                    <div class="table-responsive">
                                     <table class="table table-sm table-bordered">
                                         <thead style="background-color:#007bff; color:white">
                                             <tr>
@@ -101,6 +102,7 @@
                                         <tbody id="tabla_lecturas_maquina_1">
                                         </tbody>
                                     </table>
+                                    </div>
                                 </div>
                             </div>
 
@@ -110,6 +112,7 @@
                                     <h3 class="card-title"><i class="fas fa-cogs"></i> MÁQUINA 2</h3>
                                 </div>
                                 <div class="card-body">
+                                    <div class="table-responsive">
                                     <table class="table table-sm table-bordered">
                                         <thead style="background-color:#28a745; color:white">
                                             <tr>
@@ -122,6 +125,7 @@
                                         <tbody id="tabla_lecturas_maquina_2">
                                         </tbody>
                                     </table>
+                                    </div>
                                 </div>
                             </div>
 

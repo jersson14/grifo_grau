@@ -64,6 +64,7 @@
                         <h3 class="card-title" style="color:white"><i class="fas fa-list"></i> Listado de Turnos</h3>
                     </div>
                     <div class="card-body">
+                        <div class="table-responsive">
                         <table id="tabla_historial_turnos" class="table table-striped table-bordered table-hover" style="width:100%">
                             <thead style="background-color:#023D77; color:white">
                                 <tr>
@@ -82,6 +83,7 @@
                             <tbody>
                             </tbody>
                         </table>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -176,6 +178,7 @@
                         <h3 class="card-title"><i class="fas fa-list"></i> Lecturas de Surtidores</h3>
                     </div>
                     <div class="card-body">
+                        <div class="table-responsive">
                         <table id="tabla_detalle_lecturas" class="table table-sm table-bordered" style="width:100%">
                             <thead style="background-color:#6c757d; color:white">
                                 <tr>
@@ -192,6 +195,7 @@
                             <tbody>
                             </tbody>
                         </table>
+                        </div>
                     </div>
                 </div>
             </div>

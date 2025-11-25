@@ -30,6 +30,7 @@
                         </div>
                     </div>
                     <div class="card-body">
+                        <div class="table-responsive">
                         <table id="tabla_clientes" class="table table-striped table-bordered table-hover" style="width:100%">
                             <thead style="background-color:#023D77; color:white">
                                 <tr>
@@ -48,6 +49,7 @@
                             <tbody>
                             </tbody>
                         </table>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -233,6 +235,7 @@
                         <h3 class="card-title"><i class="fas fa-list"></i> Historial de Créditos</h3>
                     </div>
                     <div class="card-body">
+                        <div class="table-responsive">
                         <table id="tabla_creditos_cliente" class="table table-sm table-bordered table-hover" style="width:100%">
                             <thead style="background-color:#dc3545; color:white">
                                 <tr>
@@ -249,6 +252,7 @@
                             <tbody>
                             </tbody>
                         </table>
+                        </div>
                     </div>
                 </div>
             </div>

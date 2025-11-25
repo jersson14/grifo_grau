@@ -30,6 +30,7 @@
                         </div>
                     </div>
                     <div class="card-body">
+                        <div class="table-responsive">
                         <table id="tabla_productos" class="table table-striped table-bordered table-hover" style="width:100%">
                             <thead style="background-color:#023D77; color:white">
                                 <tr>
@@ -47,6 +48,7 @@
                             <tbody>
                             </tbody>
                         </table>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -65,6 +67,7 @@
                         </div>
                     </div>
                     <div class="card-body">
+                        <div class="table-responsive">
                         <table id="tabla_historial" class="table table-sm table-bordered" style="width:100%">
                             <thead style="background-color:#6c757d; color:white">
                                 <tr>
@@ -78,6 +81,7 @@
                             <tbody>
                             </tbody>
                         </table>
+                        </div>
                     </div>
                 </div>
             </div>

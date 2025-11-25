@@ -53,6 +53,7 @@
                         </div>
 
                         <!-- TABLA -->
+                        <div class="table-responsive">
                         <table id="tabla_mis_reportes" class="table table-striped table-bordered table-hover" style="width:100%">
                             <thead style="background-color:#023D77; color:white">
                                 <tr>
@@ -69,6 +70,7 @@
                             <tbody>
                             </tbody>
                         </table>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -204,6 +206,7 @@
                 </div>
                 
                 <h5><i class="fas fa-gas-pump"></i> Lecturas de Surtidores</h5>
+                <div class="table-responsive">
                 <table id="tabla_detalle_lecturas" class="table table-bordered table-sm">
                     <thead style="background-color:#023D77; color:white">
                         <tr>
@@ -220,6 +223,7 @@
                     <tbody>
                     </tbody>
                 </table>
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="fas fa-times"></i> Cerrar</button>

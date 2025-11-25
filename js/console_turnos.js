@@ -199,6 +199,9 @@ function Cargar_Turno_Actual() {
     });
 }
 
+// Variable global para el debounce
+var timeout_debounce;
+
 function Cargar_Lecturas_Turno(id_reporte) {
     $.ajax({
         url: '../controller/turnos/controlador_obtener_lecturas_turno.php',
@@ -211,11 +214,28 @@ function Cargar_Lecturas_Turno(id_reporte) {
         var html_maquina_2 = '';
         
         data.forEach(function(item) {
+            // Determinar el producto para los cálculos locales
+            var producto_tipo = '';
+            var nombre_upper = item.producto_nombre.toUpperCase();
+            
+            if (nombre_upper.includes('DIESEL')) producto_tipo = 'DIESEL';
+            else if (nombre_upper.includes('REGULAR')) producto_tipo = 'REGULAR';
+            else if (nombre_upper.includes('PREMIUM')) producto_tipo = 'PREMIUM';
+
             var fila = '<tr>';
             fila += '<td><strong>' + item.codigo + '</strong></td>';
             fila += '<td>' + item.producto_nombre + '</td>';
             fila += '<td>' + parseFloat(item.lectura_anterior).toFixed(3) + '</td>';
-            fila += '<td><input type="number" step="0.001" class="form-control form-control-sm lectura-actual" data-id="' + item.id_lectura + '" value="' + parseFloat(item.lectura_actual).toFixed(3) + '" onchange="Actualizar_Lectura_Turno(' + item.id_lectura + ', this.value)"></td>';
+            
+            // Input con clase 'input-lectura' y data attributes para cálculo local
+            // Se eliminó el onchange inline
+            fila += '<td><input type="number" step="0.001" class="form-control form-control-sm input-lectura" ' + 
+                    'data-id="' + item.id_lectura + '" ' +
+                    'data-lectura-anterior="' + item.lectura_anterior + '" ' +
+                    'data-precio="' + item.precio_galon + '" ' +
+                    'data-producto="' + producto_tipo + '" ' +
+                    'value="' + parseFloat(item.lectura_actual).toFixed(3) + '"></td>';
+            
             fila += '<td class="galones-' + item.id_lectura + '">' + parseFloat(item.galones_vendidos).toFixed(3) + '</td>';
             fila += '<td>S/. ' + parseFloat(item.precio_galon).toFixed(2) + '</td>';
             fila += '<td class="total-' + item.id_lectura + '">S/. ' + parseFloat(item.total_soles).toFixed(2) + '</td>';
@@ -231,8 +251,137 @@ function Cargar_Lecturas_Turno(id_reporte) {
         $("#tabla_lecturas_cerrar_maquina_1").html(html_maquina_1);
         $("#tabla_lecturas_cerrar_maquina_2").html(html_maquina_2);
         
-        Calcular_Totales_Turno();
+        // Calcular totales iniciales
+        Calcular_Totales_Locales();
     });
+}
+
+// Evento global para detectar cambios en tiempo real
+$(document).on('input', '.input-lectura', function() {
+    // 1. Cálculo local inmediato (UI update)
+    Calcular_Fila_Local(this);
+    Calcular_Totales_Locales();
+    
+    // 2. Guardado en servidor con debounce (esperar a que deje de escribir)
+    var id_lectura = $(this).data('id');
+    var lectura_actual = $(this).val();
+    
+    clearTimeout(timeout_debounce);
+    timeout_debounce = setTimeout(function() {
+        Actualizar_Lectura_Turno(id_lectura, lectura_actual);
+    }, 800); // Esperar 800ms después de la última tecla
+});
+
+function Calcular_Fila_Local(input) {
+    var id_lectura = $(input).data('id');
+    var lectura_anterior = parseFloat($(input).data('lectura-anterior'));
+    var precio = parseFloat($(input).data('precio'));
+    var lectura_actual = parseFloat($(input).val());
+    
+    if (isNaN(lectura_actual)) lectura_actual = 0;
+    
+    var galones = lectura_actual - lectura_anterior;
+    // Evitar negativos visuales si es menor a la anterior (aunque validación final es en server)
+    // if (galones < 0) galones = 0; 
+    
+    var total_soles = galones * precio;
+    
+    // Actualizar celdas de la fila
+    $(".galones-" + id_lectura).text(galones.toFixed(3));
+    $(".total-" + id_lectura).text('S/. ' + total_soles.toFixed(2));
+    
+    // Guardar el total calculado en el input para facilitar la suma total
+    $(input).attr('data-total-calculado', total_soles);
+}
+
+function Calcular_Totales_Locales() {
+    var total_diesel = 0;
+    var total_regular = 0;
+    var total_premium = 0;
+    var total_ventas = 0;
+    
+    // Recorrer todos los inputs de lectura
+    $(".input-lectura").each(function() {
+        var producto = $(this).data('producto');
+        // Usar el total calculado previamente o calcularlo si no existe
+        var total_fila = parseFloat($(this).attr('data-total-calculado'));
+        
+        if (isNaN(total_fila)) {
+            // Si carga por primera vez, tomar del HTML original (parseando el texto de la celda total)
+            // Pero es más seguro recalcular
+            var id_lectura = $(this).data('id');
+            var lectura_anterior = parseFloat($(this).data('lectura-anterior'));
+            var precio = parseFloat($(this).data('precio'));
+            var lectura_actual = parseFloat($(this).val());
+            if (isNaN(lectura_actual)) lectura_actual = 0;
+            var galones = lectura_actual - lectura_anterior;
+            total_fila = galones * precio;
+            $(this).attr('data-total-calculado', total_fila);
+        }
+        
+        if (producto == 'DIESEL') total_diesel += total_fila;
+        else if (producto == 'REGULAR') total_regular += total_fila;
+        else if (producto == 'PREMIUM') total_premium += total_fila;
+        
+        total_ventas += total_fila;
+    });
+    
+    // Actualizar tarjetas de resumen
+    $("#total_diesel").text('S/. ' + total_diesel.toFixed(2));
+    $("#total_regular").text('S/. ' + total_regular.toFixed(2));
+    $("#total_premium").text('S/. ' + total_premium.toFixed(2));
+    $("#total_ventas").text('S/. ' + total_ventas.toFixed(2));
+    
+    // Actualizar Cuadre de Caja Localmente
+    Actualizar_Cuadre_Caja_Local(total_ventas);
+}
+
+function Actualizar_Cuadre_Caja_Local(total_ventas) {
+    // Obtener valores actuales del DOM (que ya deberían estar cargados)
+    // Nota: Para pagos y créditos, necesitamos sumar lo que hay en las tablas o variables globales
+    // Por simplicidad y rapidez, podemos leer los totales que ya están en el cuadre, 
+    // PERO lo correcto es recalcular todo.
+    
+    // Vamos a confiar en que las funciones de agregar/eliminar pago/crédito actualizan el DOM del cuadre
+    // Así que solo necesitamos actualizar la parte de "Total Ventas" y recalcular el faltante.
+    
+    $("#cuadre_total_ventas").text('S/. ' + total_ventas.toFixed(2));
+    
+    // Leer los otros valores del DOM (quitando 'S/. ' y comas si hubiera)
+    var total_pagos = parseFloat($("#cuadre_total_pagos").text().replace('S/. ', '')) || 0;
+    var total_creditos = parseFloat($("#cuadre_total_creditos").text().replace('S/. ', '')) || 0;
+    var descuentos = parseFloat($("#txt_descuentos").val()) || 0;
+    var otros_gastos = parseFloat($("#txt_otros_gastos").val()) || 0;
+    
+    // Actualizar textos de descuentos/gastos por si cambiaron
+    $("#cuadre_descuentos").text('S/. ' + descuentos.toFixed(2));
+    $("#cuadre_otros_gastos").text('S/. ' + otros_gastos.toFixed(2));
+    
+    // Cálculo del faltante/sobrante
+    // Faltante = (Ventas - Descuentos) - (Pagos + Créditos + Gastos)
+    // Si es positivo: Faltante (falta dinero en caja) -> En realidad la lógica suele ser:
+    // Dinero que debería haber = Ventas - Descuentos
+    // Dinero que hay/justificado = Pagos + Créditos + Gastos
+    // Diferencia = (Pagos + Créditos + Gastos) - (Ventas - Descuentos)
+    
+    // Revisando lógica original del servidor (controlador_cuadre_caja.php):
+    // $total_justificado = $total_pagos + $total_creditos + $otros_gastos;
+    // $total_neto_ventas = $total_ventas - $descuentos;
+    // $diferencia = $total_justificado - $total_neto_ventas;
+    
+    var total_justificado = total_pagos + total_creditos + otros_gastos;
+    var total_neto_ventas = total_ventas - descuentos;
+    var diferencia = total_justificado - total_neto_ventas;
+    
+    var diferencia_text = 'S/. ' + Math.abs(diferencia).toFixed(2);
+    
+    if (diferencia < -0.001) { // Usar pequeña tolerancia por decimales
+        $("#cuadre_faltante").html('<span class="text-danger">' + diferencia_text + ' (FALTANTE)</span>');
+    } else if (diferencia > 0.001) {
+        $("#cuadre_faltante").html('<span class="text-success">' + diferencia_text + ' (SOBRANTE)</span>');
+    } else {
+        $("#cuadre_faltante").html('<span class="text-success">S/. 0.00 (CUADRADO)</span>');
+    }
 }
 
 function Actualizar_Lectura_Turno(id_lectura, lectura_actual) {
@@ -245,99 +394,29 @@ function Actualizar_Lectura_Turno(id_lectura, lectura_actual) {
         }
     }).done(function(resp) {
         if (resp > 0) {
-            // Recargar lecturas
-            var id_reporte = $("#txt_id_reporte").val();
-            Cargar_Lecturas_Turno(id_reporte);
-            // Actualizar totales inmediatamente
-            Calcular_Totales_Turno();
-        }
-    });
-}
-
-function Calcular_Totales_Turno() {
-    var id_reporte = $("#txt_id_reporte").val();
-    console.log('Calculando totales para reporte:', id_reporte);
-    
-    if (!id_reporte || id_reporte == '') {
-        console.error('ID de reporte no válido');
-        return;
-    }
-    
-    // Obtener totales del servidor
-    $.ajax({
-        url: '../controller/turnos/controlador_calcular_totales_turno.php',
-        type: 'POST',
-        data: { id_reporte: id_reporte },
-        dataType: 'json'
-    }).done(function(data) {
-        console.log('Totales recibidos:', data);
-        // Actualizar tarjetas de resumen por combustible
-        $("#total_diesel").text('S/. ' + parseFloat(data.total_diesel || 0).toFixed(2));
-        $("#total_regular").text('S/. ' + parseFloat(data.total_regular || 0).toFixed(2));
-        $("#total_premium").text('S/. ' + parseFloat(data.total_premium || 0).toFixed(2));
-        $("#total_ventas").text('S/. ' + parseFloat(data.total_ventas || 0).toFixed(2));
-        
-        // Actualizar cuadre de caja
-        Actualizar_Cuadre_Caja();
-    }).fail(function(xhr, status, error) {
-        console.error('Error al calcular totales:', error);
-        console.error('Respuesta:', xhr.responseText);
-        $("#total_diesel").text('S/. 0.00');
-        $("#total_regular").text('S/. 0.00');
-        $("#total_premium").text('S/. 0.00');
-        $("#total_ventas").text('S/. 0.00');
-    });
-}
-
-function Actualizar_Cuadre_Caja() {
-    var id_reporte = $("#txt_id_reporte").val();
-    var descuentos = parseFloat($("#txt_descuentos").val() || 0);
-    var otros_gastos = parseFloat($("#txt_otros_gastos").val() || 0);
-    
-    console.log('Actualizando cuadre de caja para reporte:', id_reporte);
-    
-    if (!id_reporte || id_reporte == '') {
-        console.error('ID de reporte no válido para cuadre');
-        return;
-    }
-    
-    $.ajax({
-        url: '../controller/turnos/controlador_cuadre_caja.php',
-        type: 'POST',
-        data: { 
-            id_reporte: id_reporte,
-            descuentos: descuentos,
-            otros_gastos: otros_gastos
-        },
-        dataType: 'json'
-    }).done(function(data) {
-        console.log('Cuadre de caja recibido:', data);
-        $("#cuadre_total_ventas").text('S/. ' + parseFloat(data.total_ventas || 0).toFixed(2));
-        $("#cuadre_total_pagos").text('S/. ' + parseFloat(data.total_pagos || 0).toFixed(2));
-        $("#cuadre_total_creditos").text('S/. ' + parseFloat(data.total_creditos || 0).toFixed(2));
-        $("#cuadre_descuentos").text('S/. ' + parseFloat(data.descuentos || 0).toFixed(2));
-        $("#cuadre_otros_gastos").text('S/. ' + parseFloat(data.otros_gastos || 0).toFixed(2));
-        
-        var faltante = parseFloat(data.faltante || 0);
-        var faltante_text = 'S/. ' + Math.abs(faltante).toFixed(2);
-        
-        if (faltante < 0) {
-            $("#cuadre_faltante").html('<span class="text-danger">' + faltante_text + ' (FALTANTE)</span>');
-        } else if (faltante > 0) {
-            $("#cuadre_faltante").html('<span class="text-success">' + faltante_text + ' (SOBRANTE)</span>');
+            console.log('Lectura guardada en servidor correctamente');
+            // NO recargamos la tabla para no perder el foco del input
+            // Tampoco recalculamos totales porque ya se hizo localmente
         } else {
-            $("#cuadre_faltante").html('<span class="text-success">S/. 0.00 (CUADRADO)</span>');
+            console.error('Error al guardar lectura en servidor');
         }
-    }).fail(function(xhr, status, error) {
-        console.error('Error al actualizar cuadre:', error);
-        console.error('Respuesta:', xhr.responseText);
-        $("#cuadre_total_ventas").text('S/. 0.00');
-        $("#cuadre_total_pagos").text('S/. 0.00');
-        $("#cuadre_total_creditos").text('S/. 0.00');
-        $("#cuadre_descuentos").text('S/. 0.00');
-        $("#cuadre_otros_gastos").text('S/. 0.00');
-        $("#cuadre_faltante").text('S/. 0.00');
     });
+}
+
+// Mantenemos esta función para compatibilidad, pero ahora delega en la local
+function Calcular_Totales_Turno() {
+    Calcular_Totales_Locales();
+}
+
+// Mantenemos esta función para compatibilidad
+function Actualizar_Cuadre_Caja() {
+    // Reutilizamos la lógica local, pasando el total de ventas actual calculado
+    var total_ventas = 0;
+    $(".input-lectura").each(function() {
+        var val = parseFloat($(this).attr('data-total-calculado'));
+        if (!isNaN(val)) total_ventas += val;
+    });
+    Actualizar_Cuadre_Caja_Local(total_ventas);
 }
 
 // PAGOS

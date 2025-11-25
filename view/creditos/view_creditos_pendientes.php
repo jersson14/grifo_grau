@@ -99,6 +99,7 @@
                         <h3 class="card-title" style="color:white"><i class="fas fa-users"></i> Clientes con Créditos Pendientes</h3>
                     </div>
                     <div class="card-body">
+                        <div class="table-responsive">
                         <table id="tabla_creditos_por_cliente" class="table table-striped table-bordered table-hover" style="width:100%">
                             <thead style="background-color:#dc3545; color:white">
                                 <tr>
@@ -116,6 +117,7 @@
                             <tbody>
                             </tbody>
                         </table>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -129,6 +131,7 @@
                         <h3 class="card-title"><i class="fas fa-chart-bar"></i> Top 10 Clientes con Más Deuda</h3>
                     </div>
                     <div class="card-body">
+                        <div class="table-responsive">
                         <table id="tabla_top_deudores" class="table table-sm table-bordered">
                             <thead style="background-color:#dc3545; color:white">
                                 <tr>
@@ -144,6 +147,7 @@
                             <tbody id="tbody_top_deudores">
                             </tbody>
                         </table>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -263,6 +267,7 @@
                         <h3 class="card-title"><i class="fas fa-list"></i> Detalle de Vales</h3>
                     </div>
                     <div class="card-body">
+                        <div class="table-responsive">
                         <table id="tabla_vales_cliente" class="table table-sm table-bordered table-hover" style="width:100%">
                             <thead style="background-color:#6f42c1; color:white">
                                 <tr>
@@ -280,6 +285,7 @@
                             <tbody>
                             </tbody>
                         </table>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -330,6 +336,7 @@
                         <h3 class="card-title"><i class="fas fa-list"></i> Pagos Realizados</h3>
                     </div>
                     <div class="card-body">
+                        <div class="table-responsive">
                         <table id="tabla_historial_pagos_credito" class="table table-sm table-bordered table-hover" style="width:100%">
                             <thead style="background-color:#17a2b8; color:white">
                                 <tr>
@@ -346,6 +353,7 @@
                             <tbody>
                             </tbody>
                         </table>
+                        </div>
                     </div>
                 </div>
             </div>

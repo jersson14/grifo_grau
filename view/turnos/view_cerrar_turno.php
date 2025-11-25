@@ -185,6 +185,7 @@
                             </div>
                         </div>
                         <div class="card-body">
+                            <div class="table-responsive">
                             <table id="tabla_pagos_turno" class="table table-sm table-bordered table-hover" style="width:100%">
                                 <thead style="background-color:#ffc107; color:black">
                                     <tr>
@@ -197,6 +198,7 @@
                                 <tbody>
                                 </tbody>
                             </table>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -215,6 +217,7 @@
                             </div>
                         </div>
                         <div class="card-body">
+                            <div class="table-responsive">
                             <table id="tabla_creditos_turno" class="table table-sm table-bordered table-hover" style="width:100%">
                                 <thead style="background-color:#dc3545; color:white">
                                     <tr>
@@ -227,6 +230,7 @@
                                 <tbody>
                                 </tbody>
                             </table>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -259,6 +263,7 @@
                             <h3 class="card-title"><i class="fas fa-calculator"></i> Cuadre de Caja</h3>
                         </div>
                         <div class="card-body">
+                            <div class="table-responsive">
                             <table class="table table-sm">
                                 <tr>
                                     <td><strong>Total Ventas:</strong></td>
@@ -285,6 +290,7 @@
                                     <td class="text-right"><strong><span id="cuadre_faltante">S/. 0.00</span></strong></td>
                                 </tr>
                             </table>
+                            </div>
                         </div>
                     </div>
                 </div>

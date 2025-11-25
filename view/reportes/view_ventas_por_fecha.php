@@ -166,6 +166,7 @@
                             <h3 class="card-title"><i class="fas fa-calendar-alt"></i> Detalle por Fecha</h3>
                         </div>
                         <div class="card-body">
+                            <div class="table-responsive">
                             <table id="tabla_ventas_detalle" class="table table-striped table-bordered table-hover" style="width:100%">
                                 <thead style="background-color:#6c757d; color:white">
                                     <tr>
@@ -192,6 +193,7 @@
                                     </tr>
                                 </tfoot>
                             </table>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -205,6 +207,7 @@
                             <h3 class="card-title"><i class="fas fa-users"></i> Resumen por Grifero</h3>
                         </div>
                         <div class="card-body">
+                            <div class="table-responsive">
                             <table id="tabla_ventas_grifero" class="table table-sm table-bordered">
                                 <thead style="background-color:#17a2b8; color:white">
                                     <tr>
@@ -218,6 +221,7 @@
                                 <tbody id="tbody_ventas_grifero">
                                 </tbody>
                             </table>
+                            </div>
                         </div>
                     </div>
                 </div>
