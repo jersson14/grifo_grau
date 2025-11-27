@@ -10,6 +10,9 @@ $sql = "SELECT
             rt.numero_documento,
             DATE_FORMAT(rt.fecha_reporte, '%d/%m/%Y') as fecha,
             rt.turno,
+            rt.monto_descuentos,
+            rt.monto_otros_gastos,
+            rt.monto_efectivo,
             CONCAT(u.usu_nombre, ' ', u.usu_apellido) as grifero
         FROM reportes_turno rt
         INNER JOIN usuario u ON rt.id_usuario = u.id_usuario
@@ -68,6 +71,9 @@ $response = [
     'fecha' => $turno['fecha'],
     'turno' => $turno['turno'],
     'grifero' => $turno['grifero'],
+    'monto_descuentos' => $turno['monto_descuentos'],
+    'monto_otros_gastos' => $turno['monto_otros_gastos'],
+    'monto_efectivo' => $turno['monto_efectivo'],
     'total_diesel' => $total_diesel,
     'total_regular' => $total_regular,
     'total_premium' => $total_premium,

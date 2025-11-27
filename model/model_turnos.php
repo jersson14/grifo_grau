@@ -341,7 +341,7 @@ class Modelo_Turnos extends conexionBD {
     }
 
     // CERRAR TURNO
-    public function Cerrar_Turno($id_reporte, $descuentos, $otros_gastos) {
+    public function Cerrar_Turno($id_reporte, $descuentos, $otros_gastos, $monto_efectivo) {
         $c = conexionBD::conexionPDO();
         
         // Calcular totales
@@ -385,7 +385,7 @@ class Modelo_Turnos extends conexionBD {
             $totales['monto_yape'],
             $totales['monto_bcp'],
             $totales['monto_visa'],
-            $totales['monto_efectivo'],
+            $monto_efectivo,
             $totales['total_creditos'],
             $totales['total_pagos'],
             $totales['faltante'],

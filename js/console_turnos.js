@@ -352,24 +352,26 @@ function Actualizar_Cuadre_Caja_Local(total_ventas) {
     var total_creditos = parseFloat($("#cuadre_total_creditos").text().replace('S/. ', '')) || 0;
     var descuentos = parseFloat($("#txt_descuentos").val()) || 0;
     var otros_gastos = parseFloat($("#txt_otros_gastos").val()) || 0;
+    var monto_efectivo = parseFloat($("#txt_monto_efectivo").val()) || 0;
     
     // Actualizar textos de descuentos/gastos por si cambiaron
     $("#cuadre_descuentos").text('S/. ' + descuentos.toFixed(2));
     $("#cuadre_otros_gastos").text('S/. ' + otros_gastos.toFixed(2));
+    $("#cuadre_monto_efectivo").text('S/. ' + monto_efectivo.toFixed(2));
     
     // Cálculo del faltante/sobrante
-    // Faltante = (Ventas - Descuentos) - (Pagos + Créditos + Gastos)
+    // Faltante = (Ventas - Descuentos) - (Pagos + Créditos + Gastos + Efectivo)
     // Si es positivo: Faltante (falta dinero en caja) -> En realidad la lógica suele ser:
     // Dinero que debería haber = Ventas - Descuentos
-    // Dinero que hay/justificado = Pagos + Créditos + Gastos
-    // Diferencia = (Pagos + Créditos + Gastos) - (Ventas - Descuentos)
+    // Dinero que hay/justificado = Pagos + Créditos + Gastos + Efectivo
+    // Diferencia = (Pagos + Créditos + Gastos + Efectivo) - (Ventas - Descuentos)
     
     // Revisando lógica original del servidor (controlador_cuadre_caja.php):
     // $total_justificado = $total_pagos + $total_creditos + $otros_gastos;
     // $total_neto_ventas = $total_ventas - $descuentos;
     // $diferencia = $total_justificado - $total_neto_ventas;
     
-    var total_justificado = total_pagos + total_creditos + otros_gastos;
+    var total_justificado = total_pagos + total_creditos + otros_gastos + monto_efectivo;
     var total_neto_ventas = total_ventas - descuentos;
     var diferencia = total_justificado - total_neto_ventas;
     
@@ -458,7 +460,23 @@ function Listar_Pagos_Turno(id_reporte) {
                 }
             }
         ],
-        "language": idioma_espanol
+        "language": idioma_espanol,
+        "drawCallback": function(settings) {
+            var api = this.api();
+            var total = 0;
+            
+            // Calcular total sumando la columna de monto (índice 2)
+            var data = api.column(2).data();
+            
+            if (data.length > 0) {
+                total = data.reduce(function(a, b) {
+                    return parseFloat(a) + parseFloat(b);
+                }, 0);
+            }
+            
+            $("#cuadre_total_pagos").text('S/. ' + total.toFixed(2));
+            Actualizar_Cuadre_Caja();
+        }
     });
 }
 
@@ -605,7 +623,23 @@ function Listar_Creditos_Turno(id_reporte) {
                 }
             }
         ],
-        "language": idioma_espanol
+        "language": idioma_espanol,
+        "drawCallback": function(settings) {
+            var api = this.api();
+            var total = 0;
+            
+            // Calcular total sumando la columna de monto (índice 2)
+            var data = api.column(2).data();
+            
+            if (data.length > 0) {
+                total = data.reduce(function(a, b) {
+                    return parseFloat(a) + parseFloat(b);
+                }, 0);
+            }
+            
+            $("#cuadre_total_creditos").text('S/. ' + total.toFixed(2));
+            Actualizar_Cuadre_Caja();
+        }
     });
 }
 
@@ -737,7 +771,7 @@ function Eliminar_Credito(id_credito) {
 }
 
 // Actualizar cuadre cuando cambian los descuentos u otros gastos
-$(document).on('change', '#txt_descuentos, #txt_otros_gastos', function() {
+$(document).on('change', '#txt_descuentos, #txt_otros_gastos, #txt_monto_efectivo', function() {
     Actualizar_Cuadre_Caja();
 });
 
@@ -746,6 +780,7 @@ function Cerrar_Turno_Final() {
     var id_reporte = $("#txt_id_reporte").val();
     var descuentos = $("#txt_descuentos").val() || 0;
     var otros_gastos = $("#txt_otros_gastos").val() || 0;
+    var monto_efectivo = $("#txt_monto_efectivo").val() || 0;
     
     Swal.fire({
         title: '¿Cerrar turno?',
@@ -764,7 +799,8 @@ function Cerrar_Turno_Final() {
                 data: {
                     id_reporte: id_reporte,
                     descuentos: descuentos,
-                    otros_gastos: otros_gastos
+                    otros_gastos: otros_gastos,
+                    monto_efectivo: monto_efectivo
                 }
             }).done(function(resp) {
                 if (resp > 0) {
@@ -824,6 +860,13 @@ function Ver_Detalle_Turno(id_reporte) {
         $("#detalle_galones_regular").text(parseFloat(data.galones_regular || 0).toFixed(3) + ' gal');
         $("#detalle_galones_premium").text(parseFloat(data.galones_premium || 0).toFixed(3) + ' gal');
         $("#detalle_galones_total").text(parseFloat(data.total_galones || 0).toFixed(3) + ' gal');
+        
+        // Otros Conceptos
+        // Otros Conceptos - Usamos selectores de clase para evitar conflictos de IDs duplicados
+        var modal = $("[id='modal_detalle_turno']").last();
+        modal.find(".detalle_descuentos").text('S/. ' + parseFloat(data.monto_descuentos || 0).toFixed(2));
+        modal.find(".detalle_otros_gastos").text('S/. ' + parseFloat(data.monto_otros_gastos || 0).toFixed(2));
+        modal.find(".detalle_monto_efectivo").text('S/. ' + parseFloat(data.monto_efectivo || 0).toFixed(2));
     }).fail(function(xhr, status, error) {
         console.error('Error al cargar datos del turno:', error);
         Swal.fire({
@@ -865,7 +908,8 @@ function Ver_Detalle_Turno(id_reporte) {
         $("#tabla_detalle_lecturas tbody").html('<tr><td colspan="8" class="text-center text-danger">Error al cargar lecturas</td></tr>');
     });
     
-    $("#modal_detalle_turno").modal('show');
+    // Aseguramos mostrar el último modal (el que acabamos de actualizar)
+    $("[id='modal_detalle_turno']").last().modal('show');
 }
 
 // FUNCIÓN PARA IMPRIMIR REPORTE

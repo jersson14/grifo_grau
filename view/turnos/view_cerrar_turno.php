@@ -252,6 +252,10 @@
                                 <label>Otros Gastos (S/.)</label>
                                 <input type="number" step="0.01" class="form-control" id="txt_otros_gastos" value="0" placeholder="0.00">
                             </div>
+                            <div class="form-group">
+                                <label>Efectivo (S/.)</label>
+                                <input type="number" step="0.01" class="form-control" id="txt_monto_efectivo" value="0" placeholder="0.00">
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -284,6 +288,10 @@
                                 <tr>
                                     <td><strong>Otros Gastos:</strong></td>
                                     <td class="text-right"><span id="cuadre_otros_gastos">S/. 0.00</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Efectivo:</strong></td>
+                                    <td class="text-right"><span id="cuadre_monto_efectivo">S/. 0.00</span></td>
                                 </tr>
                                 <tr style="background-color:#28a745; color:white; font-size:18px">
                                     <td><strong>FALTANTE/SOBRANTE:</strong></td>

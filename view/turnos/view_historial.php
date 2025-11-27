@@ -172,6 +172,44 @@
                     </div>
                 </div>
 
+                <!-- OTROS CONCEPTOS -->
+                <div class="card card-warning">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-coins"></i> Otros Conceptos</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="info-box bg-danger">
+                                    <span class="info-box-icon"><i class="fas fa-minus-circle"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">DESCUENTOS</span>
+                                        <span class="info-box-number detalle_descuentos">S/. 0.00</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="info-box bg-secondary">
+                                    <span class="info-box-icon"><i class="fas fa-file-invoice-dollar"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">OTROS GASTOS</span>
+                                        <span class="info-box-number detalle_otros_gastos">S/. 0.00</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="info-box bg-success">
+                                    <span class="info-box-icon"><i class="fas fa-money-bill-wave"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">EFECTIVO</span>
+                                        <span class="info-box-number detalle_monto_efectivo">S/. 0.00</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- LECTURAS -->
                 <div class="card">
                     <div class="card-header" style="background-color:#6c757d; color:white">
