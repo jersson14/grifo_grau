@@ -119,7 +119,8 @@ $total_efectivo = 0;
 foreach ($pagos_agrupados['YAPE'] as $p) $total_yape += floatval($p['monto']);
 foreach ($pagos_agrupados['BCP'] as $p) $total_bcp += floatval($p['monto']);
 foreach ($pagos_agrupados['VISA'] as $p) $total_visa += floatval($p['monto']);
-foreach ($pagos_agrupados['EFECTIVO'] as $p) $total_efectivo += floatval($p['monto']);
+foreach ($pagos_agrupados['VISA'] as $p) $total_visa += floatval($p['monto']);
+$total_efectivo = floatval($turno['monto_efectivo']);
 
 // Obtener créditos
 $sql_creditos = "SELECT 
@@ -167,23 +168,32 @@ $html = '
     .firma-line { border-top: 1px solid #000; margin: 0 30px; padding-top: 5px; }
 </style>
 
-<div class="header">
-    <table style="width: 100%; border: 1px solid #000; margin-bottom: 10px;">
-        <tr>
-            <td style="width: 70%; border-right: 1px solid #000; padding: 5px;">
-                <div style="font-weight: bold; font-size: 11px; text-align: center;">REPORTE DE VENTAS DIARIAS - ' . strtoupper(date('F', strtotime($turno['fecha_reporte']))) . ' DE ' . date('Y', strtotime($turno['fecha_reporte'])) . '</div>
-            </td>
-            <td style="width: 30%; background-color: #90EE90; padding: 5px; text-align: center; font-weight: bold;">
-                ' . $turno['numero_documento'] . '
-            </td>
-        </tr>
-    </table>
-</div>
-
-<div class="info-line"><strong>NOMBRE DEL GRIFERO:</strong> ' . strtoupper($turno['grifero_nombre']) . '</div>
-<div class="info-line"><strong>TURNO:</strong> ' . $turno['turno'] . ' (Del ' . $turno['hora_inicio_formateada'] . ' al ' . $turno['hora_fin_formateada'] . ')</div>
-<div class="info-line"><strong>FECHA DE REPORTE:</strong> ' . $turno['fecha_formateada'] . '</div>
-<div class="info-line"><strong>HORARIO:</strong> ' . $turno['hora_inicio_formateada'] . ' - ' . $turno['hora_fin_formateada'] . '</div>
+<table style="width: 100%; border-collapse: collapse; margin-bottom: 10px; font-size: 9px; font-family: Arial, sans-serif;">
+    <tr>
+        <td colspan="3" style="width: 85%; background-color: #D3D3D3; border: 1px solid #000; padding: 5px; text-align: center; font-weight: bold;">
+            REPORTE DE VENTAS DIARIAS - ' . strtoupper(date('F', strtotime($turno['fecha_reporte']))) . ' DE ' . date('Y', strtotime($turno['fecha_reporte'])) . '
+        </td>
+        <td style="width: 15%; background-color: #90EE90; border: 1px solid #000; padding: 5px; text-align: center; font-weight: bold;">
+            ' . $turno['numero_documento'] . '
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2" style="width: 50%; border: 1px solid #000; padding: 5px;">
+            <strong>NOMBRE DEL GRIFERO:</strong> ' . strtoupper($turno['grifero_nombre']) . '
+        </td>
+        <td colspan="2" style="width: 50%; border: 1px solid #000; padding: 5px;">
+            <strong>TURNO:</strong> ' . $turno['turno'] . ' (Del ' . $turno['hora_inicio_formateada'] . ' al ' . $turno['hora_fin_formateada'] . ')
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2" style="border: 1px solid #000; padding: 5px;">
+            <strong>FECHA DE REPORTE:</strong> ' . $turno['fecha_formateada'] . '
+        </td>
+        <td colspan="2" style="border: 1px solid #000; padding: 5px;">
+            <strong>HORARIO:</strong> ' . $turno['hora_inicio_formateada'] . ' - ' . $turno['hora_fin_formateada'] . '
+        </td>
+    </tr>
+</table>
 
 <!-- MÁQUINA 1 -->
 <div class="section-title">MAQUINA 1</div>
@@ -316,11 +326,10 @@ $html .= '
             <th>DESCUENTOS</th>
             <th>EFECTIVO</th>
             <th>OTROS GASTOS</th>
-            <th colspan="2">MONTO DE CRÉDITO</th>
             <th>N° DE VALE</th>
+            <th colspan="2">MONTO DE CRÉDITO</th>
         </tr>
         <tr>
-            <th>S/.</th>
             <th>COD. OPERACIÓN</th>
             <th>S/.</th>
             <th>COD. OPERACIÓN</th>
@@ -330,8 +339,9 @@ $html .= '
             <th>S/.</th>
             <th>S/.</th>
             <th>S/.</th>
-            <th>NOMBRE DEL CLIENTE</th>
             <th></th>
+            <th>NOMBRE DEL CLIENTE</th>
+            <th>S/.</th>
         </tr>
     </thead>
     <tbody>';
@@ -352,24 +362,24 @@ for ($i = 0; $i < $max_rows; $i++) {
     
     // YAPE
     if (isset($pagos_agrupados['YAPE'][$i])) {
-        $html .= '<td>' . number_format($pagos_agrupados['YAPE'][$i]['monto'], 2) . '</td>';
         $html .= '<td>' . ($pagos_agrupados['YAPE'][$i]['codigo_operacion'] ?: '') . '</td>';
+        $html .= '<td>' . number_format($pagos_agrupados['YAPE'][$i]['monto'], 2) . '</td>';
     } else {
         $html .= '<td></td><td></td>';
     }
     
     // BCP
     if (isset($pagos_agrupados['BCP'][$i])) {
-        $html .= '<td>' . number_format($pagos_agrupados['BCP'][$i]['monto'], 2) . '</td>';
         $html .= '<td>' . ($pagos_agrupados['BCP'][$i]['codigo_operacion'] ?: '') . '</td>';
+        $html .= '<td>' . number_format($pagos_agrupados['BCP'][$i]['monto'], 2) . '</td>';
     } else {
         $html .= '<td></td><td></td>';
     }
     
     // VISA
     if (isset($pagos_agrupados['VISA'][$i])) {
-        $html .= '<td>' . number_format($pagos_agrupados['VISA'][$i]['monto'], 2) . '</td>';
         $html .= '<td>' . ($pagos_agrupados['VISA'][$i]['codigo_operacion'] ?: '') . '</td>';
+        $html .= '<td>' . number_format($pagos_agrupados['VISA'][$i]['monto'], 2) . '</td>';
     } else {
         $html .= '<td></td><td></td>';
     }
@@ -381,9 +391,9 @@ for ($i = 0; $i < $max_rows; $i++) {
         $html .= '<td></td>';
     }
     
-    // EFECTIVO
-    if (isset($pagos_agrupados['EFECTIVO'][$i])) {
-        $html .= '<td>' . number_format($pagos_agrupados['EFECTIVO'][$i]['monto'], 2) . '</td>';
+    // EFECTIVO (solo en la primera fila, usando el monto del turno)
+    if ($i == 0 && floatval($turno['monto_efectivo']) > 0) {
+        $html .= '<td>' . number_format($turno['monto_efectivo'], 2) . '</td>';
     } else {
         $html .= '<td></td>';
     }
@@ -397,9 +407,9 @@ for ($i = 0; $i < $max_rows; $i++) {
     
     // CRÉDITOS
     if (isset($creditos[$i])) {
-        $html .= '<td>' . number_format($creditos[$i]['monto'], 2) . '</td>';
-        $html .= '<td class="text-left">' . strtoupper($creditos[$i]['cliente']) . '</td>';
         $html .= '<td>' . $creditos[$i]['numero_vale'] . '</td>';
+        $html .= '<td class="text-left">' . strtoupper($creditos[$i]['cliente']) . '</td>';
+        $html .= '<td>' . number_format($creditos[$i]['monto'], 2) . '</td>';
     } else {
         $html .= '<td></td><td></td><td></td>';
     }
@@ -413,17 +423,17 @@ $otros_gastos = floatval($turno['monto_otros_gastos']);
 
 $html .= '
         <tr class="total-row">
+            <td></td>
             <td>' . number_format($total_yape, 2) . '</td>
             <td></td>
             <td>' . number_format($total_bcp, 2) . '</td>
             <td></td>
             <td>' . number_format($total_visa, 2) . '</td>
-            <td></td>
             <td>' . number_format($descuentos, 2) . '</td>
             <td>' . number_format($total_efectivo, 2) . '</td>
             <td>' . number_format($otros_gastos, 2) . '</td>
-            <td>' . number_format($total_creditos, 2) . '</td>
             <td colspan="2"></td>
+            <td>' . number_format($total_creditos, 2) . '</td>
         </tr>
     </tbody>
 </table>';
