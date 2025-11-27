@@ -47,17 +47,7 @@ $id_reporte = $MTurnos->Abrir_Turno($numero_documento, $id_usuario, $turno, $fec
 
 if ($id_reporte > 0) {
     error_log("SUCCESS: Turno abierto con ID: $id_reporte");
-    
-    // Registrar lecturas iniciales
-    $resultado_lecturas = $MTurnos->Registrar_Lecturas_Iniciales($id_reporte);
-    
-    if ($resultado_lecturas > 0) {
-        error_log("SUCCESS: Lecturas iniciales registradas correctamente");
-        echo json_encode(['success' => true, 'id_reporte' => $id_reporte, 'message' => 'Turno abierto correctamente']);
-    } else {
-        error_log("WARNING: Problema al registrar lecturas iniciales");
-        echo json_encode(['success' => true, 'id_reporte' => $id_reporte, 'message' => 'Turno abierto pero sin lecturas iniciales']);
-    }
+    echo json_encode(['success' => true, 'id_reporte' => $id_reporte, 'message' => 'Turno abierto correctamente']);
 } else {
     error_log("ERROR: No se pudo abrir el turno");
     echo json_encode(['success' => false, 'message' => 'Error al insertar el turno en la base de datos']);

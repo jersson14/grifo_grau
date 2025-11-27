@@ -88,13 +88,15 @@ class Modelo_Turnos extends conexionBD {
 
     // ABRIR TURNO
     public function Abrir_Turno($numero_documento, $id_usuario, $turno, $fecha, $hora_inicio, $hora_fin) {
+        $c = conexionBD::conexionPDO();
+        
         try {
-            $c = conexionBD::conexionPDO();
-            
             if ($c === null) {
                 error_log("Error: No se pudo establecer conexión a la base de datos");
                 return 0;
             }
+            
+            $c->beginTransaction();
             
             // Insertar el reporte de turno
             $sql = "INSERT INTO reportes_turno (
@@ -105,25 +107,38 @@ class Modelo_Turnos extends conexionBD {
             $resultado = $query->execute(array($numero_documento, $id_usuario, $turno, $fecha, $hora_inicio, $hora_fin));
             
             if ($resultado) {
-                $lastId = $c->lastInsertId();
-                error_log("Turno insertado correctamente con ID: $lastId");
-                return $lastId;
+                $id_reporte = $c->lastInsertId();
+                error_log("Turno insertado correctamente con ID: $id_reporte");
+                
+                // Registrar lecturas iniciales dentro de la misma transacción
+                $this->Registrar_Lecturas_Iniciales($id_reporte, $c);
+                
+                $c->commit();
+                return $id_reporte;
             } else {
                 $errorInfo = $query->errorInfo();
                 error_log("Error al insertar turno: " . print_r($errorInfo, true));
+                $c->rollBack();
                 return 0;
             }
-        } catch (PDOException $e) {
+        } catch (Exception $e) {
             error_log("Excepción al abrir turno: " . $e->getMessage());
+            if ($c) $c->rollBack();
             return 0;
+        } finally {
+            $c = null;
         }
     }
 
     // REGISTRAR LECTURAS INICIALES DEL TURNO
-    public function Registrar_Lecturas_Iniciales($id_reporte) {
-        try {
+    public function Registrar_Lecturas_Iniciales($id_reporte, $c = null) {
+        $local_connection = false;
+        if ($c === null) {
             $c = conexionBD::conexionPDO();
-            
+            $local_connection = true;
+        }
+        
+        try {
             if ($c === null) {
                 error_log("Error: No se pudo establecer conexión a la base de datos");
                 return 0;
@@ -148,31 +163,32 @@ class Modelo_Turnos extends conexionBD {
             $sql_insert = "INSERT INTO lecturas_turno (
                             id_reporte, id_surtidor, lectura_anterior, lectura_actual, 
                             galones_vendidos, precio_galon, total_soles, created_at
-                          ) VALUES (?, ?, ?, ?, 0, ?, 0, NOW())";
+                        ) VALUES (?, ?, ?, ?, 0, ?, 0, NOW())";
+            $stmt_insert = $c->prepare($sql_insert);
             
             foreach ($surtidores as $surtidor) {
-                $query_insert = $c->prepare($sql_insert);
-                $resultado = $query_insert->execute(array(
+                $stmt_insert->execute(array(
                     $id_reporte,
                     $surtidor['id_surtidor'],
-                    $surtidor['lectura_actual'],
-                    $surtidor['lectura_actual'],
+                    $surtidor['lectura_actual'], // Lectura anterior del turno = Lectura actual del surtidor
+                    $surtidor['lectura_actual'], // Lectura actual del turno (inicial) = Lectura actual del surtidor
                     $surtidor['precio_actual']
                 ));
-                
-                if (!$resultado) {
-                    $errorInfo = $query_insert->errorInfo();
-                    error_log("Error al insertar lectura inicial: " . print_r($errorInfo, true));
-                }
             }
             
-            error_log("Lecturas iniciales registradas: " . count($surtidores) . " surtidores");
             return 1;
         } catch (PDOException $e) {
-            error_log("Excepción al registrar lecturas iniciales: " . $e->getMessage());
-            return 0;
+            error_log("Error al registrar lecturas iniciales: " . $e->getMessage());
+            // Si la conexión es local (no pasada por parámetro), hacemos rollback aquí si estuviéramos en transacción
+            // Pero como es helper, mejor lanzar la excepción para que el padre haga rollback
+            throw $e; 
+        } finally {
+            if ($local_connection) {
+                $c = null;
+            }
         }
     }
+
 
     // OBTENER TURNO ABIERTO DEL USUARIO
     public function Obtener_Turno_Abierto($id_usuario) {
@@ -341,70 +357,77 @@ class Modelo_Turnos extends conexionBD {
     }
 
     // CERRAR TURNO
+    // CERRAR TURNO
     public function Cerrar_Turno($id_reporte, $descuentos, $otros_gastos, $monto_efectivo) {
         $c = conexionBD::conexionPDO();
         
-        // Calcular totales
-        $totales = $this->Calcular_Totales_Turno($id_reporte);
-        
-        // Actualizar el reporte
-        $sql = "UPDATE reportes_turno SET 
-                    total_diesel = ?,
-                    total_regular = ?,
-                    total_premium = ?,
-                    total_ventas = ?,
-                    galones_diesel = ?,
-                    galones_regular = ?,
-                    galones_premium = ?,
-                    total_galones = ?,
-                    monto_descuentos = ?,
-                    monto_otros_gastos = ?,
-                    monto_yape = ?,
-                    monto_bcp = ?,
-                    monto_visa = ?,
-                    monto_efectivo = ?,
-                    monto_credito = ?,
-                    total_pagos = ?,
-                    monto_faltante = ?,
-                    estado = 'CERRADO',
-                    updated_at = NOW()
-                WHERE id_reporte = ?";
-        
-        $query = $c->prepare($sql);
-        $resultado = $query->execute(array(
-            $totales['total_diesel'],
-            $totales['total_regular'],
-            $totales['total_premium'],
-            $totales['total_ventas'],
-            $totales['galones_diesel'],
-            $totales['galones_regular'],
-            $totales['galones_premium'],
-            $totales['total_galones'],
-            $descuentos,
-            $otros_gastos,
-            $totales['monto_yape'],
-            $totales['monto_bcp'],
-            $totales['monto_visa'],
-            $monto_efectivo,
-            $totales['total_creditos'],
-            $totales['total_pagos'],
-            $totales['faltante'],
-            $id_reporte
-        ));
-        
-        if ($resultado) {
-            // Actualizar las lecturas actuales de los surtidores
-            $this->Actualizar_Lecturas_Surtidores($id_reporte);
+        try {
+            $c->beginTransaction();
+
+            // Calcular totales (pasando la conexión)
+            $totales = $this->Calcular_Totales_Turno($id_reporte, $c);
+            
+            // Actualizar el reporte
+            $sql = "UPDATE reportes_turno SET 
+                        total_diesel = ?,
+                        total_regular = ?,
+                        total_premium = ?,
+                        total_ventas = ?,
+                        galones_diesel = ?,
+                        galones_regular = ?,
+                        galones_premium = ?,
+                        total_galones = ?,
+                        monto_descuentos = ?,
+                        monto_otros_gastos = ?,
+                        monto_yape = ?,
+                        monto_bcp = ?,
+                        monto_visa = ?,
+                        monto_efectivo = ?,
+                        monto_credito = ?,
+                        total_pagos = ?,
+                        monto_faltante = ?,
+                        estado = 'CERRADO',
+                        updated_at = NOW()
+                    WHERE id_reporte = ?";
+            
+            $query = $c->prepare($sql);
+            $query->execute(array(
+                $totales['total_diesel'],
+                $totales['total_regular'],
+                $totales['total_premium'],
+                $totales['total_ventas'],
+                $totales['galones_diesel'],
+                $totales['galones_regular'],
+                $totales['galones_premium'],
+                $totales['total_galones'],
+                $descuentos,
+                $otros_gastos,
+                $totales['monto_yape'],
+                $totales['monto_bcp'],
+                $totales['monto_visa'],
+                $monto_efectivo,
+                $totales['total_creditos'],
+                $totales['total_pagos'],
+                $totales['faltante'],
+                $id_reporte
+            ));
+            
+            // Actualizar las lecturas actuales de los surtidores (usando la misma conexión)
+            $this->Actualizar_Lecturas_Surtidores($id_reporte, $c);
+            
+            $c->commit();
             return 1;
-        } else {
+        } catch (Exception $e) {
+            $c->rollBack();
             return 0;
+        } finally {
+            $c = null;
         }
-        conexionBD::cerrar_conexion();
     }
 
     // CALCULAR TOTALES DEL TURNO
-    private function Calcular_Totales_Turno($id_reporte) {
-        $c = conexionBD::conexionPDO();
+    private function Calcular_Totales_Turno($id_reporte, $c = null) {
+        if ($c === null) $c = conexionBD::conexionPDO();
         
         // Totales por tipo de combustible
         $sql = "SELECT 
@@ -493,19 +516,18 @@ class Modelo_Turnos extends conexionBD {
         $totales['faltante'] = $totales['total_ventas'] - $totales['total_pagos'];
         
         return $totales;
-        conexionBD::cerrar_conexion();
     }
 
     // ACTUALIZAR LECTURAS DE SURTIDORES
-    private function Actualizar_Lecturas_Surtidores($id_reporte) {
-        $c = conexionBD::conexionPDO();
+    private function Actualizar_Lecturas_Surtidores($id_reporte, $c = null) {
+        if ($c === null) $c = conexionBD::conexionPDO();
+        
         $sql = "UPDATE surtidores s
                 INNER JOIN lecturas_turno lt ON s.id_surtidor = lt.id_surtidor
                 SET s.lectura_actual = lt.lectura_actual, s.updated_at = NOW()
                 WHERE lt.id_reporte = ?";
         $query = $c->prepare($sql);
         $query->execute(array($id_reporte));
-        conexionBD::cerrar_conexion();
     }
 
     // LISTAR TURNOS
