@@ -1,0 +1,7 @@
+vendor/
+node_modules/
+.env
+.DS_Store
+*.log
+database/*.sql
+!database/init.sql
