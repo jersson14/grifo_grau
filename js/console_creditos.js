@@ -208,8 +208,10 @@ function Ver_Vales_Cliente(id_cliente, nombre_cliente, dni, total_vales, saldo_t
                 "render": function(data, type, row) {
                     var botones = "";
                     if (row.estado == 'PENDIENTE') {
-                        // Solo mostrar botón de pagar si está pendiente
+                        // Botón de pagar
                         botones = "<button class='pagar_vale btn btn-success btn-sm' title='Registrar Pago'><i class='fas fa-money-bill-wave'></i></button>&nbsp;";
+                        // Botón de editar
+                        botones += "<button class='editar_vale btn btn-warning btn-sm' title='Editar'><i class='fas fa-edit'></i></button>&nbsp;";
                     }
                     // Siempre mostrar historial
                     botones += "<button class='historial_vale btn btn-info btn-sm' title='Ver Historial'><i class='fas fa-history'></i></button>";
@@ -227,6 +229,14 @@ function Ver_Vales_Cliente(id_cliente, nombre_cliente, dni, total_vales, saldo_t
         $('#modal_vales_cliente').modal('hide');
         setTimeout(function() {
             Abrir_Modal_Pago(data.id_credito);
+        }, 300);
+    });
+    
+    $('#tabla_vales_cliente tbody').on('click', '.editar_vale', function() {
+        var data = tabla_vales_cliente.row($(this).closest('tr')).data();
+        $('#modal_vales_cliente').modal('hide');
+        setTimeout(function() {
+            Abrir_Modal_Editar_Credito(data.id_credito);
         }, 300);
     });
     
@@ -690,4 +700,260 @@ function Cargar_Clientes_Filtro() {
             }
         });
     });
+}
+
+// EXPORTAR CRÉDITOS A PDF
+function Exportar_Creditos_PDF() {
+    var filtro_cliente = $('#filtro_cliente').val() || '';
+    var filtro_estado = $('#filtro_estado').val() || '';
+    
+    var url = '../controller/creditos/controlador_exportar_creditos_pdf.php?filtro_cliente=' + filtro_cliente + '&filtro_estado=' + filtro_estado;
+    window.open(url, '_blank');
+}
+
+// EXPORTAR CRÉDITOS A EXCEL
+function Exportar_Creditos_Excel() {
+    var filtro_cliente = $('#filtro_cliente').val() || '';
+    var filtro_estado = $('#filtro_estado').val() || '';
+    
+    var url = '../controller/creditos/controlador_exportar_creditos_excel.php?filtro_cliente=' + filtro_cliente + '&filtro_estado=' + filtro_estado;
+    window.location.href = url;
+}
+
+// ABRIR MODAL AGREGAR CRÉDITO MANUAL
+function Abrir_Modal_Agregar_Credito_Manual() {
+    // Cargar clientes
+    $.ajax({
+        url: '../controller/clientes/controlador_clientes_activos.php',
+        type: 'POST'
+    }).done(function(resp) {
+        var data = JSON.parse(resp);
+        var opciones = '<option value="">-- Seleccione --</option>';
+        data.forEach(function(item) {
+            opciones += '<option value="' + item.id_cliente + '">' + item.nombre_completo + '</option>';
+        });
+        $("#txt_cliente_manual").html(opciones);
+        
+        // Inicializar Select2
+        $('#txt_cliente_manual').select2({
+            dropdownParent: $('#modal_agregar_credito_manual'),
+            placeholder: '-- Seleccione --',
+            allowClear: true
+        });
+    });
+    
+    // Limpiar formulario
+    $('#txt_numero_vale_manual').val('');
+    $('#txt_monto_manual').val('');
+    $('#txt_fecha_vencimiento_manual').val('');
+    $('#txt_observaciones_manual').val('');
+    
+    $('#modal_agregar_credito_manual').modal('show');
+}
+
+// AGREGAR CRÉDITO MANUAL
+function Agregar_Credito_Manual() {
+    var id_cliente = $('#txt_cliente_manual').val();
+    var numero_vale = $('#txt_numero_vale_manual').val();
+    var monto = $('#txt_monto_manual').val();
+    var fecha_vencimiento = $('#txt_fecha_vencimiento_manual').val();
+    var observaciones = $('#txt_observaciones_manual').val();
+    
+    console.log('Datos a enviar:', {id_cliente, numero_vale, monto, fecha_vencimiento, observaciones});
+    
+    if (!id_cliente || !numero_vale || !monto) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Advertencia',
+            text: 'Complete todos los campos obligatorios (Cliente, N° Vale y Monto)',
+            confirmButtonColor: '#023D77'
+        });
+        return;
+    }
+    
+    if (parseFloat(monto) <= 0) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Advertencia',
+            text: 'El monto debe ser mayor a 0',
+            confirmButtonColor: '#023D77'
+        });
+        return;
+    }
+    
+    $.ajax({
+        url: '../controller/creditos/controlador_agregar_credito_manual.php',
+        type: 'POST',
+        data: {
+            id_cliente: id_cliente,
+            numero_vale: numero_vale,
+            monto: monto,
+            fecha_vencimiento: fecha_vencimiento,
+            observaciones: observaciones
+        }
+    }).done(function(resp) {
+        console.log('Respuesta del servidor:', resp);
+        console.log('Tipo de respuesta:', typeof resp);
+        
+        try {
+            // Si ya es un objeto, no parsear
+            var data = (typeof resp === 'object') ? resp : JSON.parse(resp);
+            console.log('Datos procesados:', data);
+            
+            if (data.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Éxito',
+                    text: data.message,
+                    confirmButtonColor: '#023D77'
+                });
+                $('#modal_agregar_credito_manual').modal('hide');
+                Listar_Creditos_Por_Cliente();
+                Cargar_Resumen_Creditos();
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: data.message,
+                    confirmButtonColor: '#023D77'
+                });
+            }
+        } catch(e) {
+            console.error('Error al parsear respuesta:', e);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Error al procesar la respuesta del servidor',
+                confirmButtonColor: '#023D77'
+            });
+        }
+    }).fail(function(xhr, status, error) {
+        console.error('Error en la petición:', error);
+        console.error('Respuesta:', xhr.responseText);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Error al conectar con el servidor: ' + error,
+            confirmButtonColor: '#023D77'
+        });
+    });
+}
+
+// ABRIR MODAL EDITAR CRÉDITO
+function Abrir_Modal_Editar_Credito(id_credito) {
+    $.ajax({
+        url: '../controller/creditos/controlador_detalle_credito.php',
+        type: 'POST',
+        data: { id_credito: id_credito }
+    }).done(function(resp) {
+        var data = JSON.parse(resp);
+        
+        $('#txt_id_credito_editar').val(data.id_credito);
+        $('#txt_numero_vale_editar').val(data.numero_vale);
+        $('#txt_monto_editar').val(data.monto);
+        $('#txt_fecha_vencimiento_editar').val(data.fecha_vencimiento);
+        $('#txt_estado_editar').val(data.estado);
+        $('#txt_observaciones_editar').val(data.observaciones);
+        
+        $('#modal_editar_credito').modal('show');
+    });
+}
+
+// ACTUALIZAR CRÉDITO
+function Actualizar_Credito() {
+    var id_credito = $('#txt_id_credito_editar').val();
+    var numero_vale = $('#txt_numero_vale_editar').val();
+    var monto = $('#txt_monto_editar').val();
+    var fecha_vencimiento = $('#txt_fecha_vencimiento_editar').val();
+    var estado = $('#txt_estado_editar').val();
+    var observaciones = $('#txt_observaciones_editar').val();
+    
+    if (monto && parseFloat(monto) <= 0) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Advertencia',
+            text: 'El monto debe ser mayor a 0',
+            confirmButtonColor: '#023D77'
+        });
+        return;
+    }
+    
+    $.ajax({
+        url: '../controller/creditos/controlador_editar_credito.php',
+        type: 'POST',
+        data: {
+            id_credito: id_credito,
+            numero_vale: numero_vale,
+            monto: monto,
+            fecha_vencimiento: fecha_vencimiento,
+            estado: estado,
+            observaciones: observaciones
+        }
+    }).done(function(resp) {
+        var data = JSON.parse(resp);
+        if (data.success) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Éxito',
+                text: data.message,
+                confirmButtonColor: '#023D77'
+            });
+            $('#modal_editar_credito').modal('hide');
+            Listar_Creditos_Por_Cliente();
+            Cargar_Resumen_Creditos();
+            
+            // Si hay un modal de vales abierto, recargarlo
+            if ($('#modal_vales_cliente').hasClass('show')) {
+                var id_cliente = $('#txt_id_cliente_vales').val();
+                if (tabla_vales_cliente) {
+                    tabla_vales_cliente.ajax.reload();
+                }
+            }
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: data.message,
+                confirmButtonColor: '#023D77'
+            });
+        }
+    });
+}
+
+// EXPORTAR HISTORIAL DE VALES A PDF
+function Exportar_Historial_Vales_PDF() {
+    var id_cliente = $('#txt_id_cliente_vales').val();
+    var filtro_estado = ''; // Exportar todos los vales del cliente
+    
+    if (!id_cliente) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Advertencia',
+            text: 'No se ha seleccionado un cliente',
+            confirmButtonColor: '#023D77'
+        });
+        return;
+    }
+    
+    var url = '../controller/creditos/controlador_exportar_historial_vales_pdf.php?id_cliente=' + id_cliente + '&filtro_estado=' + filtro_estado;
+    window.open(url, '_blank');
+}
+
+// EXPORTAR HISTORIAL DE VALES A EXCEL
+function Exportar_Historial_Vales_Excel() {
+    var id_cliente = $('#txt_id_cliente_vales').val();
+    var filtro_estado = ''; // Exportar todos los vales del cliente
+    
+    if (!id_cliente) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Advertencia',
+            text: 'No se ha seleccionado un cliente',
+            confirmButtonColor: '#023D77'
+        });
+        return;
+    }
+    
+    var url = '../controller/creditos/controlador_exportar_historial_vales_excel.php?id_cliente=' + id_cliente + '&filtro_estado=' + filtro_estado;
+    window.location.href = url;
 }

@@ -26,8 +26,8 @@ class Modelo_Creditos extends conexionBD {
                     DATEDIFF(CURDATE(), vc.fecha_vencimiento) as dias_vencido
                 FROM ventas_credito vc
                 INNER JOIN clientes c ON vc.id_cliente = c.id_cliente
-                INNER JOIN reportes_turno rt ON vc.id_reporte = rt.id_reporte
-                INNER JOIN usuario u ON rt.id_usuario = u.id_usuario
+                LEFT JOIN reportes_turno rt ON vc.id_reporte = rt.id_reporte
+                LEFT JOIN usuario u ON rt.id_usuario = u.id_usuario
                 WHERE vc.estado = 'PENDIENTE'
                 ORDER BY vc.fecha_vencimiento ASC, vc.created_at DESC";
         $arreglo = array();
@@ -52,6 +52,7 @@ class Modelo_Creditos extends conexionBD {
                     (vc.monto - vc.saldo_pendiente) as monto_pagado,
                     vc.estado,
                     vc.fecha_vencimiento,
+                    vc.observaciones,
                     vc.created_at,
                     c.id_cliente,
                     c.nombre_completo as cliente_nombre,
@@ -61,7 +62,7 @@ class Modelo_Creditos extends conexionBD {
                     DATEDIFF(CURDATE(), vc.fecha_vencimiento) as dias_vencido
                 FROM ventas_credito vc
                 INNER JOIN clientes c ON vc.id_cliente = c.id_cliente
-                INNER JOIN reportes_turno rt ON vc.id_reporte = rt.id_reporte
+                LEFT JOIN reportes_turno rt ON vc.id_reporte = rt.id_reporte
                 WHERE 1=1";
         
         $params = array();
@@ -78,14 +79,10 @@ class Modelo_Creditos extends conexionBD {
         
         $sql .= " ORDER BY vc.created_at DESC";
         
-        $arreglo = array();
         $query = $c->prepare($sql);
         $query->execute($params);
         $resultado = $query->fetchAll(PDO::FETCH_ASSOC);
-        foreach ($resultado as $resp) {
-            $arreglo["data"][] = $resp;
-        }
-        return $arreglo;
+        return $resultado;
         conexionBD::cerrar_conexion();
     }
 
@@ -104,8 +101,8 @@ class Modelo_Creditos extends conexionBD {
                     CONCAT(u.usu_nombre, ' ', u.usu_apellido) as grifero_nombre
                 FROM ventas_credito vc
                 INNER JOIN clientes c ON vc.id_cliente = c.id_cliente
-                INNER JOIN reportes_turno rt ON vc.id_reporte = rt.id_reporte
-                INNER JOIN usuario u ON rt.id_usuario = u.id_usuario
+                LEFT JOIN reportes_turno rt ON vc.id_reporte = rt.id_reporte
+                LEFT JOIN usuario u ON rt.id_usuario = u.id_usuario
                 WHERE vc.id_credito = ?";
         $query = $c->prepare($sql);
         $query->execute(array($id_credito));
@@ -303,8 +300,8 @@ class Modelo_Creditos extends conexionBD {
                     CONCAT(u.usu_nombre, ' ', u.usu_apellido) as grifero_nombre,
                     DATEDIFF(CURDATE(), vc.fecha_vencimiento) as dias_vencido
                 FROM ventas_credito vc
-                INNER JOIN reportes_turno rt ON vc.id_reporte = rt.id_reporte
-                INNER JOIN usuario u ON rt.id_usuario = u.id_usuario
+                LEFT JOIN reportes_turno rt ON vc.id_reporte = rt.id_reporte
+                LEFT JOIN usuario u ON rt.id_usuario = u.id_usuario
                 WHERE vc.id_cliente = ?";
         
         $params = array($id_cliente);
@@ -349,9 +346,9 @@ class Modelo_Creditos extends conexionBD {
                 GROUP BY c.id_cliente
                 HAVING saldo_pendiente > 0
                 ORDER BY saldo_pendiente DESC
-                LIMIT ?";
+                LIMIT " . intval($limite);
         $query = $c->prepare($sql);
-        $query->execute(array($limite));
+        $query->execute();
         return $query->fetchAll(PDO::FETCH_ASSOC);
         conexionBD::cerrar_conexion();
     }
@@ -366,6 +363,95 @@ class Modelo_Creditos extends conexionBD {
                 WHERE id_credito = ?";
         $query = $c->prepare($sql);
         $resultado = $query->execute(array($motivo, $id_credito));
+        if ($resultado) {
+            return 1;
+        } else {
+            return 0;
+        }
+        conexionBD::cerrar_conexion();
+    }
+
+    // AGREGAR CRÉDITO MANUAL (SIN TURNO)
+    public function Agregar_Credito_Manual($id_cliente, $numero_vale, $monto, $fecha_vencimiento, $observaciones) {
+        $c = conexionBD::conexionPDO();
+        
+        // Si no hay fecha de vencimiento, usar 30 días desde hoy
+        if (empty($fecha_vencimiento)) {
+            $fecha_vencimiento = date('Y-m-d', strtotime('+30 days'));
+        }
+        
+        // Usar la tabla 'ventas_credito' con id_reporte = NULL para créditos manuales
+        $sql = "INSERT INTO ventas_credito (
+                    id_cliente, id_reporte, numero_vale, monto, saldo_pendiente,
+                    estado, fecha_vencimiento, observaciones, created_at
+                ) VALUES (?, NULL, ?, ?, ?, 'PENDIENTE', ?, ?, NOW())";
+        $query = $c->prepare($sql);
+        $resultado = $query->execute(array($id_cliente, $numero_vale, $monto, $monto, $fecha_vencimiento, $observaciones));
+        if ($resultado) {
+            return $c->lastInsertId();
+        } else {
+            return 0;
+        }
+        conexionBD::cerrar_conexion();
+    }
+
+    // EDITAR CRÉDITO
+    public function Editar_Credito($id_credito, $numero_vale, $monto, $fecha_vencimiento, $observaciones, $estado) {
+        $c = conexionBD::conexionPDO();
+        
+        // Construir la consulta dinámicamente según los campos que se envíen
+        $campos = array();
+        $valores = array();
+        
+        if ($numero_vale !== null) {
+            $campos[] = "numero_vale = ?";
+            $valores[] = $numero_vale;
+        }
+        
+        if ($monto !== null) {
+            // Si se cambia el monto, recalcular el saldo
+            $campos[] = "monto = ?";
+            $valores[] = $monto;
+            
+            // Obtener el monto pagado actual
+            $sql_pagado = "SELECT (monto - saldo_pendiente) as monto_pagado FROM ventas_credito WHERE id_credito = ?";
+            $query_pagado = $c->prepare($sql_pagado);
+            $query_pagado->execute(array($id_credito));
+            $resultado_pagado = $query_pagado->fetch(PDO::FETCH_ASSOC);
+            $monto_pagado = $resultado_pagado['monto_pagado'];
+            
+            // Nuevo saldo = Nuevo monto - Monto pagado
+            $nuevo_saldo = $monto - $monto_pagado;
+            $campos[] = "saldo_pendiente = ?";
+            $valores[] = $nuevo_saldo;
+        }
+        
+        if ($fecha_vencimiento !== null) {
+            $campos[] = "fecha_vencimiento = ?";
+            $valores[] = $fecha_vencimiento;
+        }
+        
+        if ($observaciones !== null) {
+            $campos[] = "observaciones = ?";
+            $valores[] = $observaciones;
+        }
+        
+        if ($estado !== null) {
+            $campos[] = "estado = ?";
+            $valores[] = $estado;
+        }
+        
+        if (empty($campos)) {
+            return 0; // No hay nada que actualizar
+        }
+        
+        $campos[] = "updated_at = NOW()";
+        $valores[] = $id_credito;
+        
+        $sql = "UPDATE ventas_credito SET " . implode(", ", $campos) . " WHERE id_credito = ?";
+        $query = $c->prepare($sql);
+        $resultado = $query->execute($valores);
+        
         if ($resultado) {
             return 1;
         } else {

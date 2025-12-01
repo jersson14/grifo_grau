@@ -1,7 +1,7 @@
 <?php
 date_default_timezone_set('America/Lima');
 
-$mysqli = new mysqli("localhost", "root", "", "grifo_grau2", 3307);
+$mysqli = new mysqli("localhost", "root", "", "grifo_grau", 3307);
 
 // Verificar conexión
 if ($mysqli->connect_errno) {

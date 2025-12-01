@@ -83,6 +83,26 @@
                                 </button>
                             </div>
                         </div>
+                        
+                        <!-- BOTONES DE ACCIÓN -->
+                        <div class="row mt-3">
+                            <div class="col-md-3">
+                                <button class="btn btn-success btn-block" onclick="Abrir_Modal_Agregar_Credito_Manual()">
+                                    <i class="fas fa-plus-circle"></i> Agregar Crédito
+                                </button>
+                            </div>
+                            <div class="col-md-3">
+                                <button class="btn btn-danger btn-block" onclick="Exportar_Creditos_PDF()">
+                                    <i class="fas fa-file-pdf"></i> Exportar PDF
+                                </button>
+                            </div>
+                            <div class="col-md-3">
+                                <button class="btn btn-info btn-block" onclick="Exportar_Creditos_Excel()">
+                                    <i class="fas fa-file-excel"></i> Exportar Excel
+                                </button>
+                            </div>
+                        </div>
+                        
                         <div class="alert alert-info mt-2">
                             <i class="fas fa-info-circle"></i> <strong>Nota:</strong> Usa el buscador de la tabla para filtrar por cliente, DNI o teléfono.
                         </div>
@@ -261,6 +281,20 @@
                     </div>
                 </div>
 
+                <!-- BOTONES DE EXPORTACIÓN -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <button class="btn btn-danger btn-block" onclick="Exportar_Historial_Vales_PDF()">
+                            <i class="fas fa-file-pdf"></i> Exportar PDF
+                        </button>
+                    </div>
+                    <div class="col-md-6">
+                        <button class="btn btn-info btn-block" onclick="Exportar_Historial_Vales_Excel()">
+                            <i class="fas fa-file-excel"></i> Exportar Excel
+                        </button>
+                    </div>
+                </div>
+
                 <!-- TABLA DE VALES -->
                 <div class="card">
                     <div class="card-header" style="background-color:#6f42c1; color:white">
@@ -359,6 +393,104 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="fas fa-times"></i> Cerrar</button>
+            </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL AGREGAR CRÉDITO MANUAL -->
+<div class="modal fade" id="modal_agregar_credito_manual" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, #28a745, #218838); color:white">
+                <h5 class="modal-title"><i class="fas fa-plus-circle"></i> Agregar Crédito Manual</h5>
+                <button type="button" class="close" data-dismiss="modal" style="color:white">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6 form-group">
+                        <label>Cliente <span class="text-danger">*</span></label>
+                        <select class="js-example-basic-single form-control" id="txt_cliente_manual" style="width:100%">
+                            <option value="">-- Seleccione --</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 form-group">
+                        <label>Número de Vale <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="txt_numero_vale_manual" placeholder="Número de vale">
+                    </div>
+                    <div class="col-md-6 form-group">
+                        <label>Monto (S/.) <span class="text-danger">*</span></label>
+                        <input type="number" step="0.01" class="form-control" id="txt_monto_manual" placeholder="0.00">
+                    </div>
+                    <div class="col-md-6 form-group">
+                        <label>Fecha de Vencimiento</label>
+                        <input type="date" class="form-control" id="txt_fecha_vencimiento_manual">
+                        <small class="text-muted">Si no se especifica, se usará 30 días desde hoy</small>
+                    </div>
+                    <div class="col-12 form-group">
+                        <label>Observaciones</label>
+                        <textarea class="form-control" id="txt_observaciones_manual" rows="2" placeholder="Observaciones opcionales"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="fas fa-times"></i> Cerrar</button>
+                <button type="button" class="btn btn-success" onclick="Agregar_Credito_Manual()"><i class="fas fa-save"></i> Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL EDITAR CRÉDITO -->
+<div class="modal fade" id="modal_editar_credito" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, #ffc107, #ff9800); color:white">
+                <h5 class="modal-title"><i class="fas fa-edit"></i> Editar Crédito</h5>
+                <button type="button" class="close" data-dismiss="modal" style="color:white">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="txt_id_credito_editar">
+                
+                <div class="row">
+                    <div class="col-md-6 form-group">
+                        <label>Número de Vale</label>
+                        <input type="text" class="form-control" id="txt_numero_vale_editar" placeholder="Número de vale">
+                    </div>
+                    <div class="col-md-6 form-group">
+                        <label>Monto (S/.)</label>
+                        <input type="number" step="0.01" class="form-control" id="txt_monto_editar" placeholder="0.00">
+                    </div>
+                    <div class="col-md-6 form-group">
+                        <label>Fecha de Vencimiento</label>
+                        <input type="date" class="form-control" id="txt_fecha_vencimiento_editar">
+                    </div>
+                    <div class="col-md-6 form-group">
+                        <label>Estado</label>
+                        <select class="form-control" id="txt_estado_editar">
+                            <option value="PENDIENTE">PENDIENTE</option>
+                            <option value="PAGADO">PAGADO</option>
+                            <option value="ANULADO">ANULADO</option>
+                        </select>
+                    </div>
+                    <div class="col-12 form-group">
+                        <label>Observaciones</label>
+                        <textarea class="form-control" id="txt_observaciones_editar" rows="2" placeholder="Observaciones"></textarea>
+                    </div>
+                </div>
+                
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i> <strong>Nota:</strong> Si cambias el monto, el saldo se recalculará automáticamente.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="fas fa-times"></i> Cerrar</button>
+                <button type="button" class="btn btn-warning" onclick="Actualizar_Credito()"><i class="fas fa-save"></i> Actualizar</button>
             </div>
         </div>
     </div>

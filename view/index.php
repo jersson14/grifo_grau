@@ -101,7 +101,7 @@ if (!isset($_SESSION['S_ID'])) {
                     </a>
                   </li>
                   <li class="nav-item">
-                    <a href="#" onclick="cargar_contenido('contenido_principal','turnos/view_cerrar_turno.php')" class="nav-link">
+                    <a href="#" onclick="cargar_contenido('contenido_principal','turnos/view_registrar_turno_manual.php')" class="nav-link">
                       <i class="nav-icon far fa-circle"></i>
                       <p style="color:white">Gestionar Turno</p>
                     </a>
