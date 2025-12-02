@@ -272,11 +272,17 @@ class Modelo_Creditos extends conexionBD {
             $query->execute();
         }
         
-        $arreglo = array();
+        // Inicializar el array con la clave 'data' vacía
+        $arreglo = array("data" => array());
         $resultado = $query->fetchAll(PDO::FETCH_ASSOC);
-        foreach ($resultado as $resp) {
-            $arreglo["data"][] = $resp;
+        
+        // Solo agregar datos si hay resultados
+        if (count($resultado) > 0) {
+            foreach ($resultado as $resp) {
+                $arreglo["data"][] = $resp;
+            }
         }
+        
         return $arreglo;
         conexionBD::cerrar_conexion();
     }
