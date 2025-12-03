@@ -281,6 +281,15 @@
                     </div>
                 </div>
 
+                <!-- BOTÓN PAGAR TODO -->
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <button class="btn btn-success btn-lg btn-block" onclick="Pagar_Todo_Cliente()" id="btn_pagar_todo_cliente" style="font-size:18px; padding:15px;">
+                            <i class="fas fa-check-double"></i> PAGAR TODO - <span id="monto_total_pagar" class="font-weight-bold">S/. 0.00</span>
+                        </button>
+                    </div>
+                </div>
+
                 <!-- BOTONES DE EXPORTACIÓN -->
                 <div class="row mb-3">
                     <div class="col-md-6">

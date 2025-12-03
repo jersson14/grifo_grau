@@ -190,11 +190,9 @@ function Cargar_Turno_Actual() {
             // Cargar lecturas
             Cargar_Lecturas_Turno(data.id_reporte);
             
-            // Cargar pagos
-            Listar_Pagos_Turno(data.id_reporte);
-            
-            // Cargar créditos
-            Listar_Creditos_Turno(data.id_reporte);
+            // Cargar pagos y créditos con el NUEVO sistema estilo Excel
+            Cargar_Pagos_Iniciales();
+            Cargar_Creditos_Iniciales();
         }
     });
 }
@@ -429,11 +427,12 @@ function Listar_Pagos_Turno(id_reporte) {
     
     tabla_pagos_turno = $("#tabla_pagos_turno").DataTable({
         "ordering": false,
-        "bLengthChange": false,
+        "paging": false,
         "searching": false,
-        "pageLength": 10,
+        "info": false,
         "destroy": true,
         "processing": true,
+        "dom": 't',
         "ajax": {
             "url": "../controller/turnos/controlador_listar_pagos_turno.php",
             "type": "POST",
@@ -460,7 +459,9 @@ function Listar_Pagos_Turno(id_reporte) {
                 }
             }
         ],
-        "language": idioma_espanol,
+        "language": Object.assign({}, idioma_espanol, {
+            "emptyTable": "<div style='padding:20px; text-align:center; color:#6c757d;'><i class='fas fa-info-circle' style='font-size:24px;'></i><br><br>No hay pagos registrados.<br>Haz clic en <strong>'+ Agregar Pago'</strong> para comenzar.</div>"
+        }),
         "drawCallback": function(settings) {
             var api = this.api();
             var total = 0;
@@ -589,6 +590,140 @@ function Eliminar_Pago(id_pago) {
     });
 }
 
+// ============================================
+// NUEVO SISTEMA DE PAGOS ESTILO EXCEL
+// ============================================
+
+var contador_filas_pago = 0;
+var pagos_data = []; // Array para almacenar los pagos
+
+function Cargar_Pagos_Iniciales() {
+    var id_reporte = $("#txt_id_reporte").val();
+    
+    $.ajax({
+        url: '../controller/turnos/controlador_listar_pagos_turno.php',
+        type: 'POST',
+        data: { id_reporte: id_reporte }
+    }).done(function(resp) {
+        var data = JSON.parse(resp);
+        pagos_data = data.data || [];
+        
+        $("#tbody_pagos_editable").empty();
+        
+        if (pagos_data.length === 0) {
+            // Agregar 3 filas vacías por defecto
+            for (var i = 0; i < 3; i++) {
+                Agregar_Fila_Pago();
+            }
+        } else {
+            // Cargar pagos existentes
+            pagos_data.forEach(function(pago) {
+                Agregar_Fila_Pago(pago);
+            });
+        }
+        
+        Actualizar_Total_Pagos();
+    });
+}
+
+function Agregar_Fila_Pago(datos = null) {
+    contador_filas_pago++;
+    var fila_id = 'pago_' + contador_filas_pago;
+    
+    // Cargar tipos de pago
+    $.ajax({
+        url: '../controller/turnos/controlador_tipos_pago.php',
+        type: 'POST',
+        async: false
+    }).done(function(resp) {
+        var tipos = JSON.parse(resp);
+        var opciones = '<option value="">-- Seleccione --</option>';
+        tipos.forEach(function(tipo) {
+            var selected = (datos && datos.id_tipo_pago == tipo.id_tipo_pago) ? 'selected' : '';
+            opciones += '<option value="' + tipo.id_tipo_pago + '" ' + selected + '>' + tipo.nombre + '</option>';
+        });
+        
+        var fila = '<tr id="' + fila_id + '" data-id-pago="' + (datos ? datos.id_pago_reporte : '0') + '">';
+        fila += '<td><select class="form-control form-control-sm tipo-pago-select" onchange="Guardar_Pago_Fila(\'' + fila_id + '\')">' + opciones + '</select></td>';
+        fila += '<td><input type="text" class="form-control form-control-sm codigo-operacion-input" value="' + (datos ? datos.codigo_operacion || '' : '') + '" onchange="Guardar_Pago_Fila(\'' + fila_id + '\')"></td>';
+        fila += '<td><input type="number" step="0.01" class="form-control form-control-sm monto-pago-input" value="' + (datos ? datos.monto : '0') + '" onchange="Guardar_Pago_Fila(\'' + fila_id + '\')"></td>';
+        fila += '<td><input type="text" class="form-control form-control-sm observaciones-input" value="' + (datos ? datos.observaciones || '' : '') + '" onchange="Guardar_Pago_Fila(\'' + fila_id + '\')"></td>';
+        fila += '<td><button class="btn btn-danger btn-sm" onclick="Eliminar_Fila_Pago(\'' + fila_id + '\')"><i class="fas fa-trash"></i></button></td>';
+        fila += '</tr>';
+        
+        $("#tbody_pagos_editable").append(fila);
+    });
+}
+
+function Guardar_Pago_Fila(fila_id) {
+    var fila = $("#" + fila_id);
+    var id_reporte = $("#txt_id_reporte").val();
+    var id_pago = fila.data('id-pago');
+    var id_tipo_pago = fila.find('.tipo-pago-select').val();
+    var codigo_operacion = fila.find('.codigo-operacion-input').val();
+    var monto = fila.find('.monto-pago-input').val();
+    var observaciones = fila.find('.observaciones-input').val();
+    
+    // Validar que al menos tenga tipo de pago y monto
+    if (!id_tipo_pago || !monto || parseFloat(monto) <= 0) {
+        return; // No guardar si no hay datos válidos
+    }
+    
+    $.ajax({
+        url: '../controller/turnos/controlador_registrar_pago.php',
+        type: 'POST',
+        data: {
+            id_reporte: id_reporte,
+            id_tipo_pago: id_tipo_pago,
+            codigo_operacion: codigo_operacion,
+            monto: monto,
+            observaciones: observaciones
+        }
+    }).done(function(resp) {
+        if (resp > 0) {
+            // Actualizar el ID del pago en la fila
+            if (id_pago == '0') {
+                fila.data('id-pago', resp);
+            }
+            Actualizar_Total_Pagos();
+            Actualizar_Cuadre_Caja();
+        }
+    });
+}
+
+function Eliminar_Fila_Pago(fila_id) {
+    var fila = $("#" + fila_id);
+    var id_pago = fila.data('id-pago');
+    
+    if (id_pago && id_pago != '0') {
+        // Eliminar del servidor
+        $.ajax({
+            url: '../controller/turnos/controlador_eliminar_pago.php',
+            type: 'POST',
+            data: { id_pago: id_pago }
+        }).done(function(resp) {
+            if (resp > 0) {
+                fila.remove();
+                Actualizar_Total_Pagos();
+                Actualizar_Cuadre_Caja();
+            }
+        });
+    } else {
+        // Solo eliminar la fila visual
+        fila.remove();
+    }
+}
+
+function Actualizar_Total_Pagos() {
+    var total = 0;
+    $("#tbody_pagos_editable tr").each(function() {
+        var monto = parseFloat($(this).find('.monto-pago-input').val()) || 0;
+        total += monto;
+    });
+    
+    $("#cuadre_total_pagos").text('S/. ' + total.toFixed(2));
+}
+
 // CRÉDITOS
 function Listar_Creditos_Turno(id_reporte) {
     if (tabla_creditos_turno) {
@@ -597,11 +732,12 @@ function Listar_Creditos_Turno(id_reporte) {
     
     tabla_creditos_turno = $("#tabla_creditos_turno").DataTable({
         "ordering": false,
-        "bLengthChange": false,
+        "paging": false,
         "searching": false,
-        "pageLength": 10,
+        "info": false,
         "destroy": true,
         "processing": true,
+        "dom": 't',
         "ajax": {
             "url": "../controller/turnos/controlador_listar_creditos_turno.php",
             "type": "POST",
@@ -623,7 +759,9 @@ function Listar_Creditos_Turno(id_reporte) {
                 }
             }
         ],
-        "language": idioma_espanol,
+        "language": Object.assign({}, idioma_espanol, {
+            "emptyTable": "<div style='padding:20px; text-align:center; color:#6c757d;'><i class='fas fa-info-circle' style='font-size:24px;'></i><br><br>No hay créditos registrados.<br>Haz clic en <strong>'+ Agregar Crédito'</strong> para comenzar.</div>"
+        }),
         "drawCallback": function(settings) {
             var api = this.api();
             var total = 0;
@@ -768,6 +906,141 @@ function Eliminar_Credito(id_credito) {
             });
         }
     });
+}
+
+// ============================================
+// NUEVO SISTEMA DE CRÉDITOS ESTILO EXCEL
+// ============================================
+
+var contador_filas_credito = 0;
+var creditos_data = [];
+
+function Cargar_Creditos_Iniciales() {
+    var id_reporte = $("#txt_id_reporte").val();
+    
+    $.ajax({
+        url: '../controller/turnos/controlador_listar_creditos_turno.php',
+        type: 'POST',
+        data: { id_reporte: id_reporte }
+    }).done(function(resp) {
+        var data = JSON.parse(resp);
+        creditos_data = data.data || [];
+        
+        $("#tbody_creditos_editable").empty();
+        
+        if (creditos_data.length === 0) {
+            // Agregar 3 filas vacías por defecto
+            for (var i = 0; i < 3; i++) {
+                Agregar_Fila_Credito();
+            }
+        } else {
+            // Cargar créditos existentes
+            creditos_data.forEach(function(credito) {
+                Agregar_Fila_Credito(credito);
+            });
+        }
+        
+        Actualizar_Total_Creditos();
+    });
+}
+
+function Agregar_Fila_Credito(datos = null) {
+    contador_filas_credito++;
+    var fila_id = 'credito_' + contador_filas_credito;
+    
+    // Cargar clientes
+    $.ajax({
+        url: '../controller/clientes/controlador_clientes_activos.php',
+        type: 'POST',
+        async: false
+    }).done(function(resp) {
+        var clientes = JSON.parse(resp);
+        var opciones = '<option value="">-- Seleccione --</option>';
+        clientes.forEach(function(cliente) {
+            var selected = (datos && datos.id_cliente == cliente.id_cliente) ? 'selected' : '';
+            opciones += '<option value="' + cliente.id_cliente + '" ' + selected + '>' + cliente.nombre_completo + '</option>';
+        });
+        
+        var fila = '<tr id="' + fila_id + '" data-id-credito="' + (datos ? datos.id_credito : '0') + '">';
+        fila += '<td><select class="form-control form-control-sm cliente-select" onchange="Guardar_Credito_Fila(\'' + fila_id + '\')">' + opciones + '</select></td>';
+        fila += '<td><input type="text" class="form-control form-control-sm numero-vale-input" value="' + (datos ? datos.numero_vale : '') + '" onchange="Guardar_Credito_Fila(\'' + fila_id + '\')"></td>';
+        fila += '<td><input type="number" step="0.01" class="form-control form-control-sm monto-credito-input" value="' + (datos ? datos.monto : '0') + '" onchange="Guardar_Credito_Fila(\'' + fila_id + '\')"></td>';
+        fila += '<td><input type="date" class="form-control form-control-sm fecha-vencimiento-input" value="' + (datos ? datos.fecha_vencimiento || '' : '') + '" onchange="Guardar_Credito_Fila(\'' + fila_id + '\')"></td>';
+        fila += '<td><button class="btn btn-danger btn-sm" onclick="Eliminar_Fila_Credito(\'' + fila_id + '\')"><i class="fas fa-trash"></i></button></td>';
+        fila += '</tr>';
+        
+        $("#tbody_creditos_editable").append(fila);
+    });
+}
+
+function Guardar_Credito_Fila(fila_id) {
+    var fila = $("#" + fila_id);
+    var id_reporte = $("#txt_id_reporte").val();
+    var id_credito = fila.data('id-credito');
+    var id_cliente = fila.find('.cliente-select').val();
+    var numero_vale = fila.find('.numero-vale-input').val();
+    var monto = fila.find('.monto-credito-input').val();
+    var fecha_vencimiento = fila.find('.fecha-vencimiento-input').val();
+    
+    // Validar que al menos tenga cliente, número de vale y monto
+    if (!id_cliente || !numero_vale || !monto || parseFloat(monto) <= 0) {
+        return; // No guardar si no hay datos válidos
+    }
+    
+    $.ajax({
+        url: '../controller/turnos/controlador_registrar_credito.php',
+        type: 'POST',
+        data: {
+            id_reporte: id_reporte,
+            id_cliente: id_cliente,
+            numero_vale: numero_vale,
+            monto: monto,
+            fecha_vencimiento: fecha_vencimiento,
+            observaciones: ''
+        }
+    }).done(function(resp) {
+        if (resp > 0) {
+            // Actualizar el ID del crédito en la fila
+            if (id_credito == '0') {
+                fila.data('id-credito', resp);
+            }
+            Actualizar_Total_Creditos();
+            Actualizar_Cuadre_Caja();
+        }
+    });
+}
+
+function Eliminar_Fila_Credito(fila_id) {
+    var fila = $("#" + fila_id);
+    var id_credito = fila.data('id-credito');
+    
+    if (id_credito && id_credito != '0') {
+        // Eliminar del servidor
+        $.ajax({
+            url: '../controller/turnos/controlador_eliminar_credito.php',
+            type: 'POST',
+            data: { id_credito: id_credito }
+        }).done(function(resp) {
+            if (resp > 0) {
+                fila.remove();
+                Actualizar_Total_Creditos();
+                Actualizar_Cuadre_Caja();
+            }
+        });
+    } else {
+        // Solo eliminar la fila visual
+        fila.remove();
+    }
+}
+
+function Actualizar_Total_Creditos() {
+    var total = 0;
+    $("#tbody_creditos_editable tr").each(function() {
+        var monto = parseFloat($(this).find('.monto-credito-input').val()) || 0;
+        total += monto;
+    });
+    
+    $("#cuadre_total_creditos").text('S/. ' + total.toFixed(2));
 }
 
 // Actualizar cuadre cuando cambian los descuentos u otros gastos

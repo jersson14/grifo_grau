@@ -367,7 +367,6 @@ class Modelo_Turnos extends conexionBD {
     }
 
     // CERRAR TURNO
-    // CERRAR TURNO
     public function Cerrar_Turno($id_reporte, $descuentos, $otros_gastos, $monto_efectivo) {
         $c = conexionBD::conexionPDO();
         
@@ -376,6 +375,12 @@ class Modelo_Turnos extends conexionBD {
 
             // Calcular totales (pasando la conexión)
             $totales = $this->Calcular_Totales_Turno($id_reporte, $c);
+            
+            // Calcular el faltante correctamente
+            // Fórmula: (Pagos + Créditos + Otros Gastos + Efectivo) - (Ventas - Descuentos)
+            $total_justificado = $totales['total_pagos'] + $totales['total_creditos'] + $otros_gastos + $monto_efectivo;
+            $total_neto_ventas = $totales['total_ventas'] - $descuentos;
+            $faltante = $total_justificado - $total_neto_ventas;
             
             // Actualizar el reporte
             $sql = "UPDATE reportes_turno SET 
@@ -401,7 +406,7 @@ class Modelo_Turnos extends conexionBD {
                     WHERE id_reporte = ?";
             
             $query = $c->prepare($sql);
-            $query->execute(array(
+            $resultado = $query->execute(array(
                 $totales['total_diesel'],
                 $totales['total_regular'],
                 $totales['total_premium'],
@@ -418,9 +423,13 @@ class Modelo_Turnos extends conexionBD {
                 $monto_efectivo,
                 $totales['total_creditos'],
                 $totales['total_pagos'],
-                $totales['faltante'],
+                $faltante,
                 $id_reporte
             ));
+            
+            if (!$resultado) {
+                throw new Exception("Error al actualizar el reporte");
+            }
             
             // Actualizar las lecturas actuales de los surtidores (usando la misma conexión)
             $this->Actualizar_Lecturas_Surtidores($id_reporte, $c);
@@ -429,6 +438,7 @@ class Modelo_Turnos extends conexionBD {
             return 1;
         } catch (Exception $e) {
             $c->rollBack();
+            error_log("Error en Cerrar_Turno: " . $e->getMessage());
             return 0;
         } finally {
             $c = null;
@@ -522,8 +532,9 @@ class Modelo_Turnos extends conexionBD {
         $creditos = $query_creditos->fetch(PDO::FETCH_ASSOC);
         $totales['total_creditos'] = $creditos['total'];
         
-        // Faltante
-        $totales['faltante'] = $totales['total_ventas'] - $totales['total_pagos'];
+        // Faltante: NO se calcula aquí porque necesita descuentos y otros_gastos que vienen del formulario
+        // Se calculará en Cerrar_Turno
+        $totales['faltante'] = 0;
         
         return $totales;
     }

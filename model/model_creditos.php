@@ -465,5 +465,93 @@ class Modelo_Creditos extends conexionBD {
         }
         conexionBD::cerrar_conexion();
     }
+
+    // PAGAR TODO - TODAS LAS DEUDAS PENDIENTES DE UN CLIENTE
+    public function Pagar_Todo_Cliente($id_cliente, $id_tipo_pago, $codigo_operacion, $monto_pagado, $id_usuario, $observaciones) {
+        $c = conexionBD::conexionPDO();
+        
+        try {
+            // Iniciar transacción
+            $c->beginTransaction();
+            
+            // Obtener todos los créditos pendientes del cliente
+            $sql_creditos = "SELECT id_credito, saldo_pendiente 
+                            FROM ventas_credito 
+                            WHERE id_cliente = ? AND estado = 'PENDIENTE' AND saldo_pendiente > 0
+                            ORDER BY fecha_vencimiento ASC, created_at ASC";
+            $query_creditos = $c->prepare($sql_creditos);
+            $query_creditos->execute(array($id_cliente));
+            $creditos = $query_creditos->fetchAll(PDO::FETCH_ASSOC);
+            
+            if (empty($creditos)) {
+                $c->rollBack();
+                return 0; // No hay créditos pendientes
+            }
+            
+            // Calcular saldo total pendiente
+            $saldo_total = 0;
+            foreach ($creditos as $credito) {
+                $saldo_total += $credito['saldo_pendiente'];
+            }
+            
+            // Validar que el monto no sea mayor al saldo total
+            if ($monto_pagado > $saldo_total) {
+                $c->rollBack();
+                return -1; // Monto mayor al saldo
+            }
+            
+            // Distribuir el pago entre los créditos
+            $monto_restante = $monto_pagado;
+            $creditos_pagados = 0;
+            
+            foreach ($creditos as $credito) {
+                if ($monto_restante <= 0) break;
+                
+                $id_credito = $credito['id_credito'];
+                $saldo_anterior = $credito['saldo_pendiente'];
+                
+                // Calcular cuánto pagar de este crédito
+                $monto_a_pagar = min($monto_restante, $saldo_anterior);
+                $saldo_nuevo = $saldo_anterior - $monto_a_pagar;
+                
+                // Registrar el pago en historial
+                $obs_pago = "PAGO TOTAL CLIENTE - " . $observaciones;
+                $sql_historial = "INSERT INTO historial_pagos_credito (
+                                    id_credito, id_tipo_pago, codigo_operacion, monto_pagado, 
+                                    saldo_anterior, saldo_nuevo, fecha_pago, id_usuario_registro, observaciones
+                                  ) VALUES (?, ?, ?, ?, ?, ?, NOW(), ?, ?)";
+                $query_historial = $c->prepare($sql_historial);
+                $query_historial->execute(array(
+                    $id_credito, $id_tipo_pago, $codigo_operacion, $monto_a_pagar,
+                    $saldo_anterior, $saldo_nuevo, $id_usuario, $obs_pago
+                ));
+                
+                // Actualizar saldo en ventas_credito
+                $nuevo_estado = ($saldo_nuevo == 0) ? 'PAGADO' : 'PENDIENTE';
+                $sql_update = "UPDATE ventas_credito SET 
+                                saldo_pendiente = ?,
+                                estado = ?,
+                                updated_at = NOW()
+                              WHERE id_credito = ?";
+                $query_update = $c->prepare($sql_update);
+                $query_update->execute(array($saldo_nuevo, $nuevo_estado, $id_credito));
+                
+                $monto_restante -= $monto_a_pagar;
+                $creditos_pagados++;
+            }
+            
+            // Confirmar transacción
+            $c->commit();
+            return $creditos_pagados;
+            
+        } catch (Exception $e) {
+            // Revertir transacción en caso de error
+            $c->rollBack();
+            error_log("Error en Pagar_Todo_Cliente: " . $e->getMessage());
+            return 0;
+        }
+        
+        conexionBD::cerrar_conexion();
+    }
 }
 ?>

@@ -117,6 +117,16 @@ function Ver_Vales_Cliente(id_cliente, nombre_cliente, dni, total_vales, saldo_t
     $('#info_total_vales').text(total_vales);
     $('#info_saldo_total_vales').text('S/. ' + parseFloat(saldo_total).toFixed(2));
     
+    // Actualizar el monto total a pagar en el botón
+    $('#monto_total_pagar').text('S/. ' + parseFloat(saldo_total).toFixed(2));
+    
+    // Mostrar u ocultar el botón "Pagar Todo" según el saldo
+    if (parseFloat(saldo_total) > 0) {
+        $('#btn_pagar_todo_cliente').show();
+    } else {
+        $('#btn_pagar_todo_cliente').hide();
+    }
+    
     // Cargar tabla de vales
     if (tabla_vales_cliente) {
         tabla_vales_cliente.destroy();
@@ -250,6 +260,7 @@ function Ver_Vales_Cliente(id_cliente, nombre_cliente, dni, total_vales, saldo_t
     
     $('#modal_vales_cliente').modal('show');
 }
+
 
 // FILTRAR CRÉDITOS
 function Filtrar_Creditos() {
@@ -458,28 +469,52 @@ function Registrar_Pago_Credito() {
         return;
     }
     
-    $.ajax({
-        url: '../controller/creditos/controlador_registrar_pago_credito.php',
-        type: 'POST',
-        data: {
+    // Detectar si es un pago total de cliente (múltiples créditos)
+    var es_pago_total = id_credito.indexOf('CLIENTE_') === 0;
+    var url_controlador = '';
+    var datos_envio = {};
+    
+    if (es_pago_total) {
+        // Pago total de todas las deudas del cliente
+        var id_cliente = id_credito.replace('CLIENTE_', '');
+        url_controlador = '../controller/creditos/controlador_pagar_todo_cliente.php';
+        datos_envio = {
+            id_cliente: id_cliente,
+            id_tipo_pago: id_tipo_pago,
+            codigo_operacion: codigo_operacion,
+            monto_pagado: monto_pagado,
+            id_usuario: id_usuario,
+            observaciones: observaciones
+        };
+    } else {
+        // Pago individual de un crédito
+        url_controlador = '../controller/creditos/controlador_registrar_pago_credito.php';
+        datos_envio = {
             id_credito: id_credito,
             id_tipo_pago: id_tipo_pago,
             codigo_operacion: codigo_operacion,
             monto_pagado: monto_pagado,
             id_usuario: id_usuario,
             observaciones: observaciones
-        }
+        };
+    }
+    
+    $.ajax({
+        url: url_controlador,
+        type: 'POST',
+        data: datos_envio
     }).done(function(resp) {
         if (resp > 0) {
             Swal.fire({
                 icon: 'success',
                 title: 'Éxito',
-                text: 'Pago registrado correctamente',
+                text: es_pago_total ? 'Pago total registrado correctamente' : 'Pago registrado correctamente',
                 confirmButtonColor: '#023D77'
             });
             $('#modal_registrar_pago').modal('hide');
             Listar_Creditos_Por_Cliente();
             Cargar_Resumen_Creditos();
+            Cargar_Top_Deudores();
             Limpiar_Modal_Pago();
         } else if (resp == -1) {
             Swal.fire({
@@ -506,6 +541,45 @@ function Limpiar_Modal_Pago() {
     $('#txt_monto_pago_credito').val('');
     $('#txt_observaciones_pago_credito').val('');
 }
+
+// PAGAR TODO - TODAS LAS DEUDAS DEL CLIENTE
+function Pagar_Todo_Cliente() {
+    var id_cliente = $('#txt_id_cliente_vales').val();
+    var nombre_cliente = $('#info_cliente_vales').text();
+    var saldo_total = $('#info_saldo_total_vales').text().replace('S/. ', '');
+    
+    if (parseFloat(saldo_total) <= 0) {
+        Swal.fire({
+            icon: 'info',
+            title: 'Información',
+            text: 'No hay deudas pendientes para este cliente',
+            confirmButtonColor: '#023D77'
+        });
+        return;
+    }
+    
+    // Cerrar modal de vales
+    $('#modal_vales_cliente').modal('hide');
+    
+    // Esperar a que se cierre el modal antes de abrir el nuevo
+    setTimeout(function() {
+        // Configurar el modal de pago para todas las deudas
+        $('#txt_id_credito_pago').val('CLIENTE_' + id_cliente); // Indicador especial
+        $('#info_cliente_pago').html('<strong>' + nombre_cliente + '</strong><br><span class="badge badge-warning">PAGO TOTAL DE TODAS LAS DEUDAS</span>');
+        $('#info_vale_pago').text('MÚLTIPLES VALES');
+        $('#info_monto_total_pago').text('S/. ' + parseFloat(saldo_total).toFixed(2));
+        $('#info_saldo_pendiente_pago').text('S/. ' + parseFloat(saldo_total).toFixed(2));
+        $('#max_monto_pago').text('S/. ' + parseFloat(saldo_total).toFixed(2));
+        
+        // Pre-llenar el monto con el saldo total
+        $('#txt_monto_pago_credito').val(parseFloat(saldo_total).toFixed(2));
+        
+        Cargar_Tipos_Pago_Credito();
+        
+        $('#modal_registrar_pago').modal('show');
+    }, 300);
+}
+
 
 // VER HISTORIAL DE PAGOS
 function Ver_Historial_Pagos(id_credito) {
@@ -651,7 +725,7 @@ function Cargar_Top_Deudores() {
             html += '<td>' + (item.telefono ? item.telefono : '-') + '</td>';
             html += '<td>' + item.total_creditos + '</td>';
             html += '<td><strong class="text-danger">S/. ' + parseFloat(item.saldo_pendiente).toFixed(2) + '</strong></td>';
-            html += '<td><button class="btn btn-info btn-sm" onclick="Filtrar_Por_Cliente(' + item.id_cliente + ')"><i class="fas fa-eye"></i> Ver</button></td>';
+            html += '<td><button class="btn btn-info btn-sm" onclick="Ver_Vales_Cliente(' + item.id_cliente + ', \'' + item.nombre_completo.replace(/'/g, "\\'") + '\', \'' + (item.dni_ruc ? item.dni_ruc : '-') + '\', ' + item.total_creditos + ', ' + parseFloat(item.saldo_pendiente).toFixed(2) + ')"><i class="fas fa-eye"></i> Ver</button></td>';
             html += '</tr>';
             contador++;
         });
@@ -660,11 +734,10 @@ function Cargar_Top_Deudores() {
     });
 }
 
-// FILTRAR POR CLIENTE
-function Filtrar_Por_Cliente(id_cliente) {
-    $('#filtro_cliente').val(id_cliente);
-    $('#filtro_estado').val('PENDIENTE');
-    Filtrar_Creditos();
+// FILTRAR POR CLIENTE (mantener para compatibilidad)
+function Filtrar_Por_Cliente(id_cliente, nombre_cliente, dni, total_vales, saldo_total) {
+    // Abrir directamente el modal de vales del cliente
+    Ver_Vales_Cliente(id_cliente, nombre_cliente, dni, total_vales, saldo_total);
 }
 
 // FILTRAR CRÉDITOS
