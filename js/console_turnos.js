@@ -1083,6 +1083,9 @@ function Cerrar_Turno_Final() {
                         text: 'Turno cerrado correctamente',
                         confirmButtonColor: '#023D77'
                     }).then(() => {
+                        // Imprimir el reporte automáticamente
+                        Imprimir_Reporte(id_reporte);
+                        // Redirigir al historial
                         cargar_contenido('contenido_principal', 'turnos/view_historial.php');
                     });
                 } else {
@@ -1217,6 +1220,7 @@ function Listar_Historial_Turnos() {
     
     tabla_historial_turnos = $("#tabla_historial_turnos").DataTable({
         "ordering": true,
+        "order": [], // Desactivar orden inicial del cliente, respetar orden del servidor
         "bLengthChange": true,
         "searching": { "regex": false },
         "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],

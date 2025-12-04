@@ -596,7 +596,7 @@ class Modelo_Turnos extends conexionBD {
             }
         }
         
-        $sql .= " ORDER BY rt.fecha_reporte DESC, rt.turno DESC";
+        $sql .= " ORDER BY rt.id_reporte DESC";
         
         $arreglo = array();
         $query = $c->prepare($sql);

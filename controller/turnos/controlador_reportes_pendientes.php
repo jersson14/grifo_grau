@@ -22,7 +22,7 @@ $sql = "SELECT
         LEFT JOIN usuario adm ON rt.id_administrador = adm.id_usuario
         WHERE rt.estado = 'CERRADO' 
         AND (rt.id_administrador IS NULL OR rt.fecha_aprobacion IS NULL)
-        ORDER BY rt.fecha_reporte DESC";
+        ORDER BY rt.id_reporte DESC";
 
 $stmt = $c->prepare($sql);
 $stmt->execute();

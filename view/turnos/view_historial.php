@@ -239,7 +239,6 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="fas fa-times"></i> Cerrar</button>
-                <button type="button" class="btn btn-primary" onclick="Imprimir_Reporte()"><i class="fas fa-print"></i> Imprimir</button>
             </div>
         </div>
     </div>
@@ -249,8 +248,17 @@
 var tabla_historial_turnos;
 
 function Listar_Historial_Turnos() {
+    var filtro_fecha_inicio = $("#filtro_fecha_inicio").val();
+    var filtro_fecha_fin = $("#filtro_fecha_fin").val();
+    var filtro_estado = $("#filtro_estado").val() || null;
+    
+    if (tabla_historial_turnos) {
+        tabla_historial_turnos.destroy();
+    }
+    
     tabla_historial_turnos = $("#tabla_historial_turnos").DataTable({
         "ordering": true,
+        "order": [], // Desactivar orden inicial del cliente, respetar orden del servidor
         "bLengthChange": true,
         "searching": { "regex": false },
         "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
@@ -260,7 +268,14 @@ function Listar_Historial_Turnos() {
         "processing": true,
         "ajax": {
             "url": "../controller/turnos/controlador_listar_turnos.php",
-            type: 'POST'
+            type: 'POST',
+            data: {
+                filtro_fecha_inicio: filtro_fecha_inicio,
+                filtro_fecha_fin: filtro_fecha_fin,
+                filtro_estado: filtro_estado,
+                filtro_usuario: null,
+                filtro_validacion: null
+            }
         },
         "columns": [
             { "data": "numero_documento" },
@@ -353,7 +368,7 @@ function Imprimir_Reporte(id_reporte) {
 }
 
 function Filtrar_Turnos() {
-    tabla_historial_turnos.ajax.reload();
+    Listar_Historial_Turnos();
 }
 
 $(document).ready(function() {

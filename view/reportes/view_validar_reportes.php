@@ -285,6 +285,7 @@ var tabla_reportes_pendientes;
 function Listar_Reportes_Pendientes() {
     tabla_reportes_pendientes = $("#tabla_reportes_pendientes").DataTable({
         "ordering": true,
+        "order": [], // Desactivar orden inicial del cliente, respetar orden del servidor
         "bLengthChange": true,
         "searching": { "regex": false },
         "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
