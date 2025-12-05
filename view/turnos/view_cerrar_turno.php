@@ -397,49 +397,7 @@
     </div>
 </div>
 
-<!-- MODAL AGREGAR CRÉDITO -->
-<div class="modal fade" id="modal_agregar_credito" tabindex="-1" role="dialog">
-    <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-            <div class="modal-header" style="background: linear-gradient(135deg, #dc3545, #c82333); color:white">
-                <h5 class="modal-title"><i class="fas fa-credit-card"></i> Agregar Crédito</h5>
-                <button type="button" class="close" data-dismiss="modal" style="color:white">
-                    <span>&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="row">
-                    <div class="col-md-6 form-group">
-                        <label>Cliente <span class="text-danger">*</span></label>
-                        <select class="js-example-basic-single form-control" id="txt_cliente_credito" style="width:100%">
-                            <option value="">-- Seleccione --</option>
-                        </select>
-                    </div>
-                    <div class="col-md-6 form-group">
-                        <label>N° de Vale <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="txt_numero_vale" placeholder="Número de vale">
-                    </div>
-                    <div class="col-md-6 form-group">
-                        <label>Monto (S/.) <span class="text-danger">*</span></label>
-                        <input type="number" step="0.01" class="form-control" id="txt_monto_credito" placeholder="0.00">
-                    </div>
-                    <div class="col-md-6 form-group">
-                        <label>Fecha de Vencimiento</label>
-                        <input type="date" class="form-control" id="txt_fecha_vencimiento">
-                    </div>
-                    <div class="col-12 form-group">
-                        <label>Observaciones</label>
-                        <textarea class="form-control" id="txt_observaciones_credito" rows="2" placeholder="Observaciones opcionales"></textarea>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="fas fa-times"></i> Cerrar</button>
-                <button type="button" class="btn btn-danger" onclick="Agregar_Credito()"><i class="fas fa-save"></i> Agregar</button>
-            </div>
-        </div>
-    </div>
-</div>
+
 
 <script>
 $(document).ready(function() {

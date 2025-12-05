@@ -793,124 +793,187 @@ function Exportar_Creditos_Excel() {
     window.location.href = url;
 }
 
+// ============================================
+// SISTEMA DE CRÉDITOS MANUALES ESTILO EXCEL
+// ============================================
+
+var contador_filas_credito_manual = 0;
+var creditos_manual_data = [];
+
 // ABRIR MODAL AGREGAR CRÉDITO MANUAL
 function Abrir_Modal_Agregar_Credito_Manual() {
-    // Cargar clientes
-    $.ajax({
-        url: '../controller/clientes/controlador_clientes_activos.php',
-        type: 'POST'
-    }).done(function(resp) {
-        var data = JSON.parse(resp);
-        var opciones = '<option value="">-- Seleccione --</option>';
-        data.forEach(function(item) {
-            opciones += '<option value="' + item.id_cliente + '">' + item.nombre_completo + '</option>';
-        });
-        $("#txt_cliente_manual").html(opciones);
-        
-        // Inicializar Select2
-        $('#txt_cliente_manual').select2({
-            dropdownParent: $('#modal_agregar_credito_manual'),
-            placeholder: '-- Seleccione --',
-            allowClear: true
-        });
-    });
+    // Limpiar tabla
+    $('#tbody_creditos_manual_editable').empty();
+    contador_filas_credito_manual = 0;
+    creditos_manual_data = [];
     
-    // Limpiar formulario
-    $('#txt_numero_vale_manual').val('');
-    $('#txt_monto_manual').val('');
-    $('#txt_fecha_vencimiento_manual').val('');
-    $('#txt_observaciones_manual').val('');
+    // Agregar 3 filas vacías por defecto
+    for (var i = 0; i < 3; i++) {
+        Agregar_Fila_Credito_Manual();
+    }
     
     $('#modal_agregar_credito_manual').modal('show');
 }
 
-// AGREGAR CRÉDITO MANUAL
-function Agregar_Credito_Manual() {
-    var id_cliente = $('#txt_cliente_manual').val();
-    var numero_vale = $('#txt_numero_vale_manual').val();
-    var monto = $('#txt_monto_manual').val();
-    var fecha_vencimiento = $('#txt_fecha_vencimiento_manual').val();
-    var observaciones = $('#txt_observaciones_manual').val();
+// AGREGAR FILA DE CRÉDITO MANUAL
+function Agregar_Fila_Credito_Manual(datos = null) {
+    contador_filas_credito_manual++;
+    var fila_id = 'credito_manual_' + contador_filas_credito_manual;
     
-    console.log('Datos a enviar:', {id_cliente, numero_vale, monto, fecha_vencimiento, observaciones});
-    
-    if (!id_cliente || !numero_vale || !monto) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Advertencia',
-            text: 'Complete todos los campos obligatorios (Cliente, N° Vale y Monto)',
-            confirmButtonColor: '#023D77'
-        });
-        return;
-    }
-    
-    if (parseFloat(monto) <= 0) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Advertencia',
-            text: 'El monto debe ser mayor a 0',
-            confirmButtonColor: '#023D77'
-        });
-        return;
-    }
-    
+    // Cargar clientes
     $.ajax({
-        url: '../controller/creditos/controlador_agregar_credito_manual.php',
+        url: '../controller/clientes/controlador_clientes_activos.php',
         type: 'POST',
-        data: {
-            id_cliente: id_cliente,
-            numero_vale: numero_vale,
-            monto: monto,
-            fecha_vencimiento: fecha_vencimiento,
-            observaciones: observaciones
-        }
+        async: false
     }).done(function(resp) {
-        console.log('Respuesta del servidor:', resp);
-        console.log('Tipo de respuesta:', typeof resp);
+        var clientes = JSON.parse(resp);
+        var opciones = '<option value="">-- Seleccione --</option>';
+        clientes.forEach(function(cliente) {
+            var selected = (datos && datos.id_cliente == cliente.id_cliente) ? 'selected' : '';
+            opciones += '<option value="' + cliente.id_cliente + '" ' + selected + '>' + cliente.nombre_completo + '</option>';
+        });
         
-        try {
-            // Si ya es un objeto, no parsear
-            var data = (typeof resp === 'object') ? resp : JSON.parse(resp);
-            console.log('Datos procesados:', data);
+        var fila = '<tr id="' + fila_id + '">';
+        fila += '<td><select class="form-control form-control-sm cliente-select-manual">' + opciones + '</select></td>';
+        fila += '<td><input type="text" class="form-control form-control-sm numero-vale-input-manual" value="' + (datos ? datos.numero_vale : '') + '" placeholder="Número de vale"></td>';
+        fila += '<td><input type="number" step="0.01" class="form-control form-control-sm monto-credito-input-manual" value="' + (datos ? datos.monto : '0') + '" placeholder="0.00"></td>';
+        fila += '<td><input type="date" class="form-control form-control-sm fecha-vencimiento-input-manual" value="' + (datos ? datos.fecha_vencimiento || '' : '') + '"></td>';
+        fila += '<td><button class="btn btn-danger btn-sm" onclick="Eliminar_Fila_Credito_Manual(\'' + fila_id + '\')"><i class="fas fa-trash"></i></button></td>';
+        fila += '</tr>';
+        
+        $('#tbody_creditos_manual_editable').append(fila);
+    });
+}
+
+// ELIMINAR FILA DE CRÉDITO MANUAL
+function Eliminar_Fila_Credito_Manual(fila_id) {
+    $('#' + fila_id).remove();
+}
+
+// GUARDAR TODOS LOS CRÉDITOS MANUALES
+function Guardar_Todos_Creditos_Manual() {
+    var creditos = [];
+    var errores = [];
+    
+    // Recopilar datos de todas las filas
+    $('#tbody_creditos_manual_editable tr').each(function(index) {
+        var fila = $(this);
+        var id_cliente = fila.find('.cliente-select-manual').val();
+        var numero_vale = fila.find('.numero-vale-input-manual').val().trim();
+        var monto = fila.find('.monto-credito-input-manual').val();
+        var fecha_vencimiento = fila.find('.fecha-vencimiento-input-manual').val();
+        
+        // Solo procesar filas con datos
+        if (id_cliente || numero_vale || (monto && parseFloat(monto) > 0)) {
+            // Validar que tenga todos los campos obligatorios
+            if (!id_cliente) {
+                errores.push('Fila ' + (index + 1) + ': Falta seleccionar el cliente');
+            }
+            if (!numero_vale) {
+                errores.push('Fila ' + (index + 1) + ': Falta el número de vale');
+            }
+            if (!monto || parseFloat(monto) <= 0) {
+                errores.push('Fila ' + (index + 1) + ': El monto debe ser mayor a 0');
+            }
             
-            if (data.success) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Éxito',
-                    text: data.message,
-                    confirmButtonColor: '#023D77'
+            // Si no hay errores en esta fila, agregarla
+            if (id_cliente && numero_vale && monto && parseFloat(monto) > 0) {
+                creditos.push({
+                    id_cliente: id_cliente,
+                    numero_vale: numero_vale,
+                    monto: monto,
+                    fecha_vencimiento: fecha_vencimiento
                 });
-                $('#modal_agregar_credito_manual').modal('hide');
-                Listar_Creditos_Por_Cliente();
-                Cargar_Resumen_Creditos();
-            } else {
+            }
+        }
+    });
+    
+    // Mostrar errores si los hay
+    if (errores.length > 0) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Advertencia',
+            html: errores.join('<br>'),
+            confirmButtonColor: '#023D77'
+        });
+        return;
+    }
+    
+    // Validar que haya al menos un crédito
+    if (creditos.length === 0) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Advertencia',
+            text: 'Debe agregar al menos un crédito con datos completos',
+            confirmButtonColor: '#023D77'
+        });
+        return;
+    }
+    
+    // Confirmar guardado
+    Swal.fire({
+        title: '¿Guardar créditos?',
+        text: 'Se guardarán ' + creditos.length + ' crédito(s)',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#023D77',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Sí, guardar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Enviar todos los créditos al servidor
+            $.ajax({
+                url: '../controller/creditos/controlador_agregar_creditos_multiple.php',
+                type: 'POST',
+                data: {
+                    creditos: JSON.stringify(creditos)
+                }
+            }).done(function(resp) {
+                try {
+                    var data = (typeof resp === 'object') ? resp : JSON.parse(resp);
+                    
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Éxito',
+                            text: data.message,
+                            confirmButtonColor: '#023D77'
+                        });
+                        $('#modal_agregar_credito_manual').modal('hide');
+                        Listar_Creditos_Por_Cliente();
+                        Cargar_Resumen_Creditos();
+                        Cargar_Top_Deudores();
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: data.message,
+                            confirmButtonColor: '#023D77'
+                        });
+                    }
+                } catch(e) {
+                    console.error('Error al parsear respuesta:', e);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Error al procesar la respuesta del servidor',
+                        confirmButtonColor: '#023D77'
+                    });
+                }
+            }).fail(function(xhr, status, error) {
+                console.error('Error en la petición:', error);
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
-                    text: data.message,
+                    text: 'No se pudo conectar con el servidor',
                     confirmButtonColor: '#023D77'
                 });
-            }
-        } catch(e) {
-            console.error('Error al parsear respuesta:', e);
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Error al procesar la respuesta del servidor',
-                confirmButtonColor: '#023D77'
             });
         }
-    }).fail(function(xhr, status, error) {
-        console.error('Error en la petición:', error);
-        console.error('Respuesta:', xhr.responseText);
-        Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'Error al conectar con el servidor: ' + error,
-            confirmButtonColor: '#023D77'
-        });
     });
 }
+
 
 // ABRIR MODAL EDITAR CRÉDITO
 function Abrir_Modal_Editar_Credito(id_credito) {

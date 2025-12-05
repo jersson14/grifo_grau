@@ -330,12 +330,12 @@ $html .= '
             <th colspan="2">MONTO DE CRÉDITO</th>
         </tr>
         <tr>
-            <th>COD. OPERACIÓN</th>
             <th>S/.</th>
             <th>COD. OPERACIÓN</th>
             <th>S/.</th>
             <th>COD. OPERACIÓN</th>
             <th>S/.</th>
+            <th>COD. OPERACIÓN</th>
             <th>S/.</th>
             <th>S/.</th>
             <th>S/.</th>
@@ -362,24 +362,24 @@ for ($i = 0; $i < $max_rows; $i++) {
     
     // YAPE
     if (isset($pagos_agrupados['YAPE'][$i])) {
-        $html .= '<td>' . ($pagos_agrupados['YAPE'][$i]['codigo_operacion'] ?: '') . '</td>';
         $html .= '<td>' . number_format($pagos_agrupados['YAPE'][$i]['monto'], 2) . '</td>';
+        $html .= '<td>' . ($pagos_agrupados['YAPE'][$i]['codigo_operacion'] ?: '') . '</td>';
     } else {
         $html .= '<td></td><td></td>';
     }
     
     // BCP
     if (isset($pagos_agrupados['BCP'][$i])) {
-        $html .= '<td>' . ($pagos_agrupados['BCP'][$i]['codigo_operacion'] ?: '') . '</td>';
         $html .= '<td>' . number_format($pagos_agrupados['BCP'][$i]['monto'], 2) . '</td>';
+        $html .= '<td>' . ($pagos_agrupados['BCP'][$i]['codigo_operacion'] ?: '') . '</td>';
     } else {
         $html .= '<td></td><td></td>';
     }
     
     // VISA
     if (isset($pagos_agrupados['VISA'][$i])) {
-        $html .= '<td>' . ($pagos_agrupados['VISA'][$i]['codigo_operacion'] ?: '') . '</td>';
         $html .= '<td>' . number_format($pagos_agrupados['VISA'][$i]['monto'], 2) . '</td>';
+        $html .= '<td>' . ($pagos_agrupados['VISA'][$i]['codigo_operacion'] ?: '') . '</td>';
     } else {
         $html .= '<td></td><td></td>';
     }
@@ -423,12 +423,12 @@ $otros_gastos = floatval($turno['monto_otros_gastos']);
 
 $html .= '
         <tr class="total-row">
-            <td></td>
             <td>' . number_format($total_yape, 2) . '</td>
             <td></td>
             <td>' . number_format($total_bcp, 2) . '</td>
             <td></td>
             <td>' . number_format($total_visa, 2) . '</td>
+            <td></td>
             <td>' . number_format($descuentos, 2) . '</td>
             <td>' . number_format($total_efectivo, 2) . '</td>
             <td>' . number_format($otros_gastos, 2) . '</td>

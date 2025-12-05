@@ -419,35 +419,32 @@
                 </button>
             </div>
             <div class="modal-body">
-                <div class="row">
-                    <div class="col-md-6 form-group">
-                        <label>Cliente <span class="text-danger">*</span></label>
-                        <select class="js-example-basic-single form-control" id="txt_cliente_manual" style="width:100%">
-                            <option value="">-- Seleccione --</option>
-                        </select>
-                    </div>
-                    <div class="col-md-6 form-group">
-                        <label>Número de Vale <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="txt_numero_vale_manual" placeholder="Número de vale">
-                    </div>
-                    <div class="col-md-6 form-group">
-                        <label>Monto (S/.) <span class="text-danger">*</span></label>
-                        <input type="number" step="0.01" class="form-control" id="txt_monto_manual" placeholder="0.00">
-                    </div>
-                    <div class="col-md-6 form-group">
-                        <label>Fecha de Vencimiento</label>
-                        <input type="date" class="form-control" id="txt_fecha_vencimiento_manual">
-                        <small class="text-muted">Si no se especifica, se usará 30 días desde hoy</small>
-                    </div>
-                    <div class="col-12 form-group">
-                        <label>Observaciones</label>
-                        <textarea class="form-control" id="txt_observaciones_manual" rows="2" placeholder="Observaciones opcionales"></textarea>
-                    </div>
+                <button class="btn btn-success btn-sm mb-2" onclick="Agregar_Fila_Credito_Manual()">
+                    <i class="fas fa-plus"></i> Agregar Fila
+                </button>
+                <div class="table-responsive">
+                    <table id="tabla_creditos_manual_editable" class="table table-sm table-bordered table-hover">
+                        <thead style="background-color:#28a745; color:white">
+                            <tr>
+                                <th width="30%">Cliente</th>
+                                <th width="20%">N° Vale</th>
+                                <th width="15%">Monto (S/.)</th>
+                                <th width="20%">Fecha Vencimiento</th>
+                                <th width="15%">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody_creditos_manual_editable">
+                            <!-- Filas se agregarán dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="alert alert-info mt-2">
+                    <i class="fas fa-info-circle"></i> <strong>Tip:</strong> Escribe directamente en las celdas. Solo se guardarán las filas con datos completos (Cliente, N° Vale y Monto).
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="fas fa-times"></i> Cerrar</button>
-                <button type="button" class="btn btn-success" onclick="Agregar_Credito_Manual()"><i class="fas fa-save"></i> Guardar</button>
+                <button type="button" class="btn btn-success" onclick="Guardar_Todos_Creditos_Manual()"><i class="fas fa-save"></i> Guardar Todo</button>
             </div>
         </div>
     </div>
