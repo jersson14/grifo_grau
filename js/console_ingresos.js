@@ -671,23 +671,3 @@ tbl_diferencia.on('draw.td',function(){
 });
 }
 
-//IMPRIMIR BOLETA
-
-$('#tabla_ingresos').on('click','.imprimir',function(){
-  var data = tbl_ingresos.row($(this).parents('tr')).data();
-
-  if(tbl_ingresos.row(this).child.isShown()){
-      var data = tbl_ingresos.row(this).data();
-  }
-  var url = "../view/MPDF/REPORTE/boleta_pago.php?id=" + encodeURIComponent(data.id_ingresos) + "#zoom=100%";
-
-  // Abrir una nueva ventana con la URL construida
-  var newWindow = window.open(url, "BOLETA DE PAGO", "scrollbars=NO");
-  
-  // Asegurarse de que la ventana se abre en tamaño máximo
-  if (newWindow) {
-      newWindow.moveTo(0, 0);
-      newWindow.resizeTo(screen.width, screen.height);
-  }
-
-})

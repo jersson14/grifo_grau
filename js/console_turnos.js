@@ -1009,16 +1009,34 @@ function Ver_Detalle_Turno(id_reporte) {
     $("[id='modal_detalle_turno']").last().modal('show');
 }
 
-// FUNCIÓN PARA IMPRIMIR REPORTE
 function Imprimir_Reporte(id_reporte) {
-    // Construir la URL del PDF de forma simple y directa
-    // La ruta siempre será relativa desde donde está cargado el JavaScript
-    var urlPDF = window.location.origin + '/grifo_grau/view/MPDF/REPORTE/reporte_turno.php?id=' + id_reporte;
-    
-    console.log('Abriendo PDF con URL:', urlPDF);
-    console.log('ID del reporte:', id_reporte);
-    
-    window.open(urlPDF, '_blank');
+    console.log("===== DEBUG REPORTE =====");
+    console.log("ID recibido:", id_reporte);
+
+    // 1. Detectar dominio actual
+    console.log("Origin:", window.location.origin);
+    console.log("Path actual:", window.location.pathname);
+
+    // 2. Probar ruta relativa real
+    var url = "../view/MPDF/REPORTE/reporte_turno.php?id=" + id_reporte;
+    console.log("URL generada:", url);
+
+    // 3. Verificar si el archivo realmente existe
+    fetch(url)
+        .then(response => {
+            console.log("HTTP Status:", response.status);
+            if (!response.ok) {
+                console.error("❌ Archivo NO encontrado en esa ruta");
+            } else {
+                console.log("✔ Archivo encontrado correctamente");
+            }
+        })
+        .catch(err => {
+            console.error("⚠ Error de Fetch:", err);
+        });
+
+    // 4. Abrir PDF
+    window.open(url, "_blank");
 }
 
 

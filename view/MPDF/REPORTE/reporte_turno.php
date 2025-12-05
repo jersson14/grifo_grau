@@ -1,6 +1,43 @@
 <?php
-require_once __DIR__ . '/../vendor/autoload.php';
-require_once __DIR__ . '/../../../model/model_conexion.php';
+// Error reporting for debugging (remove in production)
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+// Determine the base path for includes
+// Try to find the correct base path
+$possible_paths = [
+    $_SERVER['DOCUMENT_ROOT'] ?? '',
+    dirname(dirname(dirname(dirname(__FILE__)))), // Go up from REPORTE to grifo_grau
+    '/home/estaciongoyo/public_html', // Common hosting path
+];
+
+$base_path = null;
+foreach ($possible_paths as $path) {
+    if (!empty($path) && file_exists($path . '/model/model_conexion.php')) {
+        $base_path = $path;
+        break;
+    }
+}
+
+// Fallback to relative paths if base_path not found
+if ($base_path === null) {
+    $base_path = dirname(dirname(dirname(dirname(__FILE__))));
+}
+
+// Load dependencies
+$autoload_path = $base_path . '/view/MPDF/vendor/autoload.php';
+$conexion_path = $base_path . '/model/model_conexion.php';
+
+if (!file_exists($autoload_path)) {
+    die('Error: No se puede encontrar autoload.php en: ' . $autoload_path);
+}
+
+if (!file_exists($conexion_path)) {
+    die('Error: No se puede encontrar model_conexion.php en: ' . $conexion_path);
+}
+
+require_once $autoload_path;
+require_once $conexion_path;
 
 $id_turno = $_GET['id'] ?? 0;
 
@@ -118,7 +155,6 @@ $total_efectivo = 0;
 
 foreach ($pagos_agrupados['YAPE'] as $p) $total_yape += floatval($p['monto']);
 foreach ($pagos_agrupados['BCP'] as $p) $total_bcp += floatval($p['monto']);
-foreach ($pagos_agrupados['VISA'] as $p) $total_visa += floatval($p['monto']);
 foreach ($pagos_agrupados['VISA'] as $p) $total_visa += floatval($p['monto']);
 $total_efectivo = floatval($turno['monto_efectivo']);
 

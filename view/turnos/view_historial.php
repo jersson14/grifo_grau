@@ -359,12 +359,34 @@ function Listar_Historial_Turnos() {
 }
 
 
-
 function Imprimir_Reporte(id_reporte) {
-    // Construir la URL del PDF de forma correcta
-    var urlPDF = window.location.origin + '/grifo_grau/view/MPDF/REPORTE/reporte_turno.php?id=' + id_reporte;
-    console.log('Abriendo PDF con URL:', urlPDF);
-    window.open(urlPDF, '_blank');
+    console.log("===== DEBUG REPORTE =====");
+    console.log("ID recibido:", id_reporte);
+
+    // 1. Detectar dominio actual
+    console.log("Origin:", window.location.origin);
+    console.log("Path actual:", window.location.pathname);
+
+    // 2. Probar ruta relativa real
+    var url = "../view/MPDF/REPORTE/reporte_turno.php?id=" + id_reporte;
+    console.log("URL generada:", url);
+
+    // 3. Verificar si el archivo realmente existe
+    fetch(url)
+        .then(response => {
+            console.log("HTTP Status:", response.status);
+            if (!response.ok) {
+                console.error("❌ Archivo NO encontrado en esa ruta");
+            } else {
+                console.log("✔ Archivo encontrado correctamente");
+            }
+        })
+        .catch(err => {
+            console.error("⚠ Error de Fetch:", err);
+        });
+
+    // 4. Abrir PDF
+    window.open(url, "_blank");
 }
 
 function Filtrar_Turnos() {
