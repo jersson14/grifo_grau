@@ -95,21 +95,27 @@ if (!isset($_SESSION['S_ID'])) {
                 </a>
                 <ul class="nav nav-treeview">
                   <li class="nav-item">
-                    <a href="#" onclick="cargar_contenido('contenido_principal','turnos/view_abrir_turno.php')" class="nav-link">
+                    <a href="#" onclick="cargar_contenido('contenido_principal','turnos/view_registrar_turno.php')" class="nav-link">
                       <i class="nav-icon far fa-circle"></i>
-                      <p style="color:white">Abrir Turno</p>
-                    </a>
-                  </li>
-                  <li class="nav-item">
-                    <a href="#" onclick="cargar_contenido('contenido_principal','turnos/view_cerrar_turno.php')" class="nav-link">
-                      <i class="nav-icon far fa-circle"></i>
-                      <p style="color:white">Gestionar Turno</p>
+                      <p style="color:white">Registrar Turno</p>
                     </a>
                   </li>
                   <li class="nav-item">
                     <a href="#" onclick="cargar_contenido('contenido_principal','turnos/view_historial.php')" class="nav-link">
                       <i class="nav-icon far fa-circle"></i>
                       <p style="color:white">Historial de Turnos</p>
+                    </a>
+                  </li>
+                  <li class="nav-item" style="display:none;">
+                    <a href="#" onclick="cargar_contenido('contenido_principal','turnos/view_abrir_turno.php')" class="nav-link">
+                      <i class="nav-icon far fa-circle"></i>
+                      <p style="color:white">Abrir Turno (Antiguo)</p>
+                    </a>
+                  </li>
+                  <li class="nav-item" style="display:none;">
+                    <a href="#" onclick="cargar_contenido('contenido_principal','turnos/view_cerrar_turno.php')" class="nav-link">
+                      <i class="nav-icon far fa-circle"></i>
+                      <p style="color:white">Gestionar Turno (Antiguo)</p>
                     </a>
                   </li>
                 </ul>
@@ -205,11 +211,11 @@ if (!isset($_SESSION['S_ID'])) {
 
             <?php if ($_SESSION['S_ROL'] == "GRIFERO") { ?>
               
-              <!-- MI TURNO (Solo Grifero) -->
+              <!-- REGISTRAR TURNO (Solo Grifero) -->
               <li class="nav-item">
-                <a href="#" onclick="cargar_contenido('contenido_principal','turnos/view_abrir_turno.php')" class="nav-link">
-                  <i class="nav-icon fas fa-tasks"></i>
-                  <p style="color:white">Mi Turno</p>
+                <a href="#" onclick="cargar_contenido('contenido_principal','turnos/view_registrar_turno.php')" class="nav-link">
+                  <i class="nav-icon fas fa-clipboard-check"></i>
+                  <p style="color:white">Registrar Turno</p>
                 </a>
               </li>
 
@@ -578,7 +584,7 @@ if (!isset($_SESSION['S_ID'])) {
       <?php if ($_SESSION['S_ROL'] == "ADMINISTRADOR") { ?>
         cargar_contenido('contenido_principal', 'reportes/view_dashboard.php');
       <?php } else if ($_SESSION['S_ROL'] == "GRIFERO") { ?>
-        cargar_contenido('contenido_principal', 'turnos/view_abrir_turno.php');
+        cargar_contenido('contenido_principal', 'turnos/view_registrar_turno.php');
       <?php } ?>
     });
 

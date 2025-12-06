@@ -1213,3 +1213,414 @@ function Listar_Historial_Turnos() {
 function Filtrar_Turnos() {
     Listar_Historial_Turnos();
 }
+
+// ============================================
+// NUEVO SISTEMA DE REGISTRO UNIFICADO DE TURNO
+// ============================================
+
+var contador_filas_pago_registro = 0;
+var contador_filas_credito_registro = 0;
+var lecturas_registro = [];
+
+// CARGAR LECTURAS PARA REGISTRO (Lecturas iniciales automáticas)
+function Cargar_Lecturas_Para_Registro() {
+    $.ajax({
+        url: '../controller/surtidores/controlador_surtidores_activos.php',
+        type: 'POST'
+    }).done(function(resp) {
+        var data = JSON.parse(resp);
+        lecturas_registro = data;
+        
+        var html_maquina_1 = '';
+        var html_maquina_2 = '';
+        
+        data.forEach(function(item) {
+            // Determinar el producto para los cálculos locales
+            var producto_tipo = '';
+            var nombre_upper = item.producto_nombre.toUpperCase();
+            
+            if (nombre_upper.includes('DIESEL')) producto_tipo = 'DIESEL';
+            else if (nombre_upper.includes('REGULAR')) producto_tipo = 'REGULAR';
+            else if (nombre_upper.includes('PREMIUM')) producto_tipo = 'PREMIUM';
+
+            var fila = '<tr>';
+            fila += '<td><strong>' + item.codigo + '</strong></td>';
+            fila += '<td>' + item.producto_nombre + '</td>';
+            fila += '<td><input type="number" step="0.001" class="form-control form-control-sm lectura-inicial-input" ' + 
+                    'data-id-surtidor="' + item.id_surtidor + '" ' +
+                    'value="' + parseFloat(item.lectura_actual).toFixed(3) + '" readonly style="background-color:#f0f0f0"></td>';
+            
+            // Input de lectura final editable
+            fila += '<td><input type="number" step="0.001" class="form-control form-control-sm lectura-final-input" ' + 
+                    'data-id-surtidor="' + item.id_surtidor + '" ' +
+                    'data-lectura-inicial="' + item.lectura_actual + '" ' +
+                    'data-precio="' + item.precio_actual + '" ' +
+                    'data-producto="' + producto_tipo + '" ' +
+                    'value="' + parseFloat(item.lectura_actual).toFixed(3) + '"></td>';
+            
+            fila += '<td class="galones-registro-' + item.id_surtidor + '">0.000</td>';
+            fila += '<td>S/. ' + parseFloat(item.precio_actual).toFixed(2) + '</td>';
+            fila += '<td class="total-registro-' + item.id_surtidor + '">S/. 0.00</td>';
+            fila += '</tr>';
+            
+            if (item.numero_maquina == 1) {
+                html_maquina_1 += fila;
+            } else {
+                html_maquina_2 += fila;
+            }
+        });
+        
+        $("#tabla_lecturas_maquina_1").html(html_maquina_1);
+        $("#tabla_lecturas_maquina_2").html(html_maquina_2);
+    });
+}
+
+// Evento para calcular en tiempo real al cambiar lecturas finales
+$(document).on('input', '.lectura-final-input', function() {
+    Calcular_Fila_Registro(this);
+    Calcular_Totales_Registro();
+});
+
+function Calcular_Fila_Registro(input) {
+    var id_surtidor = $(input).data('id-surtidor');
+    var lectura_inicial = parseFloat($(input).data('lectura-inicial'));
+    var precio = parseFloat($(input).data('precio'));
+    var lectura_final = parseFloat($(input).val());
+    
+    if (isNaN(lectura_final)) lectura_final = lectura_inicial;
+    
+    var galones = lectura_final - lectura_inicial;
+    if (galones < 0) galones = 0; // Evitar negativos
+    
+    var total_soles = galones * precio;
+    
+    // Actualizar celdas de la fila
+    $(".galones-registro-" + id_surtidor).text(galones.toFixed(3));
+    $(".total-registro-" + id_surtidor).text('S/. ' + total_soles.toFixed(2));
+    
+    // Guardar el total calculado en el input para facilitar la suma total
+    $(input).attr('data-total-calculado', total_soles);
+}
+
+function Calcular_Totales_Registro() {
+    var total_diesel = 0;
+    var total_regular = 0;
+    var total_premium = 0;
+    var total_ventas = 0;
+    
+    // Recorrer todos los inputs de lectura final
+    $(".lectura-final-input").each(function() {
+        var producto = $(this).data('producto');
+        var total_fila = parseFloat($(this).attr('data-total-calculado')) || 0;
+        
+        if (producto == 'DIESEL') total_diesel += total_fila;
+        else if (producto == 'REGULAR') total_regular += total_fila;
+        else if (producto == 'PREMIUM') total_premium += total_fila;
+        
+        total_ventas += total_fila;
+    });
+    
+    // Actualizar tarjetas de resumen
+    $("#total_diesel").text('S/. ' + total_diesel.toFixed(2));
+    $("#total_regular").text('S/. ' + total_regular.toFixed(2));
+    $("#total_premium").text('S/. ' + total_premium.toFixed(2));
+    $("#total_ventas").text('S/. ' + total_ventas.toFixed(2));
+    
+    // Actualizar Cuadre de Caja
+    Actualizar_Cuadre_Caja_Registro(total_ventas);
+}
+
+function Actualizar_Cuadre_Caja_Registro(total_ventas) {
+    $("#cuadre_total_ventas").text('S/. ' + total_ventas.toFixed(2));
+    
+    // Calcular total de pagos
+    var total_pagos = 0;
+    $("#tbody_pagos_registro tr").each(function() {
+        var monto = parseFloat($(this).find('.monto-pago-input').val()) || 0;
+        total_pagos += monto;
+    });
+    $("#cuadre_total_pagos").text('S/. ' + total_pagos.toFixed(2));
+    
+    // Calcular total de créditos
+    var total_creditos = 0;
+    $("#tbody_creditos_registro tr").each(function() {
+        var monto = parseFloat($(this).find('.monto-credito-input').val()) || 0;
+        total_creditos += monto;
+    });
+    $("#cuadre_total_creditos").text('S/. ' + total_creditos.toFixed(2));
+    
+    var descuentos = parseFloat($("#txt_descuentos").val()) || 0;
+    var otros_gastos = parseFloat($("#txt_otros_gastos").val()) || 0;
+    var monto_efectivo = parseFloat($("#txt_monto_efectivo").val()) || 0;
+    
+    $("#cuadre_descuentos").text('S/. ' + descuentos.toFixed(2));
+    $("#cuadre_otros_gastos").text('S/. ' + otros_gastos.toFixed(2));
+    $("#cuadre_monto_efectivo").text('S/. ' + monto_efectivo.toFixed(2));
+    
+    // Cálculo del faltante/sobrante
+    var total_justificado = total_pagos + total_creditos + otros_gastos + monto_efectivo;
+    var total_neto_ventas = total_ventas - descuentos;
+    var diferencia = total_justificado - total_neto_ventas;
+    
+    var diferencia_text = 'S/. ' + Math.abs(diferencia).toFixed(2);
+    
+    if (diferencia < -0.001) {
+        $("#cuadre_faltante").html('<span class="text-danger">' + diferencia_text + ' (FALTANTE)</span>');
+    } else if (diferencia > 0.001) {
+        $("#cuadre_faltante").html('<span class="text-success">' + diferencia_text + ' (SOBRANTE)</span>');
+    } else {
+        $("#cuadre_faltante").html('<span class="text-success">S/. 0.00 (CUADRADO)</span>');
+    }
+}
+
+// Actualizar cuadre cuando cambian los descuentos u otros gastos
+$(document).on('change input', '#txt_descuentos, #txt_otros_gastos, #txt_monto_efectivo', function() {
+    Calcular_Totales_Registro();
+});
+
+// PAGOS - Sistema de filas editables
+function Agregar_Fila_Pago_Registro() {
+    contador_filas_pago_registro++;
+    var fila_id = 'pago_reg_' + contador_filas_pago_registro;
+    
+    // Cargar tipos de pago
+    $.ajax({
+        url: '../controller/turnos/controlador_tipos_pago.php',
+        type: 'POST',
+        async: false
+    }).done(function(resp) {
+        var tipos = JSON.parse(resp);
+        var opciones = '<option value="">-- Seleccione --</option>';
+        tipos.forEach(function(tipo) {
+            opciones += '<option value="' + tipo.id_tipo_pago + '">' + tipo.nombre + '</option>';
+        });
+        
+        var fila = '<tr id="' + fila_id + '">';
+        fila += '<td><select class="form-control form-control-sm tipo-pago-select" onchange="Actualizar_Cuadre_Caja_Registro()">' + opciones + '</select></td>';
+        fila += '<td><input type="text" class="form-control form-control-sm codigo-operacion-input"></td>';
+        fila += '<td><input type="number" step="0.01" class="form-control form-control-sm monto-pago-input" onchange="Calcular_Totales_Registro()"></td>';
+        fila += '<td><input type="text" class="form-control form-control-sm observaciones-input"></td>';
+        fila += '<td><button class="btn btn-danger btn-sm" onclick="Eliminar_Fila_Pago_Registro(\'' + fila_id + '\')"><i class="fas fa-trash"></i></button></td>';
+        fila += '</tr>';
+        
+        $("#tbody_pagos_registro").append(fila);
+    });
+}
+
+function Eliminar_Fila_Pago_Registro(fila_id) {
+    $("#" + fila_id).remove();
+    Calcular_Totales_Registro();
+}
+
+// CRÉDITOS - Sistema de filas editables
+function Agregar_Fila_Credito_Registro() {
+    contador_filas_credito_registro++;
+    var fila_id = 'credito_reg_' + contador_filas_credito_registro;
+    
+    // Cargar clientes
+    $.ajax({
+        url: '../controller/clientes/controlador_clientes_activos.php',
+        type: 'POST',
+        async: false
+    }).done(function(resp) {
+        var clientes = JSON.parse(resp);
+        var opciones = '<option value="">-- Seleccione --</option>';
+        clientes.forEach(function(cliente) {
+            opciones += '<option value="' + cliente.id_cliente + '">' + cliente.nombre_completo + '</option>';
+        });
+        
+        var fila = '<tr id="' + fila_id + '">';
+        fila += '<td><select class="form-control form-control-sm cliente-select select2-cliente-registro" data-fila-id="' + fila_id + '">' + opciones + '</select></td>';
+        fila += '<td><input type="text" class="form-control form-control-sm numero-vale-input"></td>';
+        fila += '<td><input type="number" step="0.01" class="form-control form-control-sm monto-credito-input" onchange="Calcular_Totales_Registro()"></td>';
+        fila += '<td><input type="date" class="form-control form-control-sm fecha-vencimiento-input"></td>';
+        fila += '<td><button class="btn btn-danger btn-sm" onclick="Eliminar_Fila_Credito_Registro(\'' + fila_id + '\')"><i class="fas fa-trash"></i></button></td>';
+        fila += '</tr>';
+        
+        $("#tbody_creditos_registro").append(fila);
+        
+        // Inicializar Select2 para el select recién agregado
+        $('#' + fila_id + ' .select2-cliente-registro').select2({
+            placeholder: '-- Seleccione --',
+            allowClear: true,
+            width: '100%',
+            language: {
+                noResults: function() {
+                    return "No se encontraron resultados";
+                }
+            }
+        });
+    });
+}
+
+function Eliminar_Fila_Credito_Registro(fila_id) {
+    $("#" + fila_id).remove();
+    Calcular_Totales_Registro();
+}
+
+// REGISTRAR TURNO COMPLETO
+function Registrar_Turno_Completo() {
+    // Validar campos obligatorios
+    var numero_documento = $("#txt_numero_documento").val();
+    var fecha = $("#txt_fecha_turno").val();
+    var turno = $("#txt_tipo_turno").val();
+    var hora_inicio = $("#txt_hora_inicio").val();
+    var hora_fin = $("#txt_hora_fin").val();
+    var id_grifero = $("#txt_grifero").val();
+    
+    if (fecha.length == 0 || turno.length == 0 || hora_inicio.length == 0 || hora_fin.length == 0 || id_grifero.length == 0) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Advertencia',
+            text: 'Complete todos los campos obligatorios del PASO 1',
+            confirmButtonColor: '#023D77'
+        });
+        return;
+    }
+    
+    // Recopilar lecturas
+    var lecturas = [];
+    $(".lectura-final-input").each(function() {
+        var id_surtidor = $(this).data('id-surtidor');
+        var lectura_inicial = parseFloat($(this).data('lectura-inicial'));
+        var lectura_final = parseFloat($(this).val());
+        var precio = parseFloat($(this).data('precio'));
+        
+        if (isNaN(lectura_final) || lectura_final < lectura_inicial) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error en Lecturas',
+                text: 'Todas las lecturas finales deben ser mayores o iguales a las iniciales',
+                confirmButtonColor: '#023D77'
+            });
+            return false;
+        }
+        
+        lecturas.push({
+            id_surtidor: id_surtidor,
+            lectura_inicial: lectura_inicial,
+            lectura_final: lectura_final,
+            precio: precio
+        });
+    });
+    
+    if (lecturas.length == 0) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Debe registrar al menos una lectura',
+            confirmButtonColor: '#023D77'
+        });
+        return;
+    }
+    
+    // Recopilar pagos (solo los que tienen datos)
+    var pagos = [];
+    $("#tbody_pagos_registro tr").each(function() {
+        var id_tipo_pago = $(this).find('.tipo-pago-select').val();
+        var codigo_operacion = $(this).find('.codigo-operacion-input').val();
+        var monto = parseFloat($(this).find('.monto-pago-input').val());
+        var observaciones = $(this).find('.observaciones-input').val();
+        
+        if (id_tipo_pago && monto > 0) {
+            pagos.push({
+                id_tipo_pago: id_tipo_pago,
+                codigo_operacion: codigo_operacion,
+                monto: monto,
+                observaciones: observaciones
+            });
+        }
+    });
+    
+    // Recopilar créditos (solo los que tienen datos)
+    var creditos = [];
+    $("#tbody_creditos_registro tr").each(function() {
+        var id_cliente = $(this).find('.cliente-select').val();
+        var numero_vale = $(this).find('.numero-vale-input').val();
+        var monto = parseFloat($(this).find('.monto-credito-input').val());
+        var fecha_vencimiento = $(this).find('.fecha-vencimiento-input').val();
+        
+        if (id_cliente && monto > 0) {
+            creditos.push({
+                id_cliente: id_cliente,
+                numero_vale: numero_vale,
+                monto: monto,
+                fecha_vencimiento: fecha_vencimiento
+            });
+        }
+    });
+    
+    // Otros conceptos
+    var descuentos = parseFloat($("#txt_descuentos").val()) || 0;
+    var otros_gastos = parseFloat($("#txt_otros_gastos").val()) || 0;
+    var monto_efectivo = parseFloat($("#txt_monto_efectivo").val()) || 0;
+    
+    // Confirmar registro
+    Swal.fire({
+        title: '¿Registrar turno completo?',
+        text: "Se guardarán todos los datos y se actualizarán las lecturas de los surtidores",
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#023D77',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Sí, registrar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Enviar datos al servidor
+            $.ajax({
+                url: '../controller/turnos/controlador_registrar_turno_completo.php',
+                type: 'POST',
+                dataType: 'json',
+                data: {
+                    numero_documento: numero_documento,
+                    id_usuario: id_grifero,
+                    turno: turno,
+                    fecha: fecha,
+                    hora_inicio: hora_inicio,
+                    hora_fin: hora_fin,
+                    lecturas: JSON.stringify(lecturas),
+                    pagos: JSON.stringify(pagos),
+                    creditos: JSON.stringify(creditos),
+                    descuentos: descuentos,
+                    otros_gastos: otros_gastos,
+                    monto_efectivo: monto_efectivo
+                }
+            }).done(function(resp) {
+                console.log('Respuesta del servidor:', resp);
+                
+                if (resp.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Éxito',
+                        text: resp.message,
+                        confirmButtonColor: '#023D77'
+                    }).then(() => {
+                        // Imprimir el reporte automáticamente
+                        if (resp.id_reporte) {
+                            Imprimir_Reporte(resp.id_reporte);
+                        }
+                        // Redirigir al historial
+                        cargar_contenido('contenido_principal', 'turnos/view_historial.php');
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: resp.message,
+                        confirmButtonColor: '#023D77'
+                    });
+                }
+            }).fail(function(xhr, status, error) {
+                console.error('Error en la petición:', error);
+                console.error('Respuesta del servidor:', xhr.responseText);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error de conexión',
+                    text: 'No se pudo conectar con el servidor.',
+                    confirmButtonColor: '#023D77'
+                });
+            });
+        }
+    });
+}
