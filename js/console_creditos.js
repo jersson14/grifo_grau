@@ -222,6 +222,8 @@ function Ver_Vales_Cliente(id_cliente, nombre_cliente, dni, total_vales, saldo_t
                         botones = "<button class='pagar_vale btn btn-success btn-sm' title='Registrar Pago'><i class='fas fa-money-bill-wave'></i></button>&nbsp;";
                         // Botón de editar
                         botones += "<button class='editar_vale btn btn-warning btn-sm' title='Editar'><i class='fas fa-edit'></i></button>&nbsp;";
+                        // Botón de eliminar
+                        botones += "<button class='eliminar_vale btn btn-danger btn-sm' title='Eliminar'><i class='fas fa-trash'></i></button>&nbsp;";
                     }
                     // Siempre mostrar historial
                     botones += "<button class='historial_vale btn btn-info btn-sm' title='Ver Historial'><i class='fas fa-history'></i></button>";
@@ -258,7 +260,60 @@ function Ver_Vales_Cliente(id_cliente, nombre_cliente, dni, total_vales, saldo_t
         }, 300);
     });
     
+    $('#tabla_vales_cliente tbody').on('click', '.eliminar_vale', function() {
+        var data = tabla_vales_cliente.row($(this).closest('tr')).data();
+        Eliminar_Credito(data.id_credito, data.numero_vale);
+    });
+    
     $('#modal_vales_cliente').modal('show');
+}
+
+// ELIMINAR (ANULAR) CRÉDITO
+function Eliminar_Credito(id_credito, numero_vale) {
+    Swal.fire({
+        title: '¿Eliminar crédito?',
+        html: 'Se anulará el vale <strong>' + numero_vale + '</strong><br><br>Esta acción no se puede deshacer.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            var motivo = 'Anulado por error de registro';
+            
+            $.ajax({
+                url: '../controller/creditos/controlador_anular_credito.php',
+                type: 'POST',
+                data: {
+                    id_credito: id_credito,
+                    motivo: motivo
+                }
+            }).done(function(resp) {
+                if (resp > 0) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Crédito eliminado',
+                        text: 'El crédito ha sido anulado correctamente',
+                        confirmButtonColor: '#023D77'
+                    });
+                    
+                    // Actualizar tablas y resumen
+                    tabla_vales_cliente.ajax.reload();
+                    Listar_Creditos_Por_Cliente();
+                    Cargar_Resumen_Creditos();
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'No se pudo eliminar el crédito',
+                        confirmButtonColor: '#023D77'
+                    });
+                }
+            });
+        }
+    });
 }
 
 
