@@ -419,17 +419,18 @@
                 </button>
             </div>
             <div class="modal-body">
-                <button class="btn btn-success btn-sm mb-2" onclick="Agregar_Fila_Credito_Manual()">
+                <button class="btn btn-success btn-sm mb-2" onclick="Agregar_Nueva_Fila_Credito()">
                     <i class="fas fa-plus"></i> Agregar Fila
                 </button>
                 <div class="table-responsive">
                     <table id="tabla_creditos_manual_editable" class="table table-sm table-bordered table-hover">
                         <thead style="background-color:#28a745; color:white">
                             <tr>
+                                <th width="5%">#</th>
                                 <th width="30%">Cliente</th>
                                 <th width="20%">N° Vale</th>
                                 <th width="15%">Monto (S/.)</th>
-                                <th width="20%">Fecha Vencimiento</th>
+                                <th width="15%">Fecha de Registro</th>
                                 <th width="15%">Acciones</th>
                             </tr>
                         </thead>

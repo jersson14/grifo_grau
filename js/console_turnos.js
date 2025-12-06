@@ -783,7 +783,7 @@ function Agregar_Fila_Credito(datos = null) {
         });
         
         var fila = '<tr id="' + fila_id + '" data-id-credito="' + (datos ? datos.id_credito : '0') + '">';
-        fila += '<td><select class="form-control form-control-sm cliente-select" onchange="Guardar_Credito_Fila(\'' + fila_id + '\')">' + opciones + '</select></td>';
+        fila += '<td><select class="form-control form-control-sm cliente-select select2-cliente-turno" data-fila-id="' + fila_id + '" onchange="Guardar_Credito_Fila(\'' + fila_id + '\')">' + opciones + '</select></td>';
         fila += '<td><input type="text" class="form-control form-control-sm numero-vale-input" value="' + (datos ? datos.numero_vale : '') + '" onchange="Guardar_Credito_Fila(\'' + fila_id + '\')"></td>';
         fila += '<td><input type="number" step="0.01" class="form-control form-control-sm monto-credito-input" value="' + (datos ? datos.monto : '0') + '" onchange="Guardar_Credito_Fila(\'' + fila_id + '\')"></td>';
         fila += '<td><input type="date" class="form-control form-control-sm fecha-vencimiento-input" value="' + (datos ? datos.fecha_vencimiento || '' : '') + '" onchange="Guardar_Credito_Fila(\'' + fila_id + '\')"></td>';
@@ -791,6 +791,21 @@ function Agregar_Fila_Credito(datos = null) {
         fila += '</tr>';
         
         $("#tbody_creditos_editable").append(fila);
+        
+        // Inicializar Select2 para el select recién agregado
+        $('#' + fila_id + ' .select2-cliente-turno').select2({
+            placeholder: '-- Seleccione --',
+            allowClear: true,
+            width: '100%',
+            language: {
+                noResults: function() {
+                    return "No se encontraron resultados";
+                },
+                searching: function() {
+                    return "Buscando...";
+                }
+            }
+        });
     });
 }
 
@@ -834,6 +849,13 @@ function Guardar_Credito_Fila(fila_id) {
 function Eliminar_Fila_Credito(fila_id) {
     var fila = $("#" + fila_id);
     var id_credito = fila.data('id-credito');
+    
+    // Destruir Select2 antes de eliminar la fila
+    fila.find('.select2-cliente-turno').each(function() {
+        if ($(this).hasClass("select2-hidden-accessible")) {
+            $(this).select2('destroy');
+        }
+    });
     
     if (id_credito && id_credito != '0') {
         // Eliminar del servidor

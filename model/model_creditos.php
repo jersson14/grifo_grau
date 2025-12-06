@@ -378,21 +378,25 @@ class Modelo_Creditos extends conexionBD {
     }
 
     // AGREGAR CRÉDITO MANUAL (SIN TURNO)
-    public function Agregar_Credito_Manual($id_cliente, $numero_vale, $monto, $fecha_vencimiento, $observaciones) {
+    public function Agregar_Credito_Manual($id_cliente, $numero_vale, $monto, $fecha_registro, $observaciones) {
         $c = conexionBD::conexionPDO();
         
-        // Si no hay fecha de vencimiento, usar 30 días desde hoy
-        if (empty($fecha_vencimiento)) {
-            $fecha_vencimiento = date('Y-m-d', strtotime('+30 days'));
+        // Si no hay fecha de registro, usar hoy
+        if (empty($fecha_registro)) {
+            $fecha_registro = date('Y-m-d');
         }
         
+        // Calcular fecha de vencimiento: 30 días desde la fecha de registro
+        $fecha_vencimiento = date('Y-m-d', strtotime($fecha_registro . ' +30 days'));
+        
         // Usar la tabla 'ventas_credito' con id_reporte = NULL para créditos manuales
+        // La fecha_registro se usa como created_at
         $sql = "INSERT INTO ventas_credito (
                     id_cliente, id_reporte, numero_vale, monto, saldo_pendiente,
                     estado, fecha_vencimiento, observaciones, created_at
-                ) VALUES (?, NULL, ?, ?, ?, 'PENDIENTE', ?, ?, NOW())";
+                ) VALUES (?, NULL, ?, ?, ?, 'PENDIENTE', ?, ?, ?)";
         $query = $c->prepare($sql);
-        $resultado = $query->execute(array($id_cliente, $numero_vale, $monto, $monto, $fecha_vencimiento, $observaciones));
+        $resultado = $query->execute(array($id_cliente, $numero_vale, $monto, $monto, $fecha_vencimiento, $observaciones, $fecha_registro));
         if ($resultado) {
             return $c->lastInsertId();
         } else {

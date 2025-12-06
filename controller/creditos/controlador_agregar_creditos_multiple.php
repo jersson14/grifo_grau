@@ -34,13 +34,13 @@ foreach ($creditos as $index => $credito) {
     $id_cliente = htmlspecialchars($credito['id_cliente'], ENT_QUOTES, 'UTF-8');
     $numero_vale = htmlspecialchars($credito['numero_vale'], ENT_QUOTES, 'UTF-8');
     $monto = htmlspecialchars($credito['monto'], ENT_QUOTES, 'UTF-8');
-    $fecha_vencimiento = isset($credito['fecha_vencimiento']) && !empty($credito['fecha_vencimiento']) 
-        ? htmlspecialchars($credito['fecha_vencimiento'], ENT_QUOTES, 'UTF-8') 
-        : '';
+    $fecha_registro = isset($credito['fecha_registro']) && !empty($credito['fecha_registro']) 
+        ? htmlspecialchars($credito['fecha_registro'], ENT_QUOTES, 'UTF-8') 
+        : date('Y-m-d'); // Si no viene fecha, usar hoy
     $observaciones = ''; // No tenemos campo de observaciones en la tabla
     
     // Agregar crédito
-    $resultado = $MCreditos->Agregar_Credito_Manual($id_cliente, $numero_vale, $monto, $fecha_vencimiento, $observaciones);
+    $resultado = $MCreditos->Agregar_Credito_Manual($id_cliente, $numero_vale, $monto, $fecha_registro, $observaciones);
     
     if ($resultado > 0) {
         $guardados++;
