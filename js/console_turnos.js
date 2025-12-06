@@ -646,7 +646,7 @@ function Agregar_Fila_Pago(datos = null) {
         var fila = '<tr id="' + fila_id + '" data-id-pago="' + (datos ? datos.id_pago_reporte : '0') + '">';
         fila += '<td><select class="form-control form-control-sm tipo-pago-select" onchange="Guardar_Pago_Fila(\'' + fila_id + '\')">' + opciones + '</select></td>';
         fila += '<td><input type="text" class="form-control form-control-sm codigo-operacion-input" value="' + (datos ? datos.codigo_operacion || '' : '') + '" onchange="Guardar_Pago_Fila(\'' + fila_id + '\')"></td>';
-        fila += '<td><input type="number" step="0.01" class="form-control form-control-sm monto-pago-input" value="' + (datos ? datos.monto : '0') + '" onchange="Guardar_Pago_Fila(\'' + fila_id + '\')"></td>';
+        fila += '<td><input type="number" step="0.01" class="form-control form-control-sm monto-pago-input" value="' + (datos ? datos.monto : '') + '" onchange="Guardar_Pago_Fila(\'' + fila_id + '\')"></td>';
         fila += '<td><input type="text" class="form-control form-control-sm observaciones-input" value="' + (datos ? datos.observaciones || '' : '') + '" onchange="Guardar_Pago_Fila(\'' + fila_id + '\')"></td>';
         fila += '<td><button class="btn btn-danger btn-sm" onclick="Eliminar_Fila_Pago(\'' + fila_id + '\')"><i class="fas fa-trash"></i></button></td>';
         fila += '</tr>';
@@ -768,6 +768,7 @@ function Cargar_Creditos_Iniciales() {
 function Agregar_Fila_Credito(datos = null) {
     contador_filas_credito++;
     var fila_id = 'credito_' + contador_filas_credito;
+    var numero_fila = contador_filas_credito;
     
     // Cargar clientes
     $.ajax({
@@ -782,10 +783,10 @@ function Agregar_Fila_Credito(datos = null) {
             opciones += '<option value="' + cliente.id_cliente + '" ' + selected + '>' + cliente.nombre_completo + '</option>';
         });
         
-        var fila = '<tr id="' + fila_id + '" data-id-credito="' + (datos ? datos.id_credito : '0') + '">';
+        var fila = '<tr id="' + fila_id + '" data-id-credito="' + (datos ? datos.id_credito : '0') + '" data-numero-fila="' + numero_fila + '">';
         fila += '<td><select class="form-control form-control-sm cliente-select select2-cliente-turno" data-fila-id="' + fila_id + '" onchange="Guardar_Credito_Fila(\'' + fila_id + '\')">' + opciones + '</select></td>';
-        fila += '<td><input type="text" class="form-control form-control-sm numero-vale-input" value="' + (datos ? datos.numero_vale : '') + '" onchange="Guardar_Credito_Fila(\'' + fila_id + '\')"></td>';
-        fila += '<td><input type="number" step="0.01" class="form-control form-control-sm monto-credito-input" value="' + (datos ? datos.monto : '0') + '" onchange="Guardar_Credito_Fila(\'' + fila_id + '\')"></td>';
+        fila += '<td><input type="text" class="form-control form-control-sm numero-vale-input" value="' + (datos ? datos.numero_vale : '') + '" onchange="Guardar_Credito_Fila(\'' + fila_id + '\')" oninput="Auto_Incrementar_Vales()"></td>';
+        fila += '<td><input type="number" step="0.01" class="form-control form-control-sm monto-credito-input" value="' + (datos ? datos.monto : '') + '" onchange="Guardar_Credito_Fila(\'' + fila_id + '\')"></td>';
         fila += '<td><input type="date" class="form-control form-control-sm fecha-vencimiento-input" value="' + (datos ? datos.fecha_vencimiento || '' : '') + '" onchange="Guardar_Credito_Fila(\'' + fila_id + '\')"></td>';
         fila += '<td><button class="btn btn-danger btn-sm" onclick="Eliminar_Fila_Credito(\'' + fila_id + '\')"><i class="fas fa-trash"></i></button></td>';
         fila += '</tr>';
@@ -806,6 +807,31 @@ function Agregar_Fila_Credito(datos = null) {
                 }
             }
         });
+    });
+}
+
+// FUNCIÓN PARA AUTO-INCREMENTAR NÚMEROS DE VALE
+function Auto_Incrementar_Vales() {
+    // Obtener todas las filas de créditos
+    var filas = $("#tbody_creditos_editable tr");
+    
+    if (filas.length === 0) return;
+    
+    // Obtener el valor del primer número de vale
+    var primer_vale = $(filas[0]).find('.numero-vale-input').val().trim();
+    
+    // Verificar si es un número válido
+    if (primer_vale === '' || isNaN(primer_vale)) return;
+    
+    var numero_base = parseInt(primer_vale);
+    
+    // Auto-incrementar para las filas siguientes
+    filas.each(function(index) {
+        if (index > 0) { // Saltar la primera fila
+            var input_vale = $(this).find('.numero-vale-input');
+            var nuevo_numero = numero_base + index;
+            input_vale.val(nuevo_numero);
+        }
     });
 }
 

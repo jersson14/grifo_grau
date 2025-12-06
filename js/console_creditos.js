@@ -856,7 +856,7 @@ function Agregar_Fila_Credito_Manual(datos = null) {
         fila += '<td class="text-center"><strong>' + numero_fila + '</strong></td>';
         fila += '<td><select class="form-control form-control-sm cliente-select-manual select2-cliente-manual" data-fila-id="' + fila_id + '" data-numero-fila="' + numero_fila + '">' + opciones + '</select></td>';
         fila += '<td><input type="text" class="form-control form-control-sm numero-vale-input-manual" value="' + (datos ? datos.numero_vale : '') + '" placeholder="Número de vale"></td>';
-        fila += '<td><input type="number" step="0.01" class="form-control form-control-sm monto-credito-input-manual" value="' + (datos ? datos.monto : '0') + '" placeholder="0.00"></td>';
+        fila += '<td><input type="number" step="0.01" class="form-control form-control-sm monto-credito-input-manual" value="' + (datos ? datos.monto : '') + '"></td>';
         fila += '<td><input type="date" class="form-control form-control-sm fecha-registro-input-manual" value="' + fecha_actual + '"></td>';
         fila += '<td><button class="btn btn-danger btn-sm" onclick="Eliminar_Fila_Credito_Manual(\'' + fila_id + '\')"><i class="fas fa-trash"></i></button></td>';
         fila += '</tr>';

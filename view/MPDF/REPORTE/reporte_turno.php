@@ -186,6 +186,15 @@ $mpdf = new \Mpdf\Mpdf([
     'margin_bottom' => 10
 ]);
 
+// Array de meses en español
+$meses_es = array(
+    1 => 'ENERO', 2 => 'FEBRERO', 3 => 'MARZO', 4 => 'ABRIL',
+    5 => 'MAYO', 6 => 'JUNIO', 7 => 'JULIO', 8 => 'AGOSTO',
+    9 => 'SEPTIEMBRE', 10 => 'OCTUBRE', 11 => 'NOVIEMBRE', 12 => 'DICIEMBRE'
+);
+$mes_numero = date('n', strtotime($turno['fecha_reporte']));
+$mes_espanol = $meses_es[$mes_numero];
+
 $html = '
 <style>
     body { font-family: Arial, sans-serif; font-size: 9px; }
@@ -207,7 +216,7 @@ $html = '
 <table style="width: 100%; border-collapse: collapse; margin-bottom: 10px; font-size: 9px; font-family: Arial, sans-serif;">
     <tr>
         <td colspan="3" style="width: 85%; background-color: #D3D3D3; border: 1px solid #000; padding: 5px; text-align: center; font-weight: bold;">
-            REPORTE DE VENTAS DIARIAS - ' . strtoupper(date('F', strtotime($turno['fecha_reporte']))) . ' DE ' . date('Y', strtotime($turno['fecha_reporte'])) . '
+            REPORTE DE VENTAS DIARIAS - ' . $mes_espanol . ' DE ' . date('Y', strtotime($turno['fecha_reporte'])) . '
         </td>
         <td style="width: 15%; background-color: #90EE90; border: 1px solid #000; padding: 5px; text-align: center; font-weight: bold;">
             ' . $turno['numero_documento'] . '
@@ -490,7 +499,7 @@ $html .= '
         <td style="font-weight: bold;">S/. ' . number_format($total_suma, 2) . '</td>
     </tr>
     <tr style="background-color: #FFE4E1;">
-        <td class="text-right" style="font-weight: bold;">MONTO FALTANTE</td>
+        <td class="text-right" style="font-weight: bold;">MONTO SOBRANTE</td>
         <td style="font-weight: bold; color: ' . ($monto_faltante < 0 ? 'red' : 'green') . ';">S/. ' . number_format($monto_faltante, 2) . '</td>
     </tr>
 </table>
