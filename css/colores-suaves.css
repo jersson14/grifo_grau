@@ -1,0 +1,221 @@
+/* ========================================
+   PALETA DE COLORES SUAVES - GRIFO GRAU
+   Colores optimizados para reducir fatiga visual
+   ======================================== */
+
+:root {
+    /* AZULES SUAVES - Reemplazo de #023D77, #0266C8 */
+    --color-azul-principal: #4A90A4;
+    --color-azul-secundario: #6BA3B8;
+
+    /* VERDES SUAVES - Reemplazo de #28a745, #218838 */
+    --color-verde-principal: #66B584;
+    --color-verde-secundario: #7EC89A;
+
+    /* ROJOS/ROSAS SUAVES - Reemplazo de #dc3545, #e57373 */
+    --color-rojo-principal: #D47B7B;
+    --color-rojo-secundario: #E09999;
+
+    /* NARANJAS/AMARILLOS SUAVES - Reemplazo de #ffc107, #ff9800 */
+    --color-naranja-principal: #F0B86E;
+    --color-naranja-secundario: #F5C98A;
+
+    /* GRISES SUAVES - Reemplazo de #6c757d */
+    --color-gris-principal: #8B95A0;
+
+    /* MORADOS SUAVES - Reemplazo de #6f42c1 */
+    --color-morado-principal: #9B7BB8;
+
+    /* CYAN/TURQUESA SUAVES - Reemplazo de #17a2b8 */
+    --color-cyan-principal: #5FB8C9;
+}
+
+/* ========================================
+   SOBREESCRITURA DE GRADIENTES AZULES
+   ======================================== */
+
+/* Gradientes azules principales (#023D77, #0266C8) */
+[style*="linear-gradient"][style*="#023D77"],
+[style*="linear-gradient"][style*="#0266C8"],
+.card-header[style*="linear-gradient"][style*="#023D77"],
+.modal-header[style*="linear-gradient"][style*="#023D77"] {
+    background: linear-gradient(135deg, var(--color-azul-principal), var(--color-azul-secundario)) !important;
+}
+
+/* ========================================
+   SOBREESCRITURA DE GRADIENTES VERDES
+   ======================================== */
+
+/* Gradientes verdes (#28a745, #218838) */
+[style*="linear-gradient"][style*="#28a745"],
+[style*="linear-gradient"][style*="#218838"],
+.modal-header[style*="linear-gradient"][style*="#28a745"] {
+    background: linear-gradient(135deg, var(--color-verde-principal), var(--color-verde-secundario)) !important;
+}
+
+/* ========================================
+   SOBREESCRITURA DE GRADIENTES ROJOS/ROSAS
+   ======================================== */
+
+/* Gradientes rojos (#dc3545, #c82333, #e57373, #ef5350) */
+[style*="linear-gradient"][style*="#dc3545"],
+[style*="linear-gradient"][style*="#c82333"],
+[style*="linear-gradient"][style*="#e57373"],
+[style*="linear-gradient"][style*="#ef5350"],
+.modal-header[style*="linear-gradient"][style*="#dc3545"] {
+    background: linear-gradient(135deg, var(--color-rojo-principal), var(--color-rojo-secundario)) !important;
+}
+
+/* ========================================
+   SOBREESCRITURA DE GRADIENTES NARANJAS
+   ======================================== */
+
+/* Gradientes naranjas/amarillos (#ffc107, #ff9800, #FFA500, #FF8C00) */
+[style*="linear-gradient"][style*="#ffc107"],
+[style*="linear-gradient"][style*="#ff9800"],
+[style*="linear-gradient"][style*="#FFA500"],
+[style*="linear-gradient"][style*="#FF8C00"],
+.modal-header[style*="linear-gradient"][style*="#ffc107"] {
+    background: linear-gradient(135deg, var(--color-naranja-principal), var(--color-naranja-secundario)) !important;
+}
+
+/* ========================================
+   SOBREESCRITURA DE GRADIENTES CYAN
+   ======================================== */
+
+/* Gradientes cyan (#17a2b8, #138496) */
+[style*="linear-gradient"][style*="#17a2b8"],
+[style*="linear-gradient"][style*="#138496"],
+.modal-header[style*="linear-gradient"][style*="#17a2b8"] {
+    background: linear-gradient(135deg, var(--color-cyan-principal), var(--color-cyan-secundario)) !important;
+}
+
+/* ========================================
+   SOBREESCRITURA DE GRADIENTES MORADOS
+   ======================================== */
+
+/* Gradientes morados (#6f42c1, #5a32a3) */
+[style*="linear-gradient"][style*="#6f42c1"],
+[style*="linear-gradient"][style*="#5a32a3"] {
+    background: linear-gradient(135deg, var(--color-morado-principal), var(--color-morado-secundario)) !important;
+}
+
+/* ========================================
+   SOBREESCRITURA DE FONDOS SÓLIDOS
+   ======================================== */
+
+/* Azules sólidos */
+[style*="background-color:#023D77"],
+[style*="background-color: #023D77"],
+thead[style*="background-color:#023D77"],
+h5[style*="background-color:#023D77"] {
+    background-color: var(--color-azul-principal) !important;
+}
+
+/* Verdes sólidos (#28a745, #007bff, #4caf50) */
+[style*="background-color:#28a745"],
+[style*="background-color:#007bff"],
+[style*="background-color:#4caf50"],
+thead[style*="background-color:#28a745"],
+h5[style*="background-color:#28a745"],
+tr[style*="background-color:#28a745"] {
+    background-color: var(--color-verde-principal) !important;
+}
+
+/* Rojos/Rosas sólidos (#dc3545) */
+[style*="background-color:#dc3545"],
+thead[style*="background-color:#dc3545"] {
+    background-color: var(--color-rojo-principal) !important;
+}
+
+/* Naranjas/Amarillos sólidos (#ffc107, #ff9800, #FFA500) */
+[style*="background-color:#ffc107"],
+[style*="background-color:#ff9800"],
+[style*="background-color:#FFA500"],
+thead[style*="background-color:#ffc107"],
+h5[style*="background-color:#FFA500"] {
+    background-color: var(--color-naranja-principal) !important;
+}
+
+/* Grises sólidos (#6c757d) */
+[style*="background-color:#6c757d"],
+thead[style*="background-color:#6c757d"],
+h5[style*="background-color:#6c757d"],
+.card-header[style*="background-color:#6c757d"] {
+    background-color: var(--color-gris-principal) !important;
+}
+
+/* Cyan sólidos (#17a2b8) */
+[style*="background-color:#17a2b8"],
+h5[style*="background-color:#17a2b8"] {
+    background-color: var(--color-cyan-principal) !important;
+}
+
+/* ========================================
+   SOBREESCRITURA DE BADGES
+   ======================================== */
+
+.badge-danger {
+    background-color: var(--color-rojo-principal) !important;
+}
+
+.badge-warning {
+    background-color: var(--color-naranja-principal) !important;
+    color: white !important;
+}
+
+.badge-success {
+    background-color: var(--color-verde-principal) !important;
+}
+
+.badge-info {
+    background-color: var(--color-cyan-principal) !important;
+}
+
+.badge-primary {
+    background-color: var(--color-azul-principal) !important;
+}
+
+/* ========================================
+   SOBREESCRITURA DE INFO-BOXES
+   ======================================== */
+
+.info-box.bg-danger {
+    background-color: var(--color-rojo-principal) !important;
+}
+
+.info-box.bg-warning {
+    background-color: var(--color-naranja-principal) !important;
+}
+
+.info-box.bg-success {
+    background-color: var(--color-verde-principal) !important;
+}
+
+.info-box.bg-info {
+    background-color: var(--color-cyan-principal) !important;
+}
+
+.info-box.bg-dark {
+    background-color: var(--color-gris-principal) !important;
+}
+
+/* ========================================
+   SOBREESCRITURA DE SMALL-BOXES (Dashboard)
+   ======================================== */
+
+.small-box.bg-info {
+    background-color: var(--color-cyan-principal) !important;
+}
+
+.small-box.bg-success {
+    background-color: var(--color-verde-principal) !important;
+}
+
+.small-box.bg-warning {
+    background-color: var(--color-naranja-principal) !important;
+}
+
+.small-box.bg-danger {
+    background-color: var(--color-rojo-principal) !important;
+}

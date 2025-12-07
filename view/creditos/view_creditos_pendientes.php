@@ -31,7 +31,7 @@
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="info-box bg-danger">
+                <div class="info-box" style="background-color:#e57373; color:white">
                     <span class="info-box-icon"><i class="fas fa-exclamation-triangle"></i></span>
                     <div class="info-box-content">
                         <span class="info-box-text">Créditos Vencidos</span>
@@ -92,7 +92,7 @@
                                 </button>
                             </div>
                             <div class="col-md-3">
-                                <button class="btn btn-danger btn-block" onclick="Exportar_Creditos_PDF()">
+                                <button class="btn btn-block" style="background-color:#e57373; color:white; border-color:#e57373" onclick="Exportar_Creditos_PDF()">
                                     <i class="fas fa-file-pdf"></i> Exportar PDF
                                 </button>
                             </div>
@@ -115,13 +115,13 @@
         <div class="row">
             <div class="col-md-12">
                 <div class="card">
-                    <div class="card-header" style="background: linear-gradient(135deg, #dc3545, #c82333)">
+                    <div class="card-header" style="background: linear-gradient(135deg, #e57373, #ef5350)">
                         <h3 class="card-title" style="color:white"><i class="fas fa-users"></i> Clientes con Créditos Pendientes</h3>
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
                         <table id="tabla_creditos_por_cliente" class="table table-striped table-bordered table-hover" style="width:100%">
-                            <thead style="background-color:#dc3545; color:white">
+                            <thead style="background-color:#e57373; color:white">
                                 <tr>
                                     <th>Cliente</th>
                                     <th>DNI/RUC</th>
@@ -146,14 +146,14 @@
         <!-- TOP CLIENTES CON MÁS DEUDA -->
         <div class="row">
             <div class="col-md-12">
-                <div class="card card-danger">
-                    <div class="card-header">
+                <div class="card" style="border-top: 3px solid #e57373">
+                    <div class="card-header" style="background-color:#e57373; color:white">
                         <h3 class="card-title"><i class="fas fa-chart-bar"></i> Top 10 Clientes con Más Deuda</h3>
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
                         <table id="tabla_top_deudores" class="table table-sm table-bordered">
-                            <thead style="background-color:#dc3545; color:white">
+                            <thead style="background-color:#e57373; color:white">
                                 <tr>
                                     <th>#</th>
                                     <th>Cliente</th>
@@ -293,7 +293,7 @@
                 <!-- BOTONES DE EXPORTACIÓN -->
                 <div class="row mb-3">
                     <div class="col-md-6">
-                        <button class="btn btn-danger btn-block" onclick="Exportar_Historial_Vales_PDF()">
+                        <button class="btn btn-block" style="background-color:#e57373; color:white; border-color:#e57373" onclick="Exportar_Historial_Vales_PDF()">
                             <i class="fas fa-file-pdf"></i> Exportar PDF
                         </button>
                     </div>

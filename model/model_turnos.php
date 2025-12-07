@@ -608,5 +608,141 @@ class Modelo_Turnos extends conexionBD {
         return $arreglo;
         conexionBD::cerrar_conexion();
     }
+
+    // VERIFICAR SI UN TURNO PUEDE SER ELIMINADO
+    public function Verificar_Puede_Eliminar($id_reporte) {
+        $c = conexionBD::conexionPDO();
+        
+        try {
+            // Verificar que el turno exista y esté CERRADO
+            $sql_turno = "SELECT estado FROM reportes_turno WHERE id_reporte = ?";
+            $query_turno = $c->prepare($sql_turno);
+            $query_turno->execute(array($id_reporte));
+            $turno = $query_turno->fetch(PDO::FETCH_ASSOC);
+            
+            if (!$turno) {
+                return array('puede_eliminar' => false, 'mensaje' => 'El turno no existe');
+            }
+            
+            if ($turno['estado'] == 'ABIERTO') {
+                return array('puede_eliminar' => false, 'mensaje' => 'No se puede eliminar un turno abierto. Debe cerrarlo primero.');
+            }
+            
+            // Verificar que no tenga créditos con pagos realizados
+            $sql_creditos = "SELECT COUNT(*) as total 
+                            FROM ventas_credito vc
+                            INNER JOIN historial_pagos_credito hpc ON vc.id_credito = hpc.id_credito
+                            WHERE vc.id_reporte = ?";
+            $query_creditos = $c->prepare($sql_creditos);
+            $query_creditos->execute(array($id_reporte));
+            $creditos = $query_creditos->fetch(PDO::FETCH_ASSOC);
+            
+            if ($creditos['total'] > 0) {
+                return array('puede_eliminar' => false, 'mensaje' => 'No se puede eliminar este turno porque tiene créditos con pagos realizados. Elimine primero los pagos de los créditos.');
+            }
+            
+            return array('puede_eliminar' => true, 'mensaje' => 'El turno puede ser eliminado');
+            
+        } catch (PDOException $e) {
+            error_log("Error al verificar si puede eliminar turno: " . $e->getMessage());
+            return array('puede_eliminar' => false, 'mensaje' => 'Error al verificar el turno');
+        } finally {
+            $c = null;
+        }
+    }
+
+    // REVERTIR LECTURAS DE SURTIDORES AL ESTADO ANTERIOR
+    private function Revertir_Lecturas_Surtidores($id_reporte, $c = null) {
+        $local_connection = false;
+        if ($c === null) {
+            $c = conexionBD::conexionPDO();
+            $local_connection = true;
+        }
+        
+        try {
+            // Obtener las lecturas del turno
+            $sql_lecturas = "SELECT id_surtidor, lectura_anterior 
+                            FROM lecturas_turno 
+                            WHERE id_reporte = ?";
+            $query_lecturas = $c->prepare($sql_lecturas);
+            $query_lecturas->execute(array($id_reporte));
+            $lecturas = $query_lecturas->fetchAll(PDO::FETCH_ASSOC);
+            
+            // Revertir cada surtidor a su lectura anterior
+            $sql_update = "UPDATE surtidores 
+                          SET lectura_actual = ?, updated_at = NOW() 
+                          WHERE id_surtidor = ?";
+            $stmt_update = $c->prepare($sql_update);
+            
+            foreach ($lecturas as $lectura) {
+                $stmt_update->execute(array(
+                    $lectura['lectura_anterior'],
+                    $lectura['id_surtidor']
+                ));
+            }
+            
+            error_log("Lecturas revertidas correctamente para turno ID: $id_reporte");
+            return true;
+            
+        } catch (PDOException $e) {
+            error_log("Error al revertir lecturas: " . $e->getMessage());
+            throw $e;
+        } finally {
+            if ($local_connection) {
+                $c = null;
+            }
+        }
+    }
+
+    // ELIMINAR TURNO COMPLETAMENTE
+    public function Eliminar_Turno($id_reporte, $id_usuario_elimina, $motivo) {
+        $c = conexionBD::conexionPDO();
+        
+        try {
+            // Verificar si puede eliminar
+            $verificacion = $this->Verificar_Puede_Eliminar($id_reporte);
+            if (!$verificacion['puede_eliminar']) {
+                return array('success' => false, 'message' => $verificacion['mensaje']);
+            }
+            
+            $c->beginTransaction();
+            
+            // 1. Revertir las lecturas de los surtidores ANTES de eliminar
+            $this->Revertir_Lecturas_Surtidores($id_reporte, $c);
+            
+            // 2. Eliminar créditos asociados (que no tienen pagos, ya verificado)
+            $sql_delete_creditos = "DELETE FROM ventas_credito WHERE id_reporte = ?";
+            $stmt_creditos = $c->prepare($sql_delete_creditos);
+            $stmt_creditos->execute(array($id_reporte));
+            
+            // 3. Eliminar pagos del reporte
+            $sql_delete_pagos = "DELETE FROM pagos_reporte WHERE id_reporte = ?";
+            $stmt_pagos = $c->prepare($sql_delete_pagos);
+            $stmt_pagos->execute(array($id_reporte));
+            
+            // 4. Eliminar lecturas del turno
+            $sql_delete_lecturas = "DELETE FROM lecturas_turno WHERE id_reporte = ?";
+            $stmt_lecturas = $c->prepare($sql_delete_lecturas);
+            $stmt_lecturas->execute(array($id_reporte));
+            
+            // 5. Eliminar el reporte del turno
+            $sql_delete_reporte = "DELETE FROM reportes_turno WHERE id_reporte = ?";
+            $stmt_reporte = $c->prepare($sql_delete_reporte);
+            $stmt_reporte->execute(array($id_reporte));
+            
+            // Log de auditoría
+            error_log("TURNO ELIMINADO - ID: $id_reporte, Usuario: $id_usuario_elimina, Motivo: $motivo");
+            
+            $c->commit();
+            return array('success' => true, 'message' => 'Turno eliminado correctamente. Las lecturas de los surtidores han sido revertidas.');
+            
+        } catch (Exception $e) {
+            if ($c) $c->rollBack();
+            error_log("Error al eliminar turno: " . $e->getMessage());
+            return array('success' => false, 'message' => 'Error al eliminar el turno: ' . $e->getMessage());
+        } finally {
+            $c = null;
+        }
+    }
 }
 ?>

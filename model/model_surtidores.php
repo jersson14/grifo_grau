@@ -112,7 +112,14 @@ class Modelo_Surtidores extends conexionBD {
                 FROM surtidores s
                 INNER JOIN productos p ON s.id_producto = p.id_producto
                 WHERE s.estado = 'ACTIVO' AND p.estado = 'ACTIVO'
-                ORDER BY s.numero_maquina ASC, s.codigo ASC";
+                ORDER BY s.numero_maquina ASC, 
+                         CASE 
+                             WHEN p.tipo = 'DIESEL' THEN 1
+                             WHEN p.tipo = 'REGULAR' THEN 2
+                             WHEN p.tipo = 'PREMIUM' THEN 3
+                             ELSE 4
+                         END ASC,
+                         s.codigo ASC";
         $query = $c->prepare($sql);
         $query->execute();
         return $query->fetchAll(PDO::FETCH_ASSOC);

@@ -244,6 +244,48 @@
     </div>
 </div>
 
+<!-- MODAL ELIMINAR TURNO -->
+<div class="modal fade" id="modal_eliminar_turno" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, #dc3545, #c82333); color:white">
+                <h5 class="modal-title"><i class="fas fa-exclamation-triangle"></i> Eliminar Turno</h5>
+                <button type="button" class="close" data-dismiss="modal" style="color:white">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="txt_id_reporte_eliminar">
+                
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-circle"></i> <strong>¡Advertencia!</strong><br>
+                    Esta acción eliminará permanentemente el turno y todos sus datos relacionados (lecturas, pagos, créditos).<br><br>
+                    <strong>Las lecturas de los surtidores serán revertidas</strong> a su estado anterior al turno.
+                </div>
+                
+                <div class="form-group">
+                    <label>Motivo de Eliminación <span class="text-danger">*</span></label>
+                    <textarea class="form-control" id="txt_motivo_eliminacion" rows="3" placeholder="Ingrese el motivo por el cual está eliminando este turno..." required></textarea>
+                    <small class="text-muted">Este motivo quedará registrado en los logs del sistema.</small>
+                </div>
+                
+                <div class="alert alert-danger">
+                    <i class="fas fa-ban"></i> <strong>Esta acción NO se puede deshacer.</strong>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+                <button type="button" class="btn btn-danger" onclick="Eliminar_Turno()">
+                    <i class="fas fa-trash"></i> Eliminar Turno
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 <script>
 var tabla_historial_turnos;
 
@@ -339,7 +381,19 @@ function Listar_Historial_Turnos() {
                 }
             },
             {
-                "defaultContent": "<button class='ver btn btn-info btn-sm' title='Ver Detalle'><i class='fas fa-eye'></i></button>&nbsp;<button class='imprimir btn btn-primary btn-sm' title='Imprimir'><i class='fas fa-print'></i></button>"
+                "data": null,
+                "render": function(data, type, row) {
+                    var botones = "<button class='ver btn btn-info btn-sm' title='Ver Detalle'><i class='fas fa-eye'></i></button>&nbsp;";
+                    botones += "<button class='imprimir btn btn-primary btn-sm' title='Imprimir'><i class='fas fa-print'></i></button>";
+                    
+                    // Botón eliminar solo para ADMINISTRADOR
+                    var rol_usuario = $("#txtprincipalrol").val();
+                    if (rol_usuario == 'ADMINISTRADOR') {
+                        botones += "&nbsp;<button class='eliminar btn btn-danger btn-sm' title='Eliminar Turno'><i class='fas fa-trash'></i></button>";
+                    }
+                    
+                    return botones;
+                }
             }
         ],
         "language": idioma_espanol,
@@ -354,6 +408,10 @@ function Listar_Historial_Turnos() {
         if (e.target.closest(".imprimir")) {
             var data = tabla_historial_turnos.row(e.target.closest("tr")).data();
             Imprimir_Reporte(data.id_reporte);
+        }
+        if (e.target.closest(".eliminar")) {
+            var data = tabla_historial_turnos.row(e.target.closest("tr")).data();
+            Abrir_Modal_Eliminar_Turno(data.id_reporte, data.numero_documento);
         }
     });
 }
@@ -387,6 +445,109 @@ function Imprimir_Reporte(id_reporte) {
 
     // 4. Abrir PDF
     window.open(url, "_blank");
+}
+
+function Abrir_Modal_Eliminar_Turno(id_reporte, numero_documento) {
+    $("#txt_id_reporte_eliminar").val(id_reporte);
+    $("#txt_motivo_eliminacion").val('');
+    
+    Swal.fire({
+        title: '¿Eliminar Turno ' + numero_documento + '?',
+        html: '<div class="text-left">' +
+              '<p><strong>Esta acción:</strong></p>' +
+              '<ul>' +
+              '<li>Eliminará permanentemente el turno</li>' +
+              '<li>Eliminará todos los pagos y créditos asociados</li>' +
+              '<li>Revertirá las lecturas de surtidores al estado anterior</li>' +
+              '</ul>' +
+              '<p class="text-danger"><strong>⚠ No se puede deshacer</strong></p>' +
+              '</div>',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Continuar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $("#modal_eliminar_turno").modal('show');
+        }
+    });
+}
+
+function Eliminar_Turno() {
+    var id_reporte = $("#txt_id_reporte_eliminar").val();
+    var motivo = $("#txt_motivo_eliminacion").val().trim();
+    
+    // Validar motivo
+    if (motivo.length == 0) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Motivo Requerido',
+            text: 'Debe ingresar un motivo para eliminar el turno',
+            confirmButtonColor: '#023D77'
+        });
+        return;
+    }
+    
+    if (motivo.length < 10) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Motivo Muy Corto',
+            text: 'El motivo debe tener al menos 10 caracteres',
+            confirmButtonColor: '#023D77'
+        });
+        return;
+    }
+    
+    // Mostrar loading
+    Swal.fire({
+        title: 'Eliminando turno...',
+        text: 'Por favor espere',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+    
+    // Enviar petición
+    $.ajax({
+        url: '../controller/turnos/controlador_eliminar_turno.php',
+        type: 'POST',
+        dataType: 'json',
+        data: {
+            id_reporte: id_reporte,
+            motivo: motivo
+        }
+    }).done(function(resp) {
+        if (resp.success) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Turno Eliminado',
+                text: resp.message,
+                confirmButtonColor: '#023D77'
+            }).then(() => {
+                $("#modal_eliminar_turno").modal('hide');
+                Listar_Historial_Turnos();
+            });
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: resp.message,
+                confirmButtonColor: '#023D77'
+            });
+        }
+    }).fail(function(xhr, status, error) {
+        console.error('Error:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error de Conexión',
+            text: 'No se pudo conectar con el servidor',
+            confirmButtonColor: '#023D77'
+        });
+    });
 }
 
 function Filtrar_Turnos() {
