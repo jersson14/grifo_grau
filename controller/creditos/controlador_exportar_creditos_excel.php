@@ -69,6 +69,7 @@ $total_saldo = 0;
 $contador = 1;
 
 foreach ($creditos as $credito) {
+    if ($credito['estado'] == 'ANULADO') continue;
     $monto = floatval($credito['monto']);
     $monto_pagado = floatval($credito['monto_pagado']);
     $saldo = floatval($credito['saldo_pendiente']);

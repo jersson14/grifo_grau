@@ -91,6 +91,7 @@ $total_pagado = 0;
 $total_saldo = 0;
 
 foreach ($vales as $vale) {
+    if ($vale['estado'] == 'ANULADO') continue;
     $monto = floatval($vale['monto']);
     $monto_pagado = floatval($vale['monto_pagado']);
     $saldo = floatval($vale['saldo_pendiente']);

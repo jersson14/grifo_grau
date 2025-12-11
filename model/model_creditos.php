@@ -377,6 +377,30 @@ class Modelo_Creditos extends conexionBD {
         conexionBD::cerrar_conexion();
     }
 
+    // ELIMINAR CRÉDITO (HARD DELETE)
+    public function Eliminar_Credito($id_credito) {
+        $c = conexionBD::conexionPDO();
+        $c->beginTransaction();
+        try {
+            // Primero eliminar el historial de pagos asociado
+            $sql_historial = "DELETE FROM historial_pagos_credito WHERE id_credito = ?";
+            $query_historial = $c->prepare($sql_historial);
+            $query_historial->execute(array($id_credito));
+
+            // Luego eliminar el crédito
+            $sql = "DELETE FROM ventas_credito WHERE id_credito = ?";
+            $query = $c->prepare($sql);
+            $query->execute(array($id_credito));
+            
+            $c->commit();
+            return 1;
+        } catch (Exception $e) {
+            $c->rollBack();
+            return 0;
+        }
+        conexionBD::cerrar_conexion();
+    }
+
     // AGREGAR CRÉDITO MANUAL (SIN TURNO)
     public function Agregar_Credito_Manual($id_cliente, $numero_vale, $monto, $fecha_registro, $observaciones) {
         $c = conexionBD::conexionPDO();

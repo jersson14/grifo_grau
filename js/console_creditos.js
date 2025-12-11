@@ -269,33 +269,31 @@ function Ver_Vales_Cliente(id_cliente, nombre_cliente, dni, total_vales, saldo_t
 }
 
 // ELIMINAR (ANULAR) CRÉDITO
+// ELIMINAR CRÉDITO (HARD DELETE)
 function Eliminar_Credito(id_credito, numero_vale) {
     Swal.fire({
-        title: '¿Eliminar crédito?',
-        html: 'Se anulará el vale <strong>' + numero_vale + '</strong><br><br>Esta acción no se puede deshacer.',
-        icon: 'warning',
+        title: '¿Eliminar crédito permanentemente?',
+        html: 'Se eliminará el vale <strong>' + numero_vale + '</strong> y todo su historial.<br><br><strong class="text-danger">Esta acción NO se puede deshacer.</strong>',
+        icon: 'error',
         showCancelButton: true,
         confirmButtonColor: '#d33',
         cancelButtonColor: '#6c757d',
-        confirmButtonText: 'Sí, eliminar',
+        confirmButtonText: 'Sí, eliminar definitivamente',
         cancelButtonText: 'Cancelar'
     }).then((result) => {
         if (result.isConfirmed) {
-            var motivo = 'Anulado por error de registro';
-            
             $.ajax({
-                url: '../controller/creditos/controlador_anular_credito.php',
+                url: '../controller/creditos/controlador_eliminar_credito.php',
                 type: 'POST',
                 data: {
-                    id_credito: id_credito,
-                    motivo: motivo
+                    id_credito: id_credito
                 }
             }).done(function(resp) {
                 if (resp > 0) {
                     Swal.fire({
                         icon: 'success',
                         title: 'Crédito eliminado',
-                        text: 'El crédito ha sido anulado correctamente',
+                        text: 'El registro ha sido eliminado del sistema',
                         confirmButtonColor: '#023D77'
                     });
                     
