@@ -1431,13 +1431,16 @@ function Agregar_Fila_Credito_Registro() {
         
         var fila = '<tr id="' + fila_id + '">';
         fila += '<td><select class="form-control form-control-sm cliente-select select2-cliente-registro" data-fila-id="' + fila_id + '">' + opciones + '</select></td>';
-        fila += '<td><input type="text" class="form-control form-control-sm numero-vale-input"></td>';
+        fila += '<td><input type="text" class="form-control form-control-sm numero-vale-input" oninput="Auto_Incrementar_Vales_Registro()"></td>';
         fila += '<td><input type="number" step="0.01" class="form-control form-control-sm monto-credito-input" onchange="Calcular_Totales_Registro()"></td>';
         fila += '<td><input type="date" class="form-control form-control-sm fecha-vencimiento-input"></td>';
         fila += '<td><button class="btn btn-danger btn-sm" onclick="Eliminar_Fila_Credito_Registro(\'' + fila_id + '\')"><i class="fas fa-trash"></i></button></td>';
         fila += '</tr>';
         
         $("#tbody_creditos_registro").append(fila);
+        
+        // Auto-incrementar basado en la primera fila
+        Auto_Incrementar_Vales_Registro();
         
         // Inicializar Select2 para el select recién agregado
         $('#' + fila_id + ' .select2-cliente-registro').select2({
@@ -1450,6 +1453,38 @@ function Agregar_Fila_Credito_Registro() {
                 }
             }
         });
+    });
+}
+
+// AUTO-INCREMENTAR VALES REGISTRO
+function Auto_Incrementar_Vales_Registro() {
+    // Obtener todas las filas de créditos en el registro
+    var filas = $("#tbody_creditos_registro tr");
+    
+    if (filas.length === 0) return;
+    
+    // Obtener el valor del primer número de vale
+    // Usamos el input dentro de la primera fila
+    var primer_vale = $(filas[0]).find('.numero-vale-input').val().trim();
+    
+    // Verificar si es un número válido (puede ser alfanumérico, pero intentamos extraer la parte numérica final o simplemente sumar si es número puro)
+    // Para simplificar, asumiremos que si es numérico lo incrementamos.
+    // Si el usuario quiere 'A-001', la lógica compleja requeriría regex. 
+    // Por ahora, lógica numérica simple como pidió: "si pongo 1 ... siguiente 2".
+    
+    if (primer_vale === '' || isNaN(primer_vale)) return;
+    
+    var numero_base = parseInt(primer_vale);
+    
+    // Auto-incrementar para las filas siguientes
+    filas.each(function(index) {
+        if (index > 0) { // Saltar la primera fila
+            var input_vale = $(this).find('.numero-vale-input');
+            // Solo sobrescribir si el campo está vacío o para mantener consistencia
+            // El requerimiento dice "deben ser correlativos", así que forzamos la secuencia
+            var nuevo_numero = numero_base + index;
+            input_vale.val(nuevo_numero);
+        }
     });
 }
 
