@@ -80,7 +80,14 @@ $sql_lecturas = "SELECT
                 INNER JOIN surtidores s ON lt.id_surtidor = s.id_surtidor
                 INNER JOIN productos p ON s.id_producto = p.id_producto
                 WHERE lt.id_reporte = ?
-                ORDER BY s.numero_maquina, s.codigo";
+                ORDER BY s.numero_maquina, 
+                CASE 
+                    WHEN p.nombre LIKE '%Diesel%' THEN 1
+                    WHEN p.nombre LIKE '%Regular%' THEN 2
+                    WHEN p.nombre LIKE '%Premium%' THEN 3
+                    ELSE 4
+                END,
+                s.codigo";
 
 $stmt = $c->prepare($sql_lecturas);
 $stmt->execute(array($id_turno));
@@ -520,7 +527,7 @@ $html .= '
                 <div style="height: 50px;"></div>
                 <div style="border-top: 1px solid #000; padding-top: 5px; margin: 0 50px;">
                     <div style="font-size: 10px; font-weight: bold; margin-bottom: 2px;">ADMINISTRADORA</div>
-                    <div style="font-size: 9px; margin-bottom: 2px;">Sra. Romee Azcarza Salazar</div>
+                    <div style="font-size: 9px; margin-bottom: 2px;">Sra. Renee Alcarraz Salazar</div>
                     <div style="font-size: 9px; font-weight: bold;">FIRMA</div>
                 </div>
             </td>
