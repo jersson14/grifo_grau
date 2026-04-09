@@ -74,6 +74,7 @@ $html = '
     <thead>
         <tr>
             <th>N° Vale</th>
+            <th>Placa</th>
             <th>Fecha</th>
             <th>Turno</th>
             <th class="text-right">Monto</th>
@@ -119,6 +120,7 @@ foreach ($vales as $vale) {
     $html .= '
         <tr>
             <td>' . htmlspecialchars($vale['numero_vale']) . '</td>
+            <td>' . ($vale['placa'] ? '<strong>' . htmlspecialchars($vale['placa']) . '</strong>' : '<span style="color:#999">-</span>') . '</td>
             <td>' . date('d/m/Y', strtotime($vale['created_at'])) . '</td>
             <td><small>' . $turno_info . '</small></td>
             <td class="text-right">S/. ' . number_format($monto, 2) . '</td>
@@ -132,7 +134,7 @@ foreach ($vales as $vale) {
 
 $html .= '
         <tr class="totales">
-            <td colspan="3" class="text-right">TOTALES:</td>
+            <td colspan="4" class="text-right">TOTALES:</td>
             <td class="text-right">S/. ' . number_format($total_monto, 2) . '</td>
             <td class="text-right">S/. ' . number_format($total_pagado, 2) . '</td>
             <td class="text-right">S/. ' . number_format($total_saldo, 2) . '</td>

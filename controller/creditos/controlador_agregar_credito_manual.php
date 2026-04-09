@@ -16,9 +16,10 @@ $numero_vale = htmlspecialchars($_POST['numero_vale'], ENT_QUOTES, 'UTF-8');
 $monto = htmlspecialchars($_POST['monto'], ENT_QUOTES, 'UTF-8');
 $fecha_registro = isset($_POST['fecha_registro']) && !empty($_POST['fecha_registro']) ? htmlspecialchars($_POST['fecha_registro'], ENT_QUOTES, 'UTF-8') : date('Y-m-d');
 $observaciones = isset($_POST['observaciones']) ? htmlspecialchars($_POST['observaciones'], ENT_QUOTES, 'UTF-8') : '';
+$placa = isset($_POST['placa']) ? strtoupper(trim(htmlspecialchars($_POST['placa'], ENT_QUOTES, 'UTF-8'))) : '';
 
 // Agregar crédito (sin id_reporte, es manual)
-$consulta = $MCreditos->Agregar_Credito_Manual($id_cliente, $numero_vale, $monto, $fecha_registro, $observaciones);
+$consulta = $MCreditos->Agregar_Credito_Manual($id_cliente, $numero_vale, $monto, $fecha_registro, $observaciones, $placa);
 
 if ($consulta > 0) {
     echo json_encode(['success' => true, 'message' => 'Crédito agregado correctamente']);

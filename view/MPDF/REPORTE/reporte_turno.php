@@ -1,7 +1,8 @@
 <?php
-// Error reporting for debugging (remove in production)
+// Error reporting
 error_reporting(E_ALL);
-ini_set('display_errors', 1);
+ini_set('display_errors', 0); // No mostrar en pantalla (rompe el PDF)
+ini_set('log_errors', 1);     // Sí registrar en el log de PHP
 
 // Determine the base path for includes
 // Try to find the correct base path
@@ -165,18 +166,33 @@ foreach ($pagos_agrupados['BCP'] as $p) $total_bcp += floatval($p['monto']);
 foreach ($pagos_agrupados['VISA'] as $p) $total_visa += floatval($p['monto']);
 $total_efectivo = floatval($turno['monto_efectivo']);
 
-// Obtener créditos
-$sql_creditos = "SELECT 
-                    vc.numero_vale,
-                    c.nombre_completo as cliente,
-                    vc.monto
-                FROM ventas_credito vc
-                INNER JOIN clientes c ON vc.id_cliente = c.id_cliente
-                WHERE vc.id_reporte = ?";
-
-$stmt = $c->prepare($sql_creditos);
-$stmt->execute(array($id_turno));
-$creditos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+// Obtener créditos del turno
+try {
+    $sql_creditos = "SELECT 
+                        vc.numero_vale,
+                        vc.placa,
+                        c.nombre_completo as cliente,
+                        vc.monto
+                    FROM ventas_credito vc
+                    INNER JOIN clientes c ON vc.id_cliente = c.id_cliente
+                    WHERE vc.id_reporte = ?";
+    $stmt = $c->prepare($sql_creditos);
+    $stmt->execute(array($id_turno));
+    $creditos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    // Si falla (e.g. columna placa no existe), intentar sin placa
+    $sql_creditos = "SELECT 
+                        vc.numero_vale,
+                        '' as placa,
+                        c.nombre_completo as cliente,
+                        vc.monto
+                    FROM ventas_credito vc
+                    INNER JOIN clientes c ON vc.id_cliente = c.id_cliente
+                    WHERE vc.id_reporte = ?";
+    $stmt = $c->prepare($sql_creditos);
+    $stmt->execute(array($id_turno));
+    $creditos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
 
 $total_creditos = 0;
 foreach ($creditos as $credito) {
@@ -378,7 +394,7 @@ $html .= '
             <th>DESCUENTOS</th>
             <th>EFECTIVO</th>
             <th>OTROS GASTOS</th>
-            <th>N° DE VALE</th>
+            <th>N° DE VALE / PLACA</th>
             <th colspan="2">MONTO DE CRÉDITO</th>
         </tr>
         <tr>
@@ -459,7 +475,11 @@ for ($i = 0; $i < $max_rows; $i++) {
     
     // CRÉDITOS
     if (isset($creditos[$i])) {
-        $html .= '<td>' . $creditos[$i]['numero_vale'] . '</td>';
+        $vale_display = htmlspecialchars($creditos[$i]['numero_vale']);
+        if (!empty($creditos[$i]['placa'])) {
+            $vale_display .= ' / ' . htmlspecialchars($creditos[$i]['placa']);
+        }
+        $html .= '<td>' . $vale_display . '</td>';
         $html .= '<td class="text-left">' . strtoupper($creditos[$i]['cliente']) . '</td>';
         $html .= '<td>' . number_format($creditos[$i]['monto'], 2) . '</td>';
     } else {

@@ -1432,6 +1432,7 @@ function Agregar_Fila_Credito_Registro() {
         var fila = '<tr id="' + fila_id + '">';
         fila += '<td><select class="form-control form-control-sm cliente-select select2-cliente-registro" data-fila-id="' + fila_id + '">' + opciones + '</select></td>';
         fila += '<td><input type="text" class="form-control form-control-sm numero-vale-input" oninput="Auto_Incrementar_Vales_Registro()"></td>';
+        fila += '<td><input type="text" class="form-control form-control-sm placa-credito-input" placeholder="ABC-123" style="text-transform:uppercase"></td>';
         fila += '<td><input type="number" step="0.01" class="form-control form-control-sm monto-credito-input" onchange="Calcular_Totales_Registro()"></td>';
         fila += '<td><input type="date" class="form-control form-control-sm fecha-vencimiento-input"></td>';
         fila += '<td><button class="btn btn-danger btn-sm" onclick="Eliminar_Fila_Credito_Registro(\'' + fila_id + '\')"><i class="fas fa-trash"></i></button></td>';
@@ -1569,9 +1570,11 @@ function Registrar_Turno_Completo() {
     
     // Recopilar créditos (solo los que tienen datos)
     var creditos = [];
-    $("#tbody_creditos_registro tr").each(function() {
+    $("#tbody_creditos_registro tr").each(function(index) {
         var id_cliente = $(this).find('.cliente-select').val();
         var numero_vale = $(this).find('.numero-vale-input').val();
+        var placa_el = $(this).find('.placa-credito-input');
+        var placa = placa_el.length > 0 ? (placa_el.val() || '').trim().toUpperCase() : '';
         var monto = parseFloat($(this).find('.monto-credito-input').val());
         var fecha_vencimiento = $(this).find('.fecha-vencimiento-input').val();
         
@@ -1579,6 +1582,7 @@ function Registrar_Turno_Completo() {
             creditos.push({
                 id_cliente: id_cliente,
                 numero_vale: numero_vale,
+                placa: placa,
                 monto: monto,
                 fecha_vencimiento: fecha_vencimiento
             });

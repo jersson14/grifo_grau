@@ -38,9 +38,10 @@ foreach ($creditos as $index => $credito) {
         ? htmlspecialchars($credito['fecha_registro'], ENT_QUOTES, 'UTF-8') 
         : date('Y-m-d'); // Si no viene fecha, usar hoy
     $observaciones = ''; // No tenemos campo de observaciones en la tabla
+    $placa = isset($credito['placa']) ? strtoupper(trim(htmlspecialchars($credito['placa'], ENT_QUOTES, 'UTF-8'))) : '';
     
     // Agregar crédito
-    $resultado = $MCreditos->Agregar_Credito_Manual($id_cliente, $numero_vale, $monto, $fecha_registro, $observaciones);
+    $resultado = $MCreditos->Agregar_Credito_Manual($id_cliente, $numero_vale, $monto, $fecha_registro, $observaciones, $placa);
     
     if ($resultado > 0) {
         $guardados++;

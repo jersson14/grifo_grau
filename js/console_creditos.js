@@ -155,6 +155,12 @@ function Ver_Vales_Cliente(id_cliente, nombre_cliente, dni, total_vales, saldo_t
         },
         "columns": [
             { "data": "numero_vale" },
+            {
+                "data": "placa",
+                "render": function(data) {
+                    return data ? '<strong>' + data + '</strong>' : '<span class="text-muted">-</span>';
+                }
+            },
             { 
                 "data": "created_at",
                 "render": function(data) {
@@ -165,7 +171,10 @@ function Ver_Vales_Cliente(id_cliente, nombre_cliente, dni, total_vales, saldo_t
             { 
                 "data": "turno",
                 "render": function(data, type, row) {
-                    return '<small>' + row.numero_documento + '<br>' + data + '</small>';
+                    if (row.numero_documento && row.numero_documento !== 'null' && row.numero_documento !== null) {
+                        return '<small>' + row.numero_documento + '<br>' + (data || '') + '</small>';
+                    }
+                    return '<small class="text-muted">Manual</small>';
                 }
             },
             { 
@@ -908,7 +917,8 @@ function Agregar_Fila_Credito_Manual(datos = null) {
         var fila = '<tr id="' + fila_id + '">';
         fila += '<td class="text-center"><strong>' + numero_fila + '</strong></td>';
         fila += '<td><select class="form-control form-control-sm cliente-select-manual select2-cliente-manual" data-fila-id="' + fila_id + '" data-numero-fila="' + numero_fila + '">' + opciones + '</select></td>';
-        fila += '<td><input type="text" class="form-control form-control-sm numero-vale-input-manual" value="' + (datos ? datos.numero_vale : '') + '" placeholder="Número de vale"></td>';
+        fila += '<td><input type="text" class="form-control form-control-sm numero-vale-input-manual" value="' + (datos ? datos.numero_vale : '') + '" placeholder="N° vale"></td>';
+        fila += '<td><input type="text" class="form-control form-control-sm placa-input-manual" value="' + (datos ? (datos.placa || '') : '') + '" placeholder="ABC-123" style="text-transform:uppercase"></td>';
         fila += '<td><input type="number" step="0.01" class="form-control form-control-sm monto-credito-input-manual" value="' + (datos ? datos.monto : '') + '"></td>';
         fila += '<td><input type="date" class="form-control form-control-sm fecha-registro-input-manual" value="' + fecha_actual + '"></td>';
         fila += '<td><button class="btn btn-danger btn-sm" onclick="Eliminar_Fila_Credito_Manual(\'' + fila_id + '\')"><i class="fas fa-trash"></i></button></td>';
@@ -986,6 +996,7 @@ function Guardar_Todos_Creditos_Manual() {
         var fila = $(this);
         var id_cliente = fila.find('.cliente-select-manual').val();
         var numero_vale = fila.find('.numero-vale-input-manual').val().trim();
+        var placa = fila.find('.placa-input-manual').val().trim().toUpperCase();
         var monto = fila.find('.monto-credito-input-manual').val();
         var fecha_registro = fila.find('.fecha-registro-input-manual').val();
         
@@ -1007,6 +1018,7 @@ function Guardar_Todos_Creditos_Manual() {
                 creditos.push({
                     id_cliente: id_cliente,
                     numero_vale: numero_vale,
+                    placa: placa,
                     monto: monto,
                     fecha_registro: fecha_registro
                 });

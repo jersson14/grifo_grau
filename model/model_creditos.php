@@ -293,6 +293,7 @@ class Modelo_Creditos extends conexionBD {
         $sql = "SELECT 
                     vc.id_credito,
                     vc.numero_vale,
+                    vc.placa,
                     vc.monto,
                     vc.saldo_pendiente,
                     (vc.monto - vc.saldo_pendiente) as monto_pagado,
@@ -402,7 +403,7 @@ class Modelo_Creditos extends conexionBD {
     }
 
     // AGREGAR CRÉDITO MANUAL (SIN TURNO)
-    public function Agregar_Credito_Manual($id_cliente, $numero_vale, $monto, $fecha_registro, $observaciones) {
+    public function Agregar_Credito_Manual($id_cliente, $numero_vale, $monto, $fecha_registro, $observaciones, $placa = '') {
         $c = conexionBD::conexionPDO();
         
         // Si no hay fecha de registro, usar hoy
@@ -414,13 +415,26 @@ class Modelo_Creditos extends conexionBD {
         $fecha_vencimiento = date('Y-m-d', strtotime($fecha_registro . ' +30 days'));
         
         // Usar la tabla 'ventas_credito' con id_reporte = NULL para créditos manuales
-        // La fecha_registro se usa como created_at
-        $sql = "INSERT INTO ventas_credito (
-                    id_cliente, id_reporte, numero_vale, monto, saldo_pendiente,
-                    estado, fecha_vencimiento, observaciones, created_at
-                ) VALUES (?, NULL, ?, ?, ?, 'PENDIENTE', ?, ?, ?)";
-        $query = $c->prepare($sql);
-        $resultado = $query->execute(array($id_cliente, $numero_vale, $monto, $monto, $fecha_vencimiento, $observaciones, $fecha_registro));
+        // Verificar si la columna 'placa' existe antes de incluirla en el INSERT
+        $check_placa = $c->query("SHOW COLUMNS FROM ventas_credito LIKE 'placa'");
+        $placa_existe = ($check_placa && $check_placa->fetch() !== false);
+
+        if ($placa_existe) {
+            $sql = "INSERT INTO ventas_credito (
+                        id_cliente, id_reporte, numero_vale, placa, monto, saldo_pendiente,
+                        estado, fecha_vencimiento, observaciones, created_at
+                    ) VALUES (?, NULL, ?, ?, ?, ?, 'PENDIENTE', ?, ?, ?)";
+            $query = $c->prepare($sql);
+            $resultado = $query->execute(array($id_cliente, $numero_vale, $placa, $monto, $monto, $fecha_vencimiento, $observaciones, $fecha_registro));
+        } else {
+            $sql = "INSERT INTO ventas_credito (
+                        id_cliente, id_reporte, numero_vale, monto, saldo_pendiente,
+                        estado, fecha_vencimiento, observaciones, created_at
+                    ) VALUES (?, NULL, ?, ?, ?, 'PENDIENTE', ?, ?, ?)";
+            $query = $c->prepare($sql);
+            $resultado = $query->execute(array($id_cliente, $numero_vale, $monto, $monto, $fecha_vencimiento, $observaciones, $fecha_registro));
+        }
+
         if ($resultado) {
             return $c->lastInsertId();
         } else {

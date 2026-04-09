@@ -315,6 +315,7 @@
                             <thead style="background-color:#6f42c1; color:white">
                                 <tr>
                                     <th>N° Vale</th>
+                                    <th>Placa</th>
                                     <th>Fecha</th>
                                     <th>Turno</th>
                                     <th>Monto</th>
@@ -426,12 +427,13 @@
                     <table id="tabla_creditos_manual_editable" class="table table-sm table-bordered table-hover">
                         <thead style="background-color:#28a745; color:white">
                             <tr>
-                                <th width="5%">#</th>
-                                <th width="30%">Cliente</th>
-                                <th width="20%">N° Vale</th>
-                                <th width="15%">Monto (S/.)</th>
+                                <th width="4%">#</th>
+                                <th width="28%">Cliente</th>
+                                <th width="15%">N° Vale</th>
+                                <th width="12%">Placa</th>
+                                <th width="14%">Monto (S/.)</th>
                                 <th width="15%">Fecha de Registro</th>
-                                <th width="15%">Acciones</th>
+                                <th width="12%">Acciones</th>
                             </tr>
                         </thead>
                         <tbody id="tbody_creditos_manual_editable">

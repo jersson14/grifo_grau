@@ -41,6 +41,10 @@ try {
     if ($c === null) {
         throw new Exception("No se pudo establecer conexión a la base de datos");
     }
+
+    // Verificar si la columna 'placa' existe ANTES de abrir la transacción
+    $check_placa = $c->query("SHOW COLUMNS FROM ventas_credito LIKE 'placa'");
+    $placa_existe = ($check_placa && $check_placa->fetch() !== false);
     
     $c->beginTransaction();
     
@@ -156,30 +160,42 @@ try {
     }
     
     // 4. REGISTRAR CRÉDITOS
-    $sql_credito = "INSERT INTO ventas_credito (
-                        id_reporte, id_cliente, numero_vale, monto, saldo_pendiente, 
-                        estado, fecha_vencimiento, observaciones, created_at
-                    ) VALUES (?, ?, ?, ?, ?, 'PENDIENTE', ?, '', NOW())";
-    $stmt_credito = $c->prepare($sql_credito);
-    
     $total_creditos = 0;
-    
+
     if (!empty($creditos) && is_array($creditos)) {
+
+        if ($placa_existe) {
+            $sql_credito = "INSERT INTO ventas_credito (
+                                id_reporte, id_cliente, numero_vale, placa, monto, saldo_pendiente,
+                                estado, fecha_vencimiento, observaciones, created_at
+                            ) VALUES (?, ?, ?, ?, ?, ?, 'PENDIENTE', ?, '', NOW())";
+        } else {
+            $sql_credito = "INSERT INTO ventas_credito (
+                                id_reporte, id_cliente, numero_vale, monto, saldo_pendiente,
+                                estado, fecha_vencimiento, observaciones, created_at
+                            ) VALUES (?, ?, ?, ?, ?, 'PENDIENTE', ?, '', NOW())";
+        }
+        $stmt_credito = $c->prepare($sql_credito);
+
         foreach ($creditos as $credito) {
-            $id_cliente = $credito['id_cliente'];
-            $numero_vale = $credito['numero_vale'] ?? '';
-            $monto = floatval($credito['monto']);
-            $fecha_vencimiento = $credito['fecha_vencimiento'] ?? null;
-            
-            $stmt_credito->execute(array(
-                $id_reporte,
-                $id_cliente,
-                $numero_vale,
-                $monto,
-                $monto, // saldo_pendiente inicial = monto
-                $fecha_vencimiento
-            ));
-            
+            $id_cliente        = $credito['id_cliente'];
+            $numero_vale       = $credito['numero_vale'] ?? '';
+            $placa             = !empty($credito['placa']) ? strtoupper(trim($credito['placa'])) : '';
+            $monto             = floatval($credito['monto']);
+            $fecha_vencimiento = !empty($credito['fecha_vencimiento']) ? $credito['fecha_vencimiento'] : null;
+
+            if ($placa_existe) {
+                $stmt_credito->execute(array(
+                    $id_reporte, $id_cliente, $numero_vale, $placa,
+                    $monto, $monto, $fecha_vencimiento
+                ));
+            } else {
+                $stmt_credito->execute(array(
+                    $id_reporte, $id_cliente, $numero_vale,
+                    $monto, $monto, $fecha_vencimiento
+                ));
+            }
+
             $total_creditos += $monto;
         }
     }

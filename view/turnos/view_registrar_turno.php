@@ -237,10 +237,11 @@
                             <table id="tabla_creditos_registro" class="table table-sm table-bordered table-hover">
                                 <thead style="background-color:#dc3545; color:white">
                                     <tr>
-                                        <th width="30%">Cliente</th>
-                                        <th width="20%">N° Vale</th>
-                                        <th width="20%">Monto (S/.)</th>
-                                        <th width="20%">Fecha Vencimiento</th>
+                                        <th width="28%">Cliente</th>
+                                        <th width="18%">N° Vale</th>
+                                        <th width="12%">Placa</th>
+                                        <th width="17%">Monto (S/.)</th>
+                                        <th width="15%">Fecha Vencimiento</th>
                                         <th width="10%">Acciones</th>
                                     </tr>
                                 </thead>
