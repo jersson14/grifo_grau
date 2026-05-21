@@ -222,11 +222,34 @@
                     </div>
                     <div class="col-md-6 form-group">
                         <label>Monto a Pagar (S/.) <span class="text-danger">*</span></label>
-                        <input type="number" step="0.01" class="form-control" id="txt_monto_pago_credito" placeholder="0.00">
+                        <input type="number" step="0.01" class="form-control" id="txt_monto_pago_credito" placeholder="0.00" oninput="Actualizar_Resumen_Descuento()">
                         <small class="text-muted">Máximo: <span id="max_monto_pago"></span></small>
                     </div>
                     <div class="col-md-6 form-group">
-                        <label>&nbsp;</label><br>
+                        <label>Descuento (S/.)</label>
+                        <input type="number" step="0.01" min="0" value="0.00" class="form-control" id="txt_descuento_credito" placeholder="0.00" oninput="Calcular_Con_Descuento()">
+                        <small class="text-muted">Descuento por pronto pago u otro motivo</small>
+                    </div>
+                    <!-- Resumen del descuento -->
+                    <div class="col-12 mb-2" id="div_resumen_descuento" style="display:none;">
+                        <div class="alert alert-warning p-2 mb-0">
+                            <div class="row text-center">
+                                <div class="col-4">
+                                    <small class="text-muted">Cliente Paga (efectivo)</small><br>
+                                    <strong class="text-primary" id="resumen_efectivo">S/. 0.00</strong>
+                                </div>
+                                <div class="col-4">
+                                    <small class="text-muted">Descuento</small><br>
+                                    <strong class="text-danger">- <span id="resumen_descuento_val">S/. 0.00</span></strong>
+                                </div>
+                                <div class="col-4">
+                                    <small class="text-muted">Total al Saldo</small><br>
+                                    <strong class="text-success" id="resumen_total_aplicado">S/. 0.00</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 form-group">
                         <button type="button" class="btn btn-secondary btn-block" onclick="Pagar_Saldo_Completo()">
                             <i class="fas fa-check-double"></i> Pagar Saldo Completo
                         </button>
@@ -328,6 +351,7 @@
                                     <th>Saldo</th>
                                     <th>Vencimiento</th>
                                     <th>Fecha Pago</th>
+                                    <th>Descuento</th>
                                     <th>Cód. Operación</th>
                                     <th>Estado</th>
                                     <th>Acciones</th>

@@ -111,34 +111,38 @@ class Modelo_Creditos extends conexionBD {
     }
 
     // REGISTRAR PAGO DE CRÉDITO
-    public function Registrar_Pago_Credito($id_credito, $id_tipo_pago, $codigo_operacion, $monto_pagado, $fecha_pago, $id_usuario, $observaciones) {
+    public function Registrar_Pago_Credito($id_credito, $id_tipo_pago, $codigo_operacion, $monto_pagado, $descuento = 0, $fecha_pago = '', $id_usuario = 0, $observaciones = '') {
         $c = conexionBD::conexionPDO();
-        
+
+        $monto_pagado = round(floatval($monto_pagado), 2);
+        $descuento    = round(floatval($descuento), 2);
+        if ($descuento < 0) $descuento = 0;
+
         // Obtener saldo actual
         $sql_saldo = "SELECT saldo_pendiente FROM ventas_credito WHERE id_credito = ?";
         $query_saldo = $c->prepare($sql_saldo);
         $query_saldo->execute(array($id_credito));
         $credito = $query_saldo->fetch(PDO::FETCH_ASSOC);
-        $saldo_anterior = $credito['saldo_pendiente'];
-        
-        // Validar que el monto no sea mayor al saldo
-        if ($monto_pagado > $saldo_anterior) {
-            return -1; // Monto mayor al saldo
+        $saldo_anterior = round(floatval($credito['saldo_pendiente']), 2);
+
+        // Validar que monto + descuento no supere el saldo
+        if (($monto_pagado + $descuento) > $saldo_anterior) {
+            return -1;
         }
-        
-        // Calcular nuevo saldo con redondeo para evitar errores de punto flotante
-        $saldo_nuevo = round($saldo_anterior - $monto_pagado, 2);
+
+        // Calcular nuevo saldo
+        $saldo_nuevo = round($saldo_anterior - $monto_pagado - $descuento, 2);
         if ($saldo_nuevo < 0) $saldo_nuevo = 0;
 
-        // Registrar el pago en historial
+        // Registrar el pago en historial (incluye descuento)
         $fecha_pago_db = !empty($fecha_pago) ? $fecha_pago : date('Y-m-d');
         $sql_historial = "INSERT INTO historial_pagos_credito (
-                            id_credito, id_tipo_pago, codigo_operacion, monto_pagado,
+                            id_credito, id_tipo_pago, codigo_operacion, monto_pagado, descuento,
                             saldo_anterior, saldo_nuevo, fecha_pago, id_usuario_registro, observaciones
-                          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         $query_historial = $c->prepare($sql_historial);
         $resultado = $query_historial->execute(array(
-            $id_credito, $id_tipo_pago, $codigo_operacion, $monto_pagado,
+            $id_credito, $id_tipo_pago, $codigo_operacion, $monto_pagado, $descuento,
             $saldo_anterior, $saldo_nuevo, $fecha_pago_db, $id_usuario, $observaciones
         ));
 
@@ -313,7 +317,10 @@ class Modelo_Creditos extends conexionBD {
                      ORDER BY id_pago_credito DESC LIMIT 1) AS fecha_ultimo_pago,
                     (SELECT codigo_operacion FROM historial_pagos_credito
                      WHERE id_credito = vc.id_credito
-                     ORDER BY id_pago_credito DESC LIMIT 1) AS ultimo_codigo_operacion
+                     ORDER BY id_pago_credito DESC LIMIT 1) AS ultimo_codigo_operacion,
+                    (SELECT descuento FROM historial_pagos_credito
+                     WHERE id_credito = vc.id_credito
+                     ORDER BY id_pago_credito DESC LIMIT 1) AS ultimo_descuento
                 FROM ventas_credito vc
                 LEFT JOIN reportes_turno rt ON vc.id_reporte = rt.id_reporte
                 LEFT JOIN usuario u ON rt.id_usuario = u.id_usuario
@@ -517,78 +524,83 @@ class Modelo_Creditos extends conexionBD {
     }
 
     // PAGAR TODO - TODAS LAS DEUDAS PENDIENTES DE UN CLIENTE
-    public function Pagar_Todo_Cliente($id_cliente, $id_tipo_pago, $codigo_operacion, $monto_pagado, $fecha_pago, $id_usuario, $observaciones) {
+    public function Pagar_Todo_Cliente($id_cliente, $id_tipo_pago, $codigo_operacion, $monto_pagado, $descuento = 0, $fecha_pago = '', $id_usuario = 0, $observaciones = '') {
         $c = conexionBD::conexionPDO();
-        
+
+        $monto_pagado = round(floatval($monto_pagado), 2);
+        $descuento    = round(floatval($descuento), 2);
+        if ($descuento < 0) $descuento = 0;
+
         try {
-            // Iniciar transacción
             $c->beginTransaction();
-            
-            // Obtener todos los créditos pendientes del cliente
-            $sql_creditos = "SELECT id_credito, saldo_pendiente 
-                            FROM ventas_credito 
+
+            $sql_creditos = "SELECT id_credito, saldo_pendiente
+                            FROM ventas_credito
                             WHERE id_cliente = ? AND estado = 'PENDIENTE' AND saldo_pendiente > 0
                             ORDER BY fecha_vencimiento ASC, created_at ASC";
             $query_creditos = $c->prepare($sql_creditos);
             $query_creditos->execute(array($id_cliente));
             $creditos = $query_creditos->fetchAll(PDO::FETCH_ASSOC);
-            
+
             if (empty($creditos)) {
                 $c->rollBack();
-                return 0; // No hay créditos pendientes
+                return 0;
             }
-            
-            // Calcular saldo total pendiente
-            $saldo_total = 0;
-            foreach ($creditos as $credito) {
-                $saldo_total += $credito['saldo_pendiente'];
-            }
-            
-            // Validar que el monto no sea mayor al saldo total
-            if ($monto_pagado > $saldo_total) {
+
+            // Calcular saldo total
+            $saldo_total = round(array_sum(array_column($creditos, 'saldo_pendiente')), 2);
+
+            // Validar: monto + descuento no puede superar el saldo total
+            if (($monto_pagado + $descuento) > $saldo_total) {
                 $c->rollBack();
-                return -1; // Monto mayor al saldo
+                return -1;
             }
-            
-            // Distribuir el pago entre los créditos
-            $monto_restante = $monto_pagado;
+
+            // El monto efectivo incluye el descuento (dinero + descuento = total a aplicar)
+            $monto_efectivo_restante = $monto_pagado + $descuento;
+            $descuento_restante      = $descuento;
+            $fecha_pago_db = !empty($fecha_pago) ? $fecha_pago : date('Y-m-d');
             $creditos_pagados = 0;
-            
+
             foreach ($creditos as $credito) {
-                if ($monto_restante <= 0) break;
-                
-                $id_credito = $credito['id_credito'];
-                $saldo_anterior = $credito['saldo_pendiente'];
-                
-                // Calcular cuánto pagar de este crédito con redondeo
-                $monto_a_pagar = round(min($monto_restante, $saldo_anterior), 2);
-                $saldo_nuevo   = round($saldo_anterior - $monto_a_pagar, 2);
+                if ($monto_efectivo_restante <= 0) break;
+
+                $id_credito     = $credito['id_credito'];
+                $saldo_anterior = round(floatval($credito['saldo_pendiente']), 2);
+
+                // Cuánto se aplica a este vale (dinero + descuento proporcional)
+                $aplicado = round(min($monto_efectivo_restante, $saldo_anterior), 2);
+
+                // Descuento proporcional para este vale
+                $desc_vale   = round(min($descuento_restante, $aplicado), 2);
+                $pagado_vale = round($aplicado - $desc_vale, 2);
+
+                $saldo_nuevo = round($saldo_anterior - $aplicado, 2);
                 if ($saldo_nuevo < 0) $saldo_nuevo = 0;
 
-                // Registrar el pago en historial
-                $fecha_pago_db = !empty($fecha_pago) ? $fecha_pago : date('Y-m-d');
-                $obs_pago = "PAGO TOTAL CLIENTE - " . $observaciones;
+                $obs_pago = "PAGO TOTAL CLIENTE" . ($observaciones ? " - $observaciones" : "");
+
                 $sql_historial = "INSERT INTO historial_pagos_credito (
-                                    id_credito, id_tipo_pago, codigo_operacion, monto_pagado,
-                                    saldo_anterior, saldo_nuevo, fecha_pago, id_usuario_registro, observaciones
-                                  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                                    id_credito, id_tipo_pago, codigo_operacion,
+                                    monto_pagado, descuento,
+                                    saldo_anterior, saldo_nuevo,
+                                    fecha_pago, id_usuario_registro, observaciones
+                                  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                 $query_historial = $c->prepare($sql_historial);
                 $query_historial->execute(array(
-                    $id_credito, $id_tipo_pago, $codigo_operacion, $monto_a_pagar,
-                    $saldo_anterior, $saldo_nuevo, $fecha_pago_db, $id_usuario, $obs_pago
+                    $id_credito, $id_tipo_pago, $codigo_operacion,
+                    $pagado_vale, $desc_vale,
+                    $saldo_anterior, $saldo_nuevo,
+                    $fecha_pago_db, $id_usuario, $obs_pago
                 ));
 
-                // Actualizar saldo en ventas_credito
                 $nuevo_estado = ($saldo_nuevo <= 0) ? 'PAGADO' : 'PENDIENTE';
-                $sql_update = "UPDATE ventas_credito SET 
-                                saldo_pendiente = ?,
-                                estado = ?,
-                                updated_at = NOW()
-                              WHERE id_credito = ?";
+                $sql_update = "UPDATE ventas_credito SET saldo_pendiente = ?, estado = ?, updated_at = NOW() WHERE id_credito = ?";
                 $query_update = $c->prepare($sql_update);
                 $query_update->execute(array($saldo_nuevo, $nuevo_estado, $id_credito));
-                
-                $monto_restante -= $monto_a_pagar;
+
+                $monto_efectivo_restante -= $aplicado;
+                $descuento_restante      -= $desc_vale;
                 $creditos_pagados++;
             }
             

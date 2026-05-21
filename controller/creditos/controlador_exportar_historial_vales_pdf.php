@@ -164,6 +164,7 @@ $html = '
             <th class="tr">Saldo</th>
             <th>Vencimiento</th>
             <th class="tc">Fecha Pago</th>
+            <th class="tr">Descuento</th>
             <th class="tc">Cód. Operación</th>
             <th class="tc">Estado</th>
             <th>Observaciones</th>
@@ -217,6 +218,7 @@ foreach ($vales as $vale) {
             <td class="tr"><strong>S/. ' . number_format($saldo, 2) . '</strong></td>
             <td>' . $venc . '</td>
             <td class="tc">' . $fecha_pago . '</td>
+            <td class="tr">' . (floatval($vale['ultimo_descuento']) > 0 ? '<strong style="color:#d97706">S/. ' . number_format(floatval($vale['ultimo_descuento']), 2) . '</strong>' : '—') . '</td>
             <td class="tc"><small>' . (!empty($vale['ultimo_codigo_operacion']) ? htmlspecialchars($vale['ultimo_codigo_operacion']) : '—') . '</small></td>
             <td class="tc">' . $badge . '</td>
             <td><small>' . ($vale['observaciones'] ? htmlspecialchars($vale['observaciones']) : '—') . '</small></td>
@@ -231,7 +233,7 @@ $html .= '
             <td class="tr">S/. ' . number_format($total_monto, 2) . '</td>
             <td class="tr">S/. ' . number_format($total_pagado, 2) . '</td>
             <td class="tr">S/. ' . number_format($total_saldo, 2) . '</td>
-            <td colspan="5"></td>
+            <td colspan="6"></td>
         </tr>
     </tfoot>
 </table>';

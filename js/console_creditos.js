@@ -225,6 +225,16 @@ function Ver_Vales_Cliente(id_cliente, nombre_cliente, dni, total_vales, saldo_t
                 }
             },
             {
+                "data": "ultimo_descuento",
+                "render": function(data) {
+                    var d = parseFloat(data) || 0;
+                    if (d > 0) {
+                        return '<span class="badge badge-warning text-dark">S/. ' + d.toFixed(2) + '</span>';
+                    }
+                    return '<span class="text-muted">-</span>';
+                }
+            },
+            {
                 "data": "ultimo_codigo_operacion",
                 "render": function(data) {
                     if (data && data !== '' && data !== null) {
@@ -522,8 +532,45 @@ function Cargar_Tipos_Pago_Credito() {
 
 // PAGAR SALDO COMPLETO
 function Pagar_Saldo_Completo() {
-    var saldo = $('#info_saldo_pendiente_pago').text().replace('S/. ', '');
-    $('#txt_monto_pago_credito').val(saldo);
+    var saldo     = parseFloat($('#info_saldo_pendiente_pago').text().replace('S/. ', '')) || 0;
+    var descuento = parseFloat($('#txt_descuento_credito').val()) || 0;
+    var monto     = Math.max(0, saldo - descuento);
+    $('#txt_monto_pago_credito').val(monto.toFixed(2));
+    Actualizar_Resumen_Descuento();
+}
+
+function Calcular_Con_Descuento() {
+    var saldo     = parseFloat($('#info_saldo_pendiente_pago').text().replace('S/. ', '')) || 0;
+    var descuento = parseFloat($('#txt_descuento_credito').val()) || 0;
+
+    if (descuento < 0) { descuento = 0; $('#txt_descuento_credito').val('0.00'); }
+    if (descuento > saldo) { descuento = saldo; $('#txt_descuento_credito').val(saldo.toFixed(2)); }
+
+    // NO modifica el monto — el usuario lo ingresa libremente
+    Actualizar_Resumen_Descuento();
+}
+
+function Actualizar_Resumen_Descuento() {
+    var saldo     = parseFloat($('#info_saldo_pendiente_pago').text().replace('S/. ', '')) || 0;
+    var descuento = parseFloat($('#txt_descuento_credito').val()) || 0;
+    var monto     = parseFloat($('#txt_monto_pago_credito').val()) || 0;
+    var total_aplicado = monto + descuento;
+
+    // Si el total supera el saldo, corrige el monto
+    if (total_aplicado > saldo + 0.001) {
+        monto = Math.max(0, saldo - descuento);
+        $('#txt_monto_pago_credito').val(monto.toFixed(2));
+        total_aplicado = monto + descuento;
+    }
+
+    if (descuento > 0) {
+        $('#resumen_efectivo').text('S/. ' + monto.toFixed(2));
+        $('#resumen_descuento_val').text('S/. ' + descuento.toFixed(2));
+        $('#resumen_total_aplicado').text('S/. ' + total_aplicado.toFixed(2));
+        $('#div_resumen_descuento').show();
+    } else {
+        $('#div_resumen_descuento').hide();
+    }
 }
 
 // REGISTRAR PAGO DE CRÉDITO
@@ -532,6 +579,7 @@ function Registrar_Pago_Credito() {
     var id_tipo_pago = $('#txt_tipo_pago_credito').val();
     var codigo_operacion = $('#txt_codigo_operacion_credito').val();
     var monto_pagado = $('#txt_monto_pago_credito').val();
+    var descuento = parseFloat($('#txt_descuento_credito').val()) || 0;
     var fecha_pago = $('#txt_fecha_pago_credito').val();
     var observaciones = $('#txt_observaciones_pago_credito').val();
     var id_usuario = $('#txtprincipalid').val();
@@ -570,18 +618,19 @@ function Registrar_Pago_Credito() {
             id_tipo_pago: id_tipo_pago,
             codigo_operacion: codigo_operacion,
             monto_pagado: monto_pagado,
+            descuento: descuento,
             fecha_pago: fecha_pago,
             id_usuario: id_usuario,
             observaciones: observaciones
         };
     } else {
-        // Pago individual de un crédito
         url_controlador = '../controller/creditos/controlador_registrar_pago_credito.php';
         datos_envio = {
             id_credito: id_credito,
             id_tipo_pago: id_tipo_pago,
             codigo_operacion: codigo_operacion,
             monto_pagado: monto_pagado,
+            descuento: descuento,
             fecha_pago: fecha_pago,
             id_usuario: id_usuario,
             observaciones: observaciones
@@ -628,6 +677,8 @@ function Limpiar_Modal_Pago() {
     $('#txt_tipo_pago_credito').val('');
     $('#txt_codigo_operacion_credito').val('');
     $('#txt_monto_pago_credito').val('');
+    $('#txt_descuento_credito').val('0.00');
+    $('#div_resumen_descuento').hide();
     $('#txt_fecha_pago_credito').val(Hoy_ISO());
     $('#txt_observaciones_pago_credito').val('');
 }
