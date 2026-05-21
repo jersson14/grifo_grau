@@ -225,6 +225,15 @@ function Ver_Vales_Cliente(id_cliente, nombre_cliente, dni, total_vales, saldo_t
                 }
             },
             {
+                "data": "ultimo_codigo_operacion",
+                "render": function(data) {
+                    if (data && data !== '' && data !== null) {
+                        return '<small class="badge badge-secondary">' + data + '</small>';
+                    }
+                    return '<span class="text-muted">-</span>';
+                }
+            },
+            {
                 "data": "estado",
                 "render": function(data) {
                     if (data == 'PENDIENTE') {
@@ -488,9 +497,10 @@ function Abrir_Modal_Pago(id_credito) {
         $('#info_monto_total_pago').text('S/. ' + parseFloat(data.monto).toFixed(2));
         $('#info_saldo_pendiente_pago').text('S/. ' + parseFloat(data.saldo_pendiente).toFixed(2));
         $('#max_monto_pago').text('S/. ' + parseFloat(data.saldo_pendiente).toFixed(2));
-        
+        $('#txt_fecha_pago_credito').val(Hoy_ISO());
+
         Cargar_Tipos_Pago_Credito();
-        
+
         $('#modal_registrar_pago').modal('show');
     });
 }
@@ -522,14 +532,15 @@ function Registrar_Pago_Credito() {
     var id_tipo_pago = $('#txt_tipo_pago_credito').val();
     var codigo_operacion = $('#txt_codigo_operacion_credito').val();
     var monto_pagado = $('#txt_monto_pago_credito').val();
+    var fecha_pago = $('#txt_fecha_pago_credito').val();
     var observaciones = $('#txt_observaciones_pago_credito').val();
     var id_usuario = $('#txtprincipalid').val();
-    
-    if (id_tipo_pago.length == 0 || monto_pagado.length == 0) {
+
+    if (id_tipo_pago.length == 0 || monto_pagado.length == 0 || fecha_pago.length == 0) {
         Swal.fire({
             icon: 'warning',
             title: 'Advertencia',
-            text: 'Complete los campos obligatorios',
+            text: 'Complete todos los campos obligatorios, incluyendo la Fecha de Pago',
             confirmButtonColor: '#023D77'
         });
         return;
@@ -559,6 +570,7 @@ function Registrar_Pago_Credito() {
             id_tipo_pago: id_tipo_pago,
             codigo_operacion: codigo_operacion,
             monto_pagado: monto_pagado,
+            fecha_pago: fecha_pago,
             id_usuario: id_usuario,
             observaciones: observaciones
         };
@@ -570,6 +582,7 @@ function Registrar_Pago_Credito() {
             id_tipo_pago: id_tipo_pago,
             codigo_operacion: codigo_operacion,
             monto_pagado: monto_pagado,
+            fecha_pago: fecha_pago,
             id_usuario: id_usuario,
             observaciones: observaciones
         };
@@ -615,7 +628,15 @@ function Limpiar_Modal_Pago() {
     $('#txt_tipo_pago_credito').val('');
     $('#txt_codigo_operacion_credito').val('');
     $('#txt_monto_pago_credito').val('');
+    $('#txt_fecha_pago_credito').val(Hoy_ISO());
     $('#txt_observaciones_pago_credito').val('');
+}
+
+function Hoy_ISO() {
+    var d = new Date();
+    var mes = ('0' + (d.getMonth() + 1)).slice(-2);
+    var dia = ('0' + d.getDate()).slice(-2);
+    return d.getFullYear() + '-' + mes + '-' + dia;
 }
 
 // PAGAR TODO - TODAS LAS DEUDAS DEL CLIENTE
@@ -649,9 +670,10 @@ function Pagar_Todo_Cliente() {
         
         // Pre-llenar el monto con el saldo total
         $('#txt_monto_pago_credito').val(parseFloat(saldo_total).toFixed(2));
-        
+        $('#txt_fecha_pago_credito').val(Hoy_ISO());
+
         Cargar_Tipos_Pago_Credito();
-        
+
         $('#modal_registrar_pago').modal('show');
     }, 300);
 }

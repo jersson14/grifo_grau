@@ -73,14 +73,14 @@ echo '
 <body>
 <table>
     <!-- ENCABEZADO EMPRESA -->
-    <tr><td colspan="11" class="cab">ESTACI&Oacute;N GOYO</td></tr>
-    <tr><td colspan="11" class="cab-sub">ESTACI&Oacute;N DE SERVICIOS &amp; COMBUSTIBLES</td></tr>
-    <tr><td colspan="11" class="acento"></td></tr>
-    <tr><td colspan="11" class="meta">Generado el ' . date('d/m/Y') . ' a las ' . date('H:i:s') . '</td></tr>
+    <tr><td colspan="12" class="cab">ESTACI&Oacute;N GOYO</td></tr>
+    <tr><td colspan="12" class="cab-sub">ESTACI&Oacute;N DE SERVICIOS &amp; COMBUSTIBLES</td></tr>
+    <tr><td colspan="12" class="acento"></td></tr>
+    <tr><td colspan="12" class="meta">Generado el ' . date('d/m/Y') . ' a las ' . date('H:i:s') . '</td></tr>
 
     <!-- DATOS CLIENTE -->
     <tr>
-        <td colspan="11" class="bloque">
+        <td colspan="12" class="bloque">
             <strong>Cliente:</strong> ' . htmlspecialchars($cliente['nombre_completo']) . '
             &nbsp;&nbsp;|&nbsp;&nbsp;
             <strong>DNI/RUC:</strong> ' . ($cliente['dni_ruc'] ?: '-') . '
@@ -92,7 +92,7 @@ echo '
     </tr>
 
     <!-- TÍTULO REPORTE -->
-    <tr><td colspan="11" class="titulo-rep">' . $titulo . '</td></tr>
+    <tr><td colspan="12" class="titulo-rep">' . $titulo . '</td></tr>
 
     <!-- CABECERA COLUMNAS -->
     <tr>
@@ -105,6 +105,7 @@ echo '
         <th class="tr">Saldo</th>
         <th class="tc">Vencimiento</th>
         <th class="tc">Fecha Pago</th>
+        <th class="tc">Cód. Operación</th>
         <th class="tc">Estado</th>
         <th>Observaciones</th>
     </tr>';
@@ -142,6 +143,7 @@ foreach ($vales as $vale) {
         <td class="tr"><strong>S/. ' . number_format($saldo, 2) . '</strong></td>
         <td class="tc">' . $venc . '</td>
         <td class="tc">' . $fp . '</td>
+        <td class="tc">' . (!empty($vale['ultimo_codigo_operacion']) ? htmlspecialchars($vale['ultimo_codigo_operacion']) : '—') . '</td>
         <td class="tc">' . $vale['estado'] . '</td>
         <td>' . ($vale['observaciones'] ? htmlspecialchars($vale['observaciones']) : '—') . '</td>
     </tr>';
@@ -154,7 +156,7 @@ echo '
         <td class="tr tf">S/. ' . number_format($total_monto, 2) . '</td>
         <td class="tr tf">S/. ' . number_format($total_pagado, 2) . '</td>
         <td class="tr tf">S/. ' . number_format($total_saldo, 2) . '</td>
-        <td colspan="4" class="tf"></td>
+        <td colspan="5" class="tf"></td>
     </tr>
 
 </table>

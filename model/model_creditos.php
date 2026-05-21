@@ -111,7 +111,7 @@ class Modelo_Creditos extends conexionBD {
     }
 
     // REGISTRAR PAGO DE CRÉDITO
-    public function Registrar_Pago_Credito($id_credito, $id_tipo_pago, $codigo_operacion, $monto_pagado, $id_usuario, $observaciones) {
+    public function Registrar_Pago_Credito($id_credito, $id_tipo_pago, $codigo_operacion, $monto_pagado, $fecha_pago, $id_usuario, $observaciones) {
         $c = conexionBD::conexionPDO();
         
         // Obtener saldo actual
@@ -126,23 +126,25 @@ class Modelo_Creditos extends conexionBD {
             return -1; // Monto mayor al saldo
         }
         
-        // Calcular nuevo saldo
-        $saldo_nuevo = $saldo_anterior - $monto_pagado;
-        
+        // Calcular nuevo saldo con redondeo para evitar errores de punto flotante
+        $saldo_nuevo = round($saldo_anterior - $monto_pagado, 2);
+        if ($saldo_nuevo < 0) $saldo_nuevo = 0;
+
         // Registrar el pago en historial
+        $fecha_pago_db = !empty($fecha_pago) ? $fecha_pago : date('Y-m-d');
         $sql_historial = "INSERT INTO historial_pagos_credito (
-                            id_credito, id_tipo_pago, codigo_operacion, monto_pagado, 
+                            id_credito, id_tipo_pago, codigo_operacion, monto_pagado,
                             saldo_anterior, saldo_nuevo, fecha_pago, id_usuario_registro, observaciones
-                          ) VALUES (?, ?, ?, ?, ?, ?, NOW(), ?, ?)";
+                          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         $query_historial = $c->prepare($sql_historial);
         $resultado = $query_historial->execute(array(
             $id_credito, $id_tipo_pago, $codigo_operacion, $monto_pagado,
-            $saldo_anterior, $saldo_nuevo, $id_usuario, $observaciones
+            $saldo_anterior, $saldo_nuevo, $fecha_pago_db, $id_usuario, $observaciones
         ));
-        
+
         if ($resultado) {
             // Actualizar saldo en ventas_credito
-            $nuevo_estado = ($saldo_nuevo == 0) ? 'PAGADO' : 'PENDIENTE';
+            $nuevo_estado = ($saldo_nuevo <= 0) ? 'PAGADO' : 'PENDIENTE';
             $sql_update = "UPDATE ventas_credito SET 
                             saldo_pendiente = ?,
                             estado = ?,
@@ -306,15 +308,15 @@ class Modelo_Creditos extends conexionBD {
                     rt.turno,
                     CONCAT(u.usu_nombre, ' ', u.usu_apellido) as grifero_nombre,
                     DATEDIFF(CURDATE(), vc.fecha_vencimiento) as dias_vencido,
-                    pagos.fecha_ultimo_pago
+                    (SELECT fecha_pago FROM historial_pagos_credito
+                     WHERE id_credito = vc.id_credito
+                     ORDER BY id_pago_credito DESC LIMIT 1) AS fecha_ultimo_pago,
+                    (SELECT codigo_operacion FROM historial_pagos_credito
+                     WHERE id_credito = vc.id_credito
+                     ORDER BY id_pago_credito DESC LIMIT 1) AS ultimo_codigo_operacion
                 FROM ventas_credito vc
                 LEFT JOIN reportes_turno rt ON vc.id_reporte = rt.id_reporte
                 LEFT JOIN usuario u ON rt.id_usuario = u.id_usuario
-                LEFT JOIN (
-                    SELECT id_credito, MAX(fecha_pago) as fecha_ultimo_pago
-                    FROM historial_pagos_credito
-                    GROUP BY id_credito
-                ) pagos ON vc.id_credito = pagos.id_credito
                 WHERE vc.id_cliente = ?";
         
         $params = array($id_cliente);
@@ -515,7 +517,7 @@ class Modelo_Creditos extends conexionBD {
     }
 
     // PAGAR TODO - TODAS LAS DEUDAS PENDIENTES DE UN CLIENTE
-    public function Pagar_Todo_Cliente($id_cliente, $id_tipo_pago, $codigo_operacion, $monto_pagado, $id_usuario, $observaciones) {
+    public function Pagar_Todo_Cliente($id_cliente, $id_tipo_pago, $codigo_operacion, $monto_pagado, $fecha_pago, $id_usuario, $observaciones) {
         $c = conexionBD::conexionPDO();
         
         try {
@@ -558,24 +560,26 @@ class Modelo_Creditos extends conexionBD {
                 $id_credito = $credito['id_credito'];
                 $saldo_anterior = $credito['saldo_pendiente'];
                 
-                // Calcular cuánto pagar de este crédito
-                $monto_a_pagar = min($monto_restante, $saldo_anterior);
-                $saldo_nuevo = $saldo_anterior - $monto_a_pagar;
-                
+                // Calcular cuánto pagar de este crédito con redondeo
+                $monto_a_pagar = round(min($monto_restante, $saldo_anterior), 2);
+                $saldo_nuevo   = round($saldo_anterior - $monto_a_pagar, 2);
+                if ($saldo_nuevo < 0) $saldo_nuevo = 0;
+
                 // Registrar el pago en historial
+                $fecha_pago_db = !empty($fecha_pago) ? $fecha_pago : date('Y-m-d');
                 $obs_pago = "PAGO TOTAL CLIENTE - " . $observaciones;
                 $sql_historial = "INSERT INTO historial_pagos_credito (
-                                    id_credito, id_tipo_pago, codigo_operacion, monto_pagado, 
+                                    id_credito, id_tipo_pago, codigo_operacion, monto_pagado,
                                     saldo_anterior, saldo_nuevo, fecha_pago, id_usuario_registro, observaciones
-                                  ) VALUES (?, ?, ?, ?, ?, ?, NOW(), ?, ?)";
+                                  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
                 $query_historial = $c->prepare($sql_historial);
                 $query_historial->execute(array(
                     $id_credito, $id_tipo_pago, $codigo_operacion, $monto_a_pagar,
-                    $saldo_anterior, $saldo_nuevo, $id_usuario, $obs_pago
+                    $saldo_anterior, $saldo_nuevo, $fecha_pago_db, $id_usuario, $obs_pago
                 ));
-                
+
                 // Actualizar saldo en ventas_credito
-                $nuevo_estado = ($saldo_nuevo == 0) ? 'PAGADO' : 'PENDIENTE';
+                $nuevo_estado = ($saldo_nuevo <= 0) ? 'PAGADO' : 'PENDIENTE';
                 $sql_update = "UPDATE ventas_credito SET 
                                 saldo_pendiente = ?,
                                 estado = ?,

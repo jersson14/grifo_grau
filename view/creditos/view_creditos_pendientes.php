@@ -231,6 +231,11 @@
                             <i class="fas fa-check-double"></i> Pagar Saldo Completo
                         </button>
                     </div>
+                    <div class="col-md-6 form-group">
+                        <label>Fecha de Pago <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" id="txt_fecha_pago_credito">
+                        <small class="text-muted">Fecha real en que se realizó el pago</small>
+                    </div>
                     <div class="col-12 form-group">
                         <label>Observaciones</label>
                         <textarea class="form-control" id="txt_observaciones_pago_credito" rows="2" placeholder="Observaciones opcionales"></textarea>
@@ -323,6 +328,7 @@
                                     <th>Saldo</th>
                                     <th>Vencimiento</th>
                                     <th>Fecha Pago</th>
+                                    <th>Cód. Operación</th>
                                     <th>Estado</th>
                                     <th>Acciones</th>
                                 </tr>
