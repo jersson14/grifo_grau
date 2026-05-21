@@ -272,7 +272,7 @@
                                 <p><strong>DNI/RUC:</strong><br><span id="info_dni_vales"></span></p>
                             </div>
                             <div class="col-md-3">
-                                <p><strong>Total Vales:</strong><br><span id="info_total_vales" class="badge badge-info" style="font-size:16px"></span></p>
+                                <p><strong>Total Vales Pendientes:</strong><br><span id="info_total_vales" class="badge badge-info" style="font-size:16px"></span></p>
                             </div>
                             <div class="col-md-2">
                                 <p><strong>Saldo Total:</strong><br><span id="info_saldo_total_vales" class="text-danger" style="font-size:18px; font-weight:bold"></span></p>
@@ -322,6 +322,7 @@
                                     <th>Pagado</th>
                                     <th>Saldo</th>
                                     <th>Vencimiento</th>
+                                    <th>Fecha Pago</th>
                                     <th>Estado</th>
                                     <th>Acciones</th>
                                 </tr>

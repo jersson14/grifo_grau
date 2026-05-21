@@ -195,7 +195,7 @@ function Ver_Vales_Cliente(id_cliente, nombre_cliente, dni, total_vales, saldo_t
                     return '<strong>S/. ' + parseFloat(data).toFixed(2) + '</strong>';
                 }
             },
-            { 
+            {
                 "data": "fecha_vencimiento",
                 "render": function(data, type, row) {
                     if (data) {
@@ -208,6 +208,20 @@ function Ver_Vales_Cliente(id_cliente, nombre_cliente, dni, total_vales, saldo_t
                         return html;
                     }
                     return '-';
+                }
+            },
+            {
+                "data": "fecha_ultimo_pago",
+                "render": function(data, type, row) {
+                    if (data) {
+                        var fecha = new Date(data);
+                        var html = fecha.toLocaleDateString('es-PE');
+                        if (row.estado === 'PAGADO') {
+                            return '<span class="text-success font-weight-bold">' + html + '</span>';
+                        }
+                        return '<span class="text-muted">' + html + '</span>';
+                    }
+                    return '<span class="text-muted">-</span>';
                 }
             },
             {

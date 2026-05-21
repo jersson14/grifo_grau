@@ -290,7 +290,7 @@ class Modelo_Creditos extends conexionBD {
     // LISTAR VALES DE UN CLIENTE ESPECÍFICO
     public function Listar_Vales_Cliente($id_cliente, $filtro_estado = null) {
         $c = conexionBD::conexionPDO();
-        $sql = "SELECT 
+        $sql = "SELECT
                     vc.id_credito,
                     vc.numero_vale,
                     vc.placa,
@@ -305,10 +305,16 @@ class Modelo_Creditos extends conexionBD {
                     rt.fecha_reporte,
                     rt.turno,
                     CONCAT(u.usu_nombre, ' ', u.usu_apellido) as grifero_nombre,
-                    DATEDIFF(CURDATE(), vc.fecha_vencimiento) as dias_vencido
+                    DATEDIFF(CURDATE(), vc.fecha_vencimiento) as dias_vencido,
+                    pagos.fecha_ultimo_pago
                 FROM ventas_credito vc
                 LEFT JOIN reportes_turno rt ON vc.id_reporte = rt.id_reporte
                 LEFT JOIN usuario u ON rt.id_usuario = u.id_usuario
+                LEFT JOIN (
+                    SELECT id_credito, MAX(fecha_pago) as fecha_ultimo_pago
+                    FROM historial_pagos_credito
+                    GROUP BY id_credito
+                ) pagos ON vc.id_credito = pagos.id_credito
                 WHERE vc.id_cliente = ?";
         
         $params = array($id_cliente);
@@ -319,7 +325,7 @@ class Modelo_Creditos extends conexionBD {
             $params[] = $filtro_estado;
         }
         
-        $sql .= " ORDER BY vc.estado ASC, vc.fecha_vencimiento ASC, vc.created_at DESC";
+        $sql .= " ORDER BY CASE WHEN vc.estado = 'PENDIENTE' THEN 0 WHEN vc.estado = 'PAGADO' THEN 1 ELSE 2 END ASC, vc.created_at ASC, vc.numero_vale ASC";
         
         $arreglo = array();
         $query = $c->prepare($sql);
