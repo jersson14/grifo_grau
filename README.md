@@ -1,187 +1,327 @@
-# 🚗 Sistema de Gestión de Grifo
+# Sistema de Gestión de Grifo
 
-Sistema web para gestión de ventas diarias, turnos y reportes de estación de servicio.
+> Sistema web completo para la administración de una estación de servicio — turnos, ventas, créditos y reportes en tiempo real.
+>
+> **Desarrollado con Vibe Coding** (desarrollo asistido por IA), demostrando cómo llevar un sistema empresarial de 0 a producción de forma acelerada y estructurada.
 
-## 🛠️ Tecnologías
+---
 
-- **Backend:** PHP 8.0+ (MVC)
-- **Frontend:** HTML5, CSS3, JavaScript
-- **Template:** AdminLTE 3.2
-- **Base de Datos:** MySQL 8.0+
-- **PDF:** mPDF
-- **Gráficos:** Chart.js
-- **Contenedores:** Docker & Docker Compose
+## Tabla de Contenidos
 
-## 📁 Estructura del Proyecto
+- [Vista general](#vista-general)
+- [Módulos del sistema](#módulos-del-sistema)
+- [Stack tecnológico](#stack-tecnológico)
+- [Arquitectura MVC](#arquitectura-mvc)
+- [Base de datos](#base-de-datos)
+- [Instalación rápida con Docker](#instalación-rápida-con-docker)
+- [Instalación manual (XAMPP)](#instalación-manual-xampp)
+- [Usuarios por defecto](#usuarios-por-defecto)
+- [Sobre Vibe Coding](#sobre-vibe-coding)
+- [Autor](#autor)
 
+---
+
+## Vista general
+
+Este proyecto nació de la necesidad real de digitalizar la operación diaria de un grifo (estación de servicio). El sistema reemplaza el registro manual en papel por un flujo digital completo que abarca desde la apertura de turno hasta los reportes gerenciales.
+
+**Capacidades principales:**
+
+- Control de turnos DÍA / NOCHE con lectura automática de surtidores
+- Registro de ventas con 6 métodos de pago (YAPE, BCP, VISA, EFECTIVO, DESCUENTO, OTROS GASTOS)
+- Gestión de créditos a clientes con historial de pagos y alertas de vencimiento
+- Dashboard interactivo con 4 tipos de gráficos (Chart.js)
+- Exportación de reportes a PDF (mPDF) y Excel
+- Consulta de DNI / RUC en tiempo real (API externa)
+- Control de acceso por roles: ADMINISTRADOR y GRIFERO
+
+---
+
+## Módulos del sistema
+
+### 1. Dashboard y Reportes
+
+Panel principal con indicadores del día, gráficos de ventas de los últimos 7 días, distribución por tipo de combustible, métodos de pago y desempeño por grifero.
+
+| Gráfico | Tipo |
+| --- | --- |
+| Ventas últimos 7 días | Líneas |
+| Ventas por combustible (mes) | Barras |
+| Comparativo DÍA vs NOCHE | Barras agrupadas |
+| Distribución de métodos de pago | Dona |
+
+---
+
+### 2. Gestión de Turnos
+
+Flujo completo desde apertura hasta cierre:
+
+```text
+Abrir Turno
+  └─ Genera número de documento automático (DOC-0001, DOC-0002 ...)
+  └─ Carga lecturas iniciales de los 12 surtidores automáticamente
+
+Durante el Turno
+  └─ Actualiza lecturas en tiempo real
+  └─ Registra pagos (6 métodos, código de operación obligatorio para digitales)
+  └─ Registra créditos a clientes con número de vale y vencimiento
+  └─ Calcula faltante / sobrante en tiempo real
+
+Cerrar Turno
+  └─ Valida lecturas finales
+  └─ Calcula galones vendidos y totales por combustible
+  └─ Actualiza lecturas actuales en la tabla de surtidores
+  └─ Genera el cuadre de caja final
 ```
-GRIFO_GRAU/
-├── controller/
-├── database/           # Scripts SQL de inicialización
-├── img/
-├── js/
-├── model/
-├── PHPMailer-master/
-├── plantilla/
-├── utilitario/
-├── vendor/
-├── view/
-├── docker-compose.yml  # Configuración de contenedores
-├── Dockerfile          # Imagen Docker del proyecto
-├── install.bat         # Instalador automático para Windows
-├── stop.bat            # Script para detener el sistema
-└── README.md
+
+---
+
+### 3. Créditos a Clientes
+
+- Listado de créditos pendientes con dashboard de resumen
+- Registro de pagos parciales o totales con código de operación
+- Historial de pagos por crédito
+- Anulación de créditos con motivo
+- Top 10 deudores
+- Exportación a PDF y Excel
+- Alertas visuales para créditos vencidos
+
+---
+
+### 4. Surtidores
+
+12 surtidores organizados en 2 máquinas. Cada surtidor tiene:
+
+- Código único por máquina (BS1, BS2, R1, R2, P1, P2)
+- Estado: ACTIVO / INACTIVO / MANTENIMIENTO
+- Lectura actual (se actualiza automáticamente al cerrar cada turno)
+- Producto asignado: Diesel B5 / Regular 84 / Premium 95
+
+---
+
+### 5. Productos (Combustibles)
+
+- CRUD completo con historial de cambios de precio
+- Registro del usuario y fecha en cada modificación de precio
+- Control de estado activo / inactivo
+
+---
+
+### 6. Clientes
+
+- CRUD completo con datos personales (nombre, DNI, teléfono, dirección)
+- Vista de detalle con resumen de créditos (total, pagado, pendiente)
+- Historial de créditos por cliente con turnos asociados
+- Consulta de DNI en tiempo real
+
+---
+
+### 7. Usuarios
+
+- CRUD completo con foto de perfil
+- Roles: ADMINISTRADOR / GRIFERO
+- Cambio de contraseña independiente
+- Control de estado activo / inactivo
+
+---
+
+## Stack tecnológico
+
+| Capa | Tecnología |
+| --- | --- |
+| Backend | PHP 7+ con PDO |
+| Base de datos | MySQL / MariaDB |
+| Frontend | HTML5, CSS3, JavaScript (jQuery) |
+| UI Framework | AdminLTE 3 |
+| Gráficos | Chart.js |
+| Tablas | DataTables |
+| Alertas | SweetAlert2 |
+| Iconos | Font Awesome 5 |
+| Selectores | Select2 |
+| PDF | mPDF |
+| Email | PHPMailer |
+| Contenedores | Docker & Docker Compose |
+
+---
+
+## Arquitectura MVC
+
+```text
+grifo_grau/
+├── model/                          # Capa de datos (PDO)
+│   ├── model_conexion.php
+│   ├── model_productos.php
+│   ├── model_clientes_grifo.php
+│   ├── model_surtidores.php
+│   ├── model_turnos.php
+│   ├── model_creditos.php
+│   ├── model_reportes.php
+│   ├── model_empresa.php
+│   ├── model_gastos.php
+│   ├── model_ingresos.php
+│   ├── model_pagos.php
+│   ├── model_indicadores.php
+│   └── model_usuario.php
+│
+├── view/                           # Capa de presentación (AdminLTE 3)
+│   ├── index.php                   # Dashboard principal
+│   ├── productos/
+│   ├── clientes/
+│   ├── surtidores/
+│   ├── usuario/
+│   ├── turnos/
+│   │   ├── view_abrir_turno.php
+│   │   ├── view_cerrar_turno.php
+│   │   └── view_historial.php
+│   ├── creditos/
+│   └── reportes/
+│
+├── controller/                     # 100+ controladores PHP (un archivo por acción)
+│   ├── clientes/
+│   ├── creditos/
+│   ├── dashboard/
+│   ├── empresa/
+│   ├── gastos/
+│   ├── indicadores/
+│   ├── ingresos/
+│   ├── pagos/
+│   ├── productos/
+│   ├── reportes/
+│   ├── surtidores/
+│   ├── turnos/
+│   └── usuario/
+│
+├── js/                             # Lógica de cliente (jQuery + AJAX)
+│   ├── console_productos.js
+│   ├── console_clientes_grifo.js
+│   ├── console_surtidores.js
+│   ├── console_usuario.js
+│   ├── console_turnos.js
+│   ├── console_creditos.js
+│   └── console_reportes.js
+│
+├── database/                       # Scripts SQL
+│   ├── init.sql
+│   ├── tipos_pago.sql
+│   └── fix_ventas_credito.sql
+│
+├── view/MPDF/                      # Motor de generación de PDF
+├── PHPMailer-master/               # Envío de correos
+├── plantilla/                      # AdminLTE 3 assets
+├── img/                            # Imágenes del sistema
+├── docker-compose.yml
+├── Dockerfile
+├── install.bat                     # Instalador automático Windows
+└── stop.bat
 ```
 
-## 🚀 Instalación Rápida con Docker (Recomendado)
+**Estadísticas del proyecto:**
 
-### Requisitos Previos
-- **Docker Desktop** instalado ([Descargar aquí](https://www.docker.com/products/docker-desktop))
-- Windows 10/11
+- 13 modelos PHP
+- 13+ vistas funcionales
+- 100+ controladores PHP (un archivo por acción REST)
+- 7 archivos JavaScript (2 500+ líneas)
+- 80+ archivos creados en total
 
-### Pasos de Instalación
+---
 
-1. **Clonar o copiar el proyecto** en tu PC
-   ```bash
-   git clone https://github.com/tu-usuario/GRIFO_GRAU.git
-   cd GRIFO_GRAU
-   ```
+## Base de datos
 
-2. **Colocar tu script SQL** en la carpeta `database/`
-   - Renombra tu archivo SQL a `init.sql` o colócalo en `database/`
-   - Este script se ejecutará automáticamente al iniciar
+### Scripts SQL incluidos
 
-3. **Ejecutar el instalador**
-   - Doble clic en `install.bat`
-   - El script verificará Docker y levantará todos los servicios automáticamente
+#### `database/tipos_pago.sql`
 
-4. **Acceder al sistema**
-   - **Aplicación:** http://localhost:8080
-   - **phpMyAdmin:** http://localhost:8081
+Crea e inserta los métodos de pago del sistema:
 
-### Comandos Útiles
+```sql
+CREATE TABLE IF NOT EXISTS `tipos_pago` (
+  `id_tipo_pago` int(11) NOT NULL AUTO_INCREMENT,
+  `nombre`       varchar(50) NOT NULL,
+  `requiere_codigo` enum('SI','NO') DEFAULT 'NO',
+  `estado`       enum('ACTIVO','INACTIVO') DEFAULT 'ACTIVO',
+  PRIMARY KEY (`id_tipo_pago`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT INTO `tipos_pago` VALUES
+  (1, 'YAPE',         'SI',  'ACTIVO'),
+  (2, 'BCP',          'SI',  'ACTIVO'),
+  (3, 'VISA',         'SI',  'ACTIVO'),
+  (4, 'EFECTIVO',     'NO',  'ACTIVO'),
+  (5, 'DESCUENTO',    'NO',  'ACTIVO'),
+  (6, 'OTROS_GASTOS', 'NO',  'ACTIVO')
+ON DUPLICATE KEY UPDATE nombre = nombre;
+```
+
+#### `database/fix_ventas_credito.sql`
+
+Migración que permite registrar créditos manuales sin turno (el campo `id_reporte` pasa a ser nullable con `ON DELETE SET NULL`):
+
+```sql
+-- 1. Eliminar FK existente
+ALTER TABLE `ventas_credito` DROP FOREIGN KEY `ventas_credito_ibfk_1`;
+
+-- 2. Limpiar referencias huérfanas
+UPDATE `ventas_credito` SET `id_reporte` = NULL
+WHERE `id_reporte` NOT IN (SELECT `id_reporte` FROM `reportes_turno`);
+
+-- 3. Columna nullable
+ALTER TABLE `ventas_credito` MODIFY `id_reporte` INT(11) NULL;
+
+-- 4. Recrear FK con SET NULL
+ALTER TABLE `ventas_credito`
+  ADD CONSTRAINT `ventas_credito_ibfk_1`
+  FOREIGN KEY (`id_reporte`)
+  REFERENCES `reportes_turno` (`id_reporte`)
+  ON DELETE SET NULL ON UPDATE CASCADE;
+```
+
+#### `database/init.sql`
+
+Script de inicialización completa de la base de datos. Coloca aquí el dump de tu BD o usa los scripts individuales.
+
+### Datos precargados
+
+| Entidad | Registros |
+| --- | --- |
+| Combustibles | Diesel B5 (S/.15.69), Regular 84 (S/.14.99), Premium 95 (S/.15.89) |
+| Surtidores | 12 (Máquina 1 y 2: BS1, BS2, R1, R2, P1, P2) |
+| Tipos de pago | 6 (YAPE, BCP, VISA, EFECTIVO, DESCUENTO, OTROS GASTOS) |
+| Roles | ADMINISTRADOR, GRIFERO |
+
+---
+
+## Instalación rápida con Docker
+
+**Requisitos:** Docker Desktop instalado.
 
 ```bash
-# Detener el sistema
+# 1. Clonar el repositorio
+git clone https://github.com/tu-usuario/grifo_grau.git
+cd grifo_grau
+
+# 2. Levantar los servicios
+install.bat        # Windows
+# o
+docker-compose up -d
+```
+
+| Servicio | URL |
+| --- | --- |
+| Aplicación web | <http://localhost:8080> |
+| phpMyAdmin | <http://localhost:8081> |
+
+```bash
+# Detener
 docker-compose down
 
-# O usar el script
-stop.bat
-
-# Ver logs en tiempo real
+# Ver logs
 docker-compose logs -f
 
-# Reiniciar servicios
+# Reiniciar
 docker-compose restart
-
-# Ver estado de contenedores
-docker-compose ps
 ```
 
-## 📦 Instalación en Otra PC
-
-### Opción 1: Con Docker (Más Fácil)
-1. Copia toda la carpeta del proyecto a la nueva PC
-2. Instala Docker Desktop
-3. Ejecuta `install.bat`
-4. ¡Listo!
-
-### Opción 2: Manual (Sin Docker)
-Sigue las instrucciones de instalación manual más abajo.
-
-## 🔧 Instalación Manual (Sin Docker)
-
-### 1. Requisitos Previos
-- PHP >= 8.0
-- MySQL >= 8.0
-- Apache/Nginx
-- Composer (opcional)
-
-### 2. Clonar Repositorio
-```bash
-git clone https://github.com/tu-usuario/GRIFO_GRAU.git
-cd GRIFO_GRAU
-```
-
-### 3. Configurar Base de Datos
-```bash
-# Crear base de datos
-mysql -u root -p
-CREATE DATABASE grifo_grau;
-USE grifo_grau;
-
-# Importar estructura
-source database/init.sql
-```
-
-### 4. Configurar Conexión
-Editar `model/model_conexion.php`:
-```php
-$host = "localhost";
-$port = "3306";
-$usuario = "root";
-$contrasena = "";
-$bdName = "grifo_grau";
-```
-
-### 5. Instalar Dependencias
-```bash
-composer install
-```
-
-### 6. Permisos (Linux/Mac)
-```bash
-chmod -R 755 view/MPDF/
-chmod -R 755 img/
-chmod -R 755 plantilla/
-```
-
-### 7. Configurar Apache
-Apuntar el DocumentRoot a la carpeta del proyecto.
-
-## 👤 Usuarios por Defecto
-
-| Usuario | Contraseña | Rol |
-|---------|-----------|-----|
-| admin | admin123 | Administrador |
-| grifero1 | grifero123 | Grifero |
-
-## 📋 Funcionalidades
-
-### Administrador
-- Abrir y cerrar turnos
-- Asignar griferos a turnos
-- Validar reportes
-- Gestionar créditos
-- Configuración general
-
-### Grifero
-- Registrar lecturas
-- Registrar pagos
-- Registrar créditos
-- Ver su turno asignado
-
-## 🐳 Configuración Docker
-
-### Servicios Incluidos
-
-1. **Web (PHP + Apache)**
-   - Puerto: 8080
-   - PHP 8.1 con extensiones necesarias
-
-2. **Base de Datos (MySQL 8.0)**
-   - Puerto: 3306
-   - Usuario: root
-   - Contraseña: rootpassword
-   - Base de datos: grifo_grau
-
-3. **phpMyAdmin**
-   - Puerto: 8081
-   - Gestión visual de la base de datos
-
-### Variables de Entorno
-
-Puedes modificar las credenciales en `docker-compose.yml`:
+### Variables de entorno (`docker-compose.yml`)
 
 ```yaml
 environment:
@@ -191,57 +331,105 @@ environment:
   MYSQL_PASSWORD: grifo_pass
 ```
 
-## 🔧 Stored Procedures Principales
+---
+
+## Instalación manual (XAMPP)
+
+### 1. Requisitos
+
+- PHP >= 7.4 con extensiones: `pdo_mysql`, `mbstring`, `gd`
+- MySQL >= 5.7 / MariaDB >= 10.3
+- Apache (incluido en XAMPP)
+
+### 2. Clonar o copiar el proyecto
+
+```bash
+git clone https://github.com/tu-usuario/grifo_grau.git
+# Copiar a: C:\xampp\htdocs\grifo_grau
+```
+
+### 3. Crear la base de datos
 
 ```sql
-CALL sp_abrir_turno(fecha, turno_id, usuario_id, hora_inicio, @reporte_id);
-CALL sp_cerrar_turno(reporte_id, hora_fin, observaciones);
-CALL sp_validar_turno(reporte_id, admin_id);
+CREATE DATABASE grifo_grau CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE grifo_grau;
+SOURCE database/init.sql;
+SOURCE database/tipos_pago.sql;
 ```
 
-## 📄 Generación de PDF
+### 4. Configurar la conexión
 
-Archivo: `view/MPDF/reporte_turno.php`
+Editar [model/model_conexion.php](model/model_conexion.php):
+
 ```php
-require_once __DIR__ . '/../../vendor/autoload.php';
-$mpdf = new \Mpdf\Mpdf();
-$mpdf->WriteHTML($html);
-$mpdf->Output('reporte.pdf', 'D');
+$host     = "localhost";
+$port     = "3306";
+$usuario  = "root";
+$contrasena = "";
+$bdName   = "grifo_grau";
 ```
 
-## 🎨 Personalización AdminLTE
+### 5. Permisos (Linux / Mac)
 
-Editar: `plantilla/css/custom.css`
-
-## 🐛 Solución de Problemas
-
-### Docker no inicia
-- Verifica que Docker Desktop esté corriendo
-- Reinicia Docker Desktop
-- Ejecuta `docker-compose down` y luego `install.bat` nuevamente
-
-### Puerto 8080 ocupado
-Cambia el puerto en `docker-compose.yml`:
-```yaml
-ports:
-  - "8090:80"  # Cambia 8080 por otro puerto
+```bash
+chmod -R 755 view/MPDF/
+chmod -R 755 img/
+chmod -R 755 controller/empresa/FOTOS/
+chmod -R 755 controller/usuario/fotos/
 ```
 
-### Error de conexión a base de datos
-- Espera 30 segundos después de ejecutar `install.bat`
-- Verifica que el contenedor de MySQL esté corriendo: `docker-compose ps`
+### 6. Acceder
 
-## 📞 Soporte
-
-Desarrollado por: **ING. JERSSON JORGE CORILLA MIRANDA**  
-Email: jersson14071996@gmail.com  
-
-## 📝 Licencia
-
-MIT License
+```text
+http://localhost/grifo_grau
+```
 
 ---
 
-**Versión:** 2.0.0  
-**Fecha:** Enero 2025  
-**Dockerizado:** ✅
+## Usuarios por defecto
+
+| Usuario | Contraseña | Rol |
+| --- | --- | --- |
+| admin | admin123 | Administrador |
+| grifero1 | grifero123 | Grifero |
+
+> Cambia las contraseñas después del primer inicio de sesión.
+
+---
+
+## Sobre Vibe Coding
+
+Este proyecto fue construido usando **Vibe Coding**: un flujo de desarrollo donde el programador define la visión, los requerimientos y el diseño del negocio, mientras la IA genera, refactoriza e itera el código de forma acelerada.
+
+### Lo que aporta el desarrollador
+
+- Dominio del negocio (lógica de turnos, cuadre de caja, créditos)
+- Definición de la arquitectura (MVC, separación controlador/modelo/vista)
+- Toma de decisiones técnicas (stack, base de datos, flujos de seguridad)
+- Revisión, prueba y validación de cada módulo en producción real
+
+### Lo que aporta la IA
+
+- Generación de código boilerplate
+- Aceleración en la escritura de CRUD repetitivos
+- Sugerencias de estructura y patrones
+
+El resultado: un sistema empresarial completo de 80+ archivos, 100+ controladores y 7 módulos funcionales, construido y puesto en producción en semanas en lugar de meses.
+
+---
+
+## Autor
+
+### Ing. Jersson Jorge Corilla Miranda
+
+- Email: <jersson14071996@gmail.com>
+
+---
+
+## Licencia
+
+MIT License — libre para uso, modificación y distribución con atribución.
+
+---
+
+Versión: 2.0.0 | Estado: Producción | Año: 2025
