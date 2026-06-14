@@ -267,6 +267,10 @@ function Ver_Vales_Cliente(id_cliente, nombre_cliente, dni, total_vales, saldo_t
                         // Botón de eliminar
                         botones += "<button class='eliminar_vale btn btn-danger btn-sm' title='Eliminar'><i class='fas fa-trash'></i></button>&nbsp;";
                     }
+                    if (row.estado == 'PAGADO') {
+                        // Botón de anular pago (revertir a pendiente)
+                        botones += "<button class='anular_pago_vale btn btn-danger btn-sm' title='Anular Pago'><i class='fas fa-undo'></i></button>&nbsp;";
+                    }
                     // Siempre mostrar historial
                     botones += "<button class='historial_vale btn btn-info btn-sm' title='Ver Historial'><i class='fas fa-history'></i></button>";
                     return botones;
@@ -306,7 +310,12 @@ function Ver_Vales_Cliente(id_cliente, nombre_cliente, dni, total_vales, saldo_t
         var data = tabla_vales_cliente.row($(this).closest('tr')).data();
         Eliminar_Credito(data.id_credito, data.numero_vale);
     });
-    
+
+    $('#tabla_vales_cliente tbody').on('click', '.anular_pago_vale', function() {
+        var data = tabla_vales_cliente.row($(this).closest('tr')).data();
+        Anular_Pago_Credito(data.id_credito, data.numero_vale);
+    });
+
     $('#modal_vales_cliente').modal('show');
 }
 
@@ -808,6 +817,136 @@ function Ver_Historial_Pagos(id_credito) {
     });
     
     $('#modal_historial_pagos').modal('show');
+}
+
+// Recalcula y actualiza el saldo total en el encabezado del modal de vales
+function Actualizar_Saldo_Modal_Cliente() {
+    var saldo_total = 0;
+    tabla_vales_cliente.rows().data().each(function(row) {
+        if (row.estado === 'PENDIENTE') {
+            saldo_total += parseFloat(row.saldo_pendiente) || 0;
+        }
+    });
+    saldo_total = Math.round(saldo_total * 100) / 100;
+    $('#info_saldo_total_vales').text('S/. ' + saldo_total.toFixed(2));
+    $('#monto_total_pagar').text('S/. ' + saldo_total.toFixed(2));
+    if (saldo_total > 0) {
+        $('#btn_pagar_todo_cliente').show();
+    } else {
+        $('#btn_pagar_todo_cliente').hide();
+    }
+}
+
+// REVERTIR MONTO: deshace los pagos más recientes del cliente hasta cubrir el monto indicado
+function Revertir_Monto_Cliente() {
+    var id_cliente = $('#txt_id_cliente_vales').val();
+    var nombre     = $('#info_cliente_vales').text();
+
+    Swal.fire({
+        title: 'Revertir Monto de Pagos',
+        html:
+            '<p style="margin-bottom:6px">Cliente: <strong>' + nombre + '</strong></p>' +
+            '<p style="color:#666; font-size:13px">Se desharán los pagos <strong>más recientes</strong> hasta cubrir el monto. Los vales afectados volverán a <span class="badge badge-warning">PENDIENTE</span>.</p>',
+        input: 'text',
+        inputPlaceholder: 'Ej: 2000.00',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: '<i class="fas fa-undo-alt"></i> Revertir',
+        cancelButtonText: 'Cancelar',
+        inputValidator: function(value) {
+            if (!value || parseFloat(value) <= 0) {
+                return 'Ingresa un monto válido mayor a 0';
+            }
+        },
+        didOpen: function() {
+            $(document).off('focusin.bs.modal');
+            document.querySelector('.swal2-input').focus();
+        }
+    }).then(function(result) {
+        if (result.isConfirmed) {
+            Swal.fire({
+                title: 'Procesando...',
+                allowOutsideClick: false,
+                didOpen: function() { Swal.showLoading(); }
+            });
+            $.ajax({
+                url: '../controller/creditos/controlador_revertir_monto_cliente.php',
+                type: 'POST',
+                data: { id_cliente: id_cliente, monto: parseFloat(result.value) }
+            }).done(function(resp) {
+                var data = JSON.parse(resp);
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Monto Revertido',
+                        html: data.message + '<br><small class="text-muted">Vales afectados: ' + (data.vales_afectados || 0) + '</small>',
+                        confirmButtonColor: '#023D77'
+                    });
+                    tabla_vales_cliente.ajax.reload(function() {
+                        Actualizar_Saldo_Modal_Cliente();
+                    });
+                    Listar_Creditos_Por_Cliente();
+                    Cargar_Resumen_Creditos();
+                    Cargar_Top_Deudores();
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.message,
+                        confirmButtonColor: '#023D77'
+                    });
+                }
+            }).fail(function() {
+                Swal.fire({ icon: 'error', title: 'Error de conexión', confirmButtonColor: '#023D77' });
+            });
+        }
+    });
+}
+
+// ANULAR PAGO: elimina historial y revierte crédito a PENDIENTE
+function Anular_Pago_Credito(id_credito, numero_vale) {
+    Swal.fire({
+        title: '¿Anular el pago?',
+        html: 'Se eliminará todo el historial de pagos del vale <strong>' + numero_vale + '</strong> y quedará como <strong>PENDIENTE</strong> con el monto original.<br><br><strong class="text-danger">Esta acción no se puede deshacer.</strong>',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Sí, anular pago',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.ajax({
+                url: '../controller/creditos/controlador_anular_pago_credito.php',
+                type: 'POST',
+                data: { id_credito: id_credito }
+            }).done(function(resp) {
+                if (resp > 0) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Pago anulado',
+                        text: 'El vale ' + numero_vale + ' ha vuelto a estado PENDIENTE',
+                        confirmButtonColor: '#023D77'
+                    });
+                    tabla_vales_cliente.ajax.reload(function() {
+                        Actualizar_Saldo_Modal_Cliente();
+                    });
+                    Listar_Creditos_Por_Cliente();
+                    Cargar_Resumen_Creditos();
+                    Cargar_Top_Deudores();
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'No se pudo anular el pago. Intente nuevamente.',
+                        confirmButtonColor: '#023D77'
+                    });
+                }
+            });
+        }
+    });
 }
 
 // ANULAR CRÉDITO

@@ -375,6 +375,127 @@ class Modelo_Creditos extends conexionBD {
         conexionBD::cerrar_conexion();
     }
 
+    // ANULAR PAGO: borra historial y revierte el crédito a PENDIENTE
+    public function Anular_Pago_Credito($id_credito) {
+        $c = conexionBD::conexionPDO();
+        $c->beginTransaction();
+        try {
+            // Obtener el monto original del crédito
+            $sql_monto = "SELECT monto FROM ventas_credito WHERE id_credito = ?";
+            $query_monto = $c->prepare($sql_monto);
+            $query_monto->execute(array($id_credito));
+            $credito = $query_monto->fetch(PDO::FETCH_ASSOC);
+            if (!$credito) {
+                $c->rollBack();
+                return 0;
+            }
+            $monto_original = $credito['monto'];
+
+            // Eliminar todo el historial de pagos de este crédito
+            $sql_del = "DELETE FROM historial_pagos_credito WHERE id_credito = ?";
+            $query_del = $c->prepare($sql_del);
+            $query_del->execute(array($id_credito));
+
+            // Revertir el crédito a PENDIENTE con saldo completo
+            $sql_update = "UPDATE ventas_credito SET
+                                saldo_pendiente = ?,
+                                estado = 'PENDIENTE',
+                                updated_at = NOW()
+                           WHERE id_credito = ?";
+            $query_update = $c->prepare($sql_update);
+            $query_update->execute(array($monto_original, $id_credito));
+
+            $c->commit();
+            return 1;
+        } catch (Exception $e) {
+            $c->rollBack();
+            return 0;
+        }
+        conexionBD::cerrar_conexion();
+    }
+
+    // REVERTIR MONTO DE PAGOS DE UN CLIENTE (más recientes primero)
+    public function Revertir_Monto_Cliente($id_cliente, $monto_a_revertir) {
+        $c = conexionBD::conexionPDO();
+        $c->beginTransaction();
+        try {
+            $monto_restante = round(floatval($monto_a_revertir), 2);
+            if ($monto_restante <= 0) {
+                $c->rollBack();
+                return ['success' => false, 'message' => 'Monto inválido'];
+            }
+
+            // Pagos del cliente ordenados del más reciente al más antiguo
+            $q = $c->prepare("SELECT hpc.id_pago_credito, hpc.id_credito, hpc.monto_pagado, hpc.descuento
+                               FROM historial_pagos_credito hpc
+                               INNER JOIN ventas_credito vc ON hpc.id_credito = vc.id_credito
+                               WHERE vc.id_cliente = ?
+                               ORDER BY hpc.id_pago_credito DESC");
+            $q->execute([$id_cliente]);
+            $pagos = $q->fetchAll(PDO::FETCH_ASSOC);
+
+            if (empty($pagos)) {
+                $c->rollBack();
+                return ['success' => false, 'message' => 'No hay pagos registrados para este cliente'];
+            }
+
+            $total_disponible = 0;
+            foreach ($pagos as $p) {
+                $total_disponible += floatval($p['monto_pagado']) + floatval($p['descuento']);
+            }
+            if ($monto_restante > round($total_disponible, 2) + 0.01) {
+                $c->rollBack();
+                return ['success' => false, 'message' => 'El monto a revertir (S/. ' . number_format($monto_a_revertir, 2) . ') supera el total pagado (S/. ' . number_format($total_disponible, 2) . ')'];
+            }
+
+            $vales_afectados = 0;
+
+            foreach ($pagos as $pago) {
+                if ($monto_restante <= 0) break;
+
+                $monto_pago = round(floatval($pago['monto_pagado']) + floatval($pago['descuento']), 2);
+                if ($monto_pago <= 0) continue;
+
+                // Obtener saldo actual y monto original del vale
+                $qv = $c->prepare("SELECT saldo_pendiente, monto FROM ventas_credito WHERE id_credito = ?");
+                $qv->execute([$pago['id_credito']]);
+                $vale = $qv->fetch(PDO::FETCH_ASSOC);
+
+                if ($monto_restante >= $monto_pago) {
+                    // Eliminar este pago completo
+                    $c->prepare("DELETE FROM historial_pagos_credito WHERE id_pago_credito = ?")->execute([$pago['id_pago_credito']]);
+
+                    $nuevo_saldo = round(floatval($vale['saldo_pendiente']) + $monto_pago, 2);
+                    if ($nuevo_saldo > floatval($vale['monto'])) $nuevo_saldo = floatval($vale['monto']);
+
+                    $c->prepare("UPDATE ventas_credito SET saldo_pendiente = ?, estado = 'PENDIENTE', updated_at = NOW() WHERE id_credito = ?")->execute([$nuevo_saldo, $pago['id_credito']]);
+
+                    $monto_restante = round($monto_restante - $monto_pago, 2);
+                } else {
+                    // Revertir parcialmente: reducir monto_pagado en historial
+                    $nuevo_mp = round(floatval($pago['monto_pagado']) - $monto_restante, 2);
+                    if ($nuevo_mp < 0) $nuevo_mp = 0;
+
+                    $c->prepare("UPDATE historial_pagos_credito SET monto_pagado = ?, saldo_nuevo = saldo_nuevo + ? WHERE id_pago_credito = ?")->execute([$nuevo_mp, $monto_restante, $pago['id_pago_credito']]);
+
+                    $nuevo_saldo = round(floatval($vale['saldo_pendiente']) + $monto_restante, 2);
+                    if ($nuevo_saldo > floatval($vale['monto'])) $nuevo_saldo = floatval($vale['monto']);
+
+                    $c->prepare("UPDATE ventas_credito SET saldo_pendiente = ?, estado = 'PENDIENTE', updated_at = NOW() WHERE id_credito = ?")->execute([$nuevo_saldo, $pago['id_credito']]);
+
+                    $monto_restante = 0;
+                }
+                $vales_afectados++;
+            }
+
+            $c->commit();
+            return ['success' => true, 'message' => 'Se revirtieron S/. ' . number_format($monto_a_revertir, 2) . ' de los pagos más recientes.', 'vales_afectados' => $vales_afectados];
+        } catch (Exception $e) {
+            $c->rollBack();
+            return ['success' => false, 'message' => 'Error: ' . $e->getMessage()];
+        }
+    }
+
     // ANULAR CRÉDITO
     public function Anular_Credito($id_credito, $motivo) {
         $c = conexionBD::conexionPDO();

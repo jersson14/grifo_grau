@@ -318,6 +318,15 @@
                     </div>
                 </div>
 
+                <!-- BOTÓN REVERTIR MONTO -->
+                <div class="row mb-2">
+                    <div class="col-md-12">
+                        <button class="btn btn-warning btn-block" onclick="Revertir_Monto_Cliente()" style="font-size:15px;">
+                            <i class="fas fa-undo-alt"></i> Revertir Monto de Pagos
+                        </button>
+                    </div>
+                </div>
+
                 <!-- BOTONES DE EXPORTACIÓN -->
                 <div class="row mb-3">
                     <div class="col-md-6">
