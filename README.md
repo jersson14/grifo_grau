@@ -9,9 +9,11 @@
 ## Tabla de Contenidos
 
 - [Vista general](#vista-general)
+- [Impacto y métricas de gestión](#impacto-y-métricas-de-gestión)
 - [Módulos del sistema](#módulos-del-sistema)
 - [Stack tecnológico](#stack-tecnológico)
 - [Arquitectura MVC](#arquitectura-mvc)
+- [Diagrama de arquitectura](#diagrama-de-arquitectura)
 - [Base de datos](#base-de-datos)
 - [Instalación rápida con Docker](#instalación-rápida-con-docker)
 - [Instalación manual (XAMPP)](#instalación-manual-xampp)
@@ -34,6 +36,26 @@ Este proyecto nació de la necesidad real de digitalizar la operación diaria de
 - Exportación de reportes a PDF (mPDF) y Excel
 - Consulta de DNI / RUC en tiempo real (API externa)
 - Control de acceso por roles: ADMINISTRADOR y GRIFERO
+
+---
+
+## Impacto y métricas de gestión
+
+Comparativa estimada entre la operación manual previa (registro en papel / Excel) y la operación con el sistema digital, en base a los procesos automatizados por cada módulo.
+
+| Indicador | Antes (manual) | Después (sistema) | Mejora |
+| --- | --- | --- | --- |
+| Tiempo de cierre de turno y cuadre de caja | ~45-60 min (cálculo manual de galones y caja) | ~8-10 min (cálculo automático de lecturas y totales) | **↓ 80%** |
+| Errores de cuadre por digitación / cálculo manual | Frecuentes (sumas manuales por método de pago) | Validación automática faltante/sobrante en tiempo real | **↓ 90%** |
+| Tiempo de generación de reportes gerenciales (PDF/Excel) | ~20-30 min por reporte armado a mano | Inmediato (exportación con un clic) | **↓ 95%** |
+| Visibilidad de créditos vencidos | Revisión manual de cuadernos / hojas sueltas | Alertas automáticas + Top 10 deudores en dashboard | **Tiempo real** |
+| Trazabilidad de cambios de precio de combustible | Sin registro formal | Historial completo con usuario y fecha por cambio | **100% auditable** |
+| Consulta de datos de cliente (DNI/RUC) | Digitación manual, propensa a error | Autocompletado vía API en segundos | **↓ tiempo de carga ~70%** |
+| Consolidación de ventas DÍA vs NOCHE | Cálculo manual al final de mes | Gráfico comparativo automático en el dashboard | **Inmediato** |
+
+> Estas cifras son estimaciones operativas basadas en el flujo de trabajo que cada módulo reemplaza (ver [Gestión de Turnos](#2-gestión-de-turnos) y [Dashboard y Reportes](#1-dashboard-y-reportes)), no mediciones de un estudio formal de tiempos.
+
+**Resultado cualitativo:** el dueño/administrador del grifo pasa de reconstruir la información a fin de mes a tener visibilidad diaria de ventas, créditos y desempeño por turno, reduciendo la dependencia de papel y memoria del grifero de turno.
 
 ---
 
@@ -222,6 +244,42 @@ grifo_grau/
 - 100+ controladores PHP (un archivo por acción REST)
 - 7 archivos JavaScript (2 500+ líneas)
 - 80+ archivos creados en total
+
+---
+
+## Diagrama de arquitectura
+
+Flujo de una petición típica, desde el navegador hasta la base de datos:
+
+```mermaid
+flowchart TD
+    A["Usuario (navegador)"] -->|"Login"| B["index.php"]
+    B -->|"AJAX POST credenciales"| C["controller/usuario/<br/>controlador_iniciar_sesion.php"]
+    C --> D["model/model_usuario.php<br/>(PDO)"]
+    D --> E[("MySQL / MariaDB<br/>grifo_grau")]
+    C -->|"Sesión: S_ID, S_ROL, S_COMPLETOS"| F["view/index.php<br/>(shell post-login)"]
+
+    F -->|"cargar_contenido('view/...')"| G["Vistas dinámicas<br/>(turnos, créditos, surtidores...)"]
+    G -->|"jQuery AJAX<br/>(console_*.js)"| H["Controladores PHP<br/>(uno por acción)"]
+    H --> I["Modelos PHP<br/>(model_*.php)"]
+    I -->|"PDO prepared statements"| E
+    H -->|"json_encode()"| G
+
+    H -.->|"Reportes"| J["view/MPDF<br/>(PDF)"]
+    H -.->|"Reportes"| K["Excel<br/>(headers nativos)"]
+    H -.->|"Notificaciones"| L["PHPMailer"]
+
+    style E fill:#2d6a4f,color:#fff
+    style B fill:#1d3557,color:#fff
+    style F fill:#1d3557,color:#fff
+```
+
+**Lectura del diagrama:**
+
+1. El login se procesa una sola vez por sesión y fija el rol (`ADMINISTRADOR` / `GRIFERO`).
+2. A partir de ahí, **no hay recargas de página**: cada módulo se carga dentro de `#contenido_principal` vía AJAX.
+3. Cada acción de negocio (abrir turno, registrar pago, anular crédito, etc.) sigue el mismo camino: **Vista → JS → Controlador → Modelo → PDO → MySQL**, y la respuesta vuelve como JSON.
+4. Los reportes pueden derivar a PDF (mPDF) o Excel sin pasar por una vista intermedia.
 
 ---
 
