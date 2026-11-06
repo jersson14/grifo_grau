@@ -15,14 +15,16 @@ $usu    = htmlspecialchars($_POST['usu'], ENT_QUOTES, 'UTF-8');
 $contra = password_hash($_POST['contra'], PASSWORD_DEFAULT, ['cost' => 12]);
 $rol    = htmlspecialchars($_POST['rol'], ENT_QUOTES, 'UTF-8');
 
-$ruta = 'controller/usuario/fotos/';
+$MU->Validar_Cambio_Rol(null, $rol);
+
+$ruta = 'img/avatar.png';
 if (isset($_FILES['foto']) && $_FILES['foto']['error'] !== UPLOAD_ERR_NO_FILE) {
     $nombreFoto = guardar_imagen_subida($_FILES['foto'], __DIR__ . '/fotos');
     if ($nombreFoto === null) {
         echo 0;
         exit;
     }
-    $ruta .= $nombreFoto;
+    $ruta = 'controller/usuario/fotos/' . $nombreFoto;
 }
 
 echo $MU->Registrar_Usuario($dni, $nombre, $apelli, $correo, $tele, $dire, $ruta, $usu, $contra, $rol);

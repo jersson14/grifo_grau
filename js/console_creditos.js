@@ -263,11 +263,11 @@ function Ver_Vales_Cliente(id_cliente, nombre_cliente, dni, total_vales, saldo_t
                         // Botón de pagar
                         botones = "<button class='pagar_vale btn btn-success btn-sm' title='Registrar Pago'><i class='fas fa-money-bill-wave'></i></button>&nbsp;";
                         // Botón de editar
-                        if ($("#txtprincipalrol").val() === 'ADMINISTRADOR') botones += "<button class='editar_vale btn btn-warning btn-sm' title='Editar'><i class='fas fa-edit'></i></button>&nbsp;";
+                        if (G.puede('creditos_gestionar')) botones += "<button class='editar_vale btn btn-warning btn-sm' title='Editar'><i class='fas fa-edit'></i></button>&nbsp;";
                         // Botón de eliminar
-                        if ($("#txtprincipalrol").val() === 'ADMINISTRADOR') botones += "<button class='eliminar_vale btn btn-danger btn-sm' title='Eliminar'><i class='fas fa-trash'></i></button>&nbsp;";
+                        if (G.puede('creditos_gestionar')) botones += "<button class='eliminar_vale btn btn-danger btn-sm' title='Eliminar'><i class='fas fa-trash'></i></button>&nbsp;";
                     }
-                    if (row.estado == 'PAGADO' && $("#txtprincipalrol").val() === 'ADMINISTRADOR') {
+                    if (row.estado == 'PAGADO' && G.puede('creditos_gestionar')) {
                         // Botón de anular pago (revertir a pendiente)
                         botones += "<button class='anular_pago_vale btn btn-danger btn-sm' title='Anular Pago'><i class='fas fa-undo'></i></button>&nbsp;";
                     }
@@ -460,8 +460,7 @@ function Listar_Creditos_Pendientes() {
             {
                 "data": "estado",
                 "render": function(data, type, row) {
-                    var rol_usuario = $("#txtprincipalrol").val(); // Obtener el rol del usuario
-                    var botones = "";
+                                        var botones = "";
                     
                     if (data == 'PENDIENTE') {
                         // Botón de pagar (todos pueden)
@@ -469,7 +468,7 @@ function Listar_Creditos_Pendientes() {
                         // Botón de historial (todos pueden)
                         botones += "<button class='historial btn btn-info btn-sm' title='Ver Historial'><i class='fas fa-history'></i></button>";
                         // Botón de anular (solo ADMINISTRADOR)
-                        if (rol_usuario == 'ADMINISTRADOR') {
+                        if (G.puede('creditos_gestionar')) {
                             botones += "&nbsp;<button class='anular btn btn-danger btn-sm' title='Anular'><i class='fas fa-ban'></i></button>";
                         }
                     } else {

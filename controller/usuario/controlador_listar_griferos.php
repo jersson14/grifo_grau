@@ -10,7 +10,7 @@ $sql = "SELECT
             CONCAT(usu_nombre, ' ', usu_apellido) as nombre_completo,
             usu_usuario
         FROM usuario
-        WHERE usu_rol = 'GRIFERO'
+        WHERE usu_rol IN (SELECT rol FROM roles_capacidades WHERE capacidad = 'turnos_registrar')
         AND usu_estatus = 'ACTIVO'
         ORDER BY usu_nombre, usu_apellido";
 

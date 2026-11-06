@@ -21,6 +21,8 @@ try {
     
     if ($usuario) {
         unset($usuario['usu_contrasenia']);
+        require_once '../../model/model_usuario.php';
+        $usuario['usu_foto'] = Modelo_Usuario::Foto_Mostrable($usuario['usu_foto'] ?? null);
         echo json_encode($usuario);
     } else {
         echo json_encode(['error' => 'Usuario no encontrado']);

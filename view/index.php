@@ -1,5 +1,10 @@
 <?php
 require_once __DIR__ . '/../controller/_bootstrap.php';
+require_once __DIR__ . '/../model/model_menu.php';
+$modelo_menu = new Modelo_Menu();
+$menu_sesion = $modelo_menu->Para_Sesion();
+$vista_inicio = $modelo_menu->Vista_Inicio($menu_sesion);
+$capacidades = capacidades_sesion();
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -49,8 +54,8 @@ require_once __DIR__ . '/../controller/_bootstrap.php';
 
     <!-- Main Sidebar -->
     <aside class="main-sidebar sidebar-dark-primary elevation-4">
-      <a href="#"  onclick="cargar_contenido('contenido_principal','reportes/view_dashboard.php')" class="brand-link">
-        <img src="../img/grau.png" alt="<?php echo $_SESSION['S_RAZON']; ?>" width="100%" height="auto">
+      <a href="#"  onclick="cargar_contenido('contenido_principal',<?php echo htmlspecialchars(json_encode($vista_inicio), ENT_QUOTES, 'UTF-8'); ?>)" class="brand-link">
+        <img src="../<?php echo htmlspecialchars($_SESSION['S_FOTO_EMPRESA'] ?: 'img/grau.png', ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars((string) $_SESSION['S_RAZON'], ENT_QUOTES, 'UTF-8'); ?>" width="100%" height="auto">
       </a>
 
       <div class="sidebar">
@@ -66,268 +71,38 @@ require_once __DIR__ . '/../controller/_bootstrap.php';
 
         <nav class="mt-1">
           <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
-            <li class="header text-center" style="color:#FFFFFF; background-color:#023D77; border-radius: 10px;">
-              <b>MENÚ PRINCIPAL</b>
-            </li>
-
-            <!-- Dashboard -->
-            <li class="nav-item">
-              <a href="#" onclick="cargar_contenido('contenido_principal','reportes/view_dashboard.php')" class="nav-link">
-                <i class="nav-icon fas fa-tachometer-alt"></i>
-                <p style="color:white">Dashboard</p>
-              </a>
-            </li>
-
-            <?php if ($_SESSION['S_ROL'] == "ADMINISTRADOR") { ?>
-              
-              <!-- GESTIÓN DE TURNOS (Solo Admin) -->
-              <li class="nav-item has-treeview">
-                <a href="#" class="nav-link">
-                  <i class="nav-icon fas fa-clock"></i>
-                  <p style="color:white">
-                    Gestión de Turnos
-                    <i class="right fas fa-angle-left"></i>
-                  </p>
-                </a>
-                <ul class="nav nav-treeview">
-                  <li class="nav-item">
-                    <a href="#" onclick="cargar_contenido('contenido_principal','turnos/view_registrar_turno.php')" class="nav-link">
-                      <i class="nav-icon far fa-circle"></i>
-                      <p style="color:white">Registrar Turno</p>
-                    </a>
-                  </li>
-                  <li class="nav-item">
-                    <a href="#" onclick="cargar_contenido('contenido_principal','turnos/view_historial.php')" class="nav-link">
-                      <i class="nav-icon far fa-circle"></i>
-                      <p style="color:white">Historial de Turnos</p>
-                    </a>
-                  </li>
-                  <li class="nav-item" style="display:none;">
-                    <a href="#" onclick="cargar_contenido('contenido_principal','turnos/view_abrir_turno.php')" class="nav-link">
-                      <i class="nav-icon far fa-circle"></i>
-                      <p style="color:white">Abrir Turno (Antiguo)</p>
-                    </a>
-                  </li>
-                  <li class="nav-item" style="display:none;">
-                    <a href="#" onclick="cargar_contenido('contenido_principal','turnos/view_cerrar_turno.php')" class="nav-link">
-                      <i class="nav-icon far fa-circle"></i>
-                      <p style="color:white">Gestionar Turno (Antiguo)</p>
-                    </a>
-                  </li>
-                </ul>
-              </li>
-
-              <?php if (modulo_activo('ventas')) { ?>
-              <li class="nav-item">
-                <a href="#" onclick="cargar_contenido('contenido_principal','ventas/view_ventas.php')" class="nav-link">
-                  <i class="nav-icon fas fa-cash-register"></i>
-                  <p style="color:white">Ventas</p>
-                </a>
-              </li>
-              <?php } ?>
-
-              <?php if (modulo_activo('inventario')) { ?>
-              <li class="nav-item has-treeview">
-                <a href="#" class="nav-link">
-                  <i class="nav-icon fas fa-oil-can"></i>
-                  <p style="color:white">
-                    Inventario
-                    <i class="right fas fa-angle-left"></i>
-                  </p>
-                </a>
-                <ul class="nav nav-treeview">
-                  <li class="nav-item">
-                    <a href="#" onclick="cargar_contenido('contenido_principal','inventario/view_tanques.php')" class="nav-link">
-                      <i class="nav-icon far fa-circle"></i>
-                      <p style="color:white">Tanques y kardex</p>
-                    </a>
-                  </li>
-                  <li class="nav-item">
-                    <a href="#" onclick="cargar_contenido('contenido_principal','inventario/view_varillaje.php')" class="nav-link">
-                      <i class="nav-icon far fa-circle"></i>
-                      <p style="color:white">Varillaje</p>
-                    </a>
-                  </li>
-                  <li class="nav-item">
-                    <a href="#" onclick="cargar_contenido('contenido_principal','inventario/view_compras.php')" class="nav-link">
-                      <i class="nav-icon far fa-circle"></i>
-                      <p style="color:white">Compras y proveedores</p>
-                    </a>
-                  </li>
-                </ul>
-              </li>
-              <?php } ?>
-
-              <?php if (modulo_activo('caja')) { ?>
-              <li class="nav-item">
-                <a href="#" onclick="cargar_contenido('contenido_principal','caja/view_caja.php')" class="nav-link">
-                  <i class="nav-icon fas fa-coins"></i>
-                  <p style="color:white">Caja y arqueo</p>
-                </a>
-              </li>
-              <?php } ?>
-
-              <!-- CRÉDITOS/VALES -->
-              <li class="nav-item has-treeview">
-                <a href="#" class="nav-link">
-                  <i class="nav-icon fas fa-credit-card"></i>
-                  <p style="color:white">
-                    Créditos/Vales
-                    <i class="right fas fa-angle-left"></i>
-                  </p>
-                </a>
-                <ul class="nav nav-treeview">
-                  <li class="nav-item">
-                    <a href="#" onclick="cargar_contenido('contenido_principal','creditos/view_creditos_pendientes.php')" class="nav-link">
-                      <i class="nav-icon far fa-circle"></i>
-                      <p style="color:white">Gestionar Créditos</p>
-                    </a>
-                  </li>
-                </ul>
-              </li>
-
-              <!-- REPORTES -->
-              <li class="nav-item has-treeview">
-                <a href="#" class="nav-link">
-                  <i class="nav-icon fas fa-file-alt"></i>
-                  <p style="color:white">
-                    Reportes
-                    <i class="right fas fa-angle-left"></i>
-                  </p>
-                </a>
-                <ul class="nav nav-treeview">
-                  <li class="nav-item">
-                    <a href="#" onclick="cargar_contenido('contenido_principal','reportes/view_ventas_por_fecha.php')" class="nav-link">
-                      <i class="nav-icon far fa-circle"></i>
-                      <p style="color:white">Ventas por Fecha</p>
-                    </a>
-                  </li>
-                  <li class="nav-item">
-                    <a href="#" onclick="cargar_contenido('contenido_principal','reportes/view_listado_reportes.php')" class="nav-link">
-                      <i class="nav-icon far fa-circle"></i>
-                      <p style="color:white">Todos los Reportes</p>
-                    </a>
-                  </li>
-                  <li class="nav-item">
-                    <a href="#" onclick="cargar_contenido('contenido_principal','reportes/view_validar_reportes.php')" class="nav-link">
-                      <i class="nav-icon far fa-circle"></i>
-                      <p style="color:white">Validar Reportes</p>
-                    </a>
-                  </li>
-                </ul>
-              </li>
-
+            <?php foreach ($menu_sesion as $seccion_menu) { ?>
               <li class="header text-center" style="color:#FFFFFF; background-color:#023D77; border-radius: 10px;">
-                <b>CONFIGURACIÓN</b>
+                <b><?php echo htmlspecialchars($seccion_menu['titulo'], ENT_QUOTES, 'UTF-8'); ?></b>
               </li>
-
-              <!-- CLIENTES -->
-              <li class="nav-item">
-                <a href="#" onclick="cargar_contenido('contenido_principal','clientes/view_clientes.php')" class="nav-link">
-                  <i class="nav-icon fas fa-user-friends"></i>
-                  <p style="color:white">Clientes</p>
-                </a>
-              </li>
-
-              <!-- PRODUCTOS -->
-              <li class="nav-item">
-                <a href="#" onclick="cargar_contenido('contenido_principal','productos/view_productos.php')" class="nav-link">
-                  <i class="nav-icon fas fa-gas-pump"></i>
-                  <p style="color:white">Productos (Combustibles)</p>
-                </a>
-              </li>
-
-              <!-- SURTIDORES -->
-              <li class="nav-item">
-                <a href="#" onclick="cargar_contenido('contenido_principal','surtidores/view_surtidores.php')" class="nav-link">
-                  <i class="nav-icon fas fa-tint"></i>
-                  <p style="color:white">Surtidores</p>
-                </a>
-              </li>
-
-              <!-- USUARIOS -->
-              <li class="nav-item">
-                <a onclick="cargar_contenido('contenido_principal','usuario/view_usuario.php')" class="nav-link">
-                  <i class="nav-icon fas fa-users"></i>
-                  <p style="color:white">Usuarios</p>
-                </a>
-              </li>
-
-              <!-- CONFIGURACIÓN GENERAL -->
-              <li class="nav-item">
-                <a href="#" onclick="cargar_contenido('contenido_principal','configuracion/view_configuracion.php')" class="nav-link">
-                  <i class="nav-icon fas fa-cogs"></i>
-                  <p style="color:white">Configuración</p>
-                </a>
-              </li>
-
-            <?php } ?>
-
-            <?php if ($_SESSION['S_ROL'] == "GRIFERO") { ?>
-              
-              <!-- REGISTRAR TURNO (Solo Grifero) -->
-              <li class="nav-item">
-                <a href="#" onclick="cargar_contenido('contenido_principal','turnos/view_registrar_turno.php')" class="nav-link">
-                  <i class="nav-icon fas fa-clipboard-check"></i>
-                  <p style="color:white">Registrar Turno</p>
-                </a>
-              </li>
-
-              <?php if (modulo_activo('ventas')) { ?>
-              <li class="nav-item">
-                <a href="#" onclick="cargar_contenido('contenido_principal','ventas/view_ventas.php')" class="nav-link">
-                  <i class="nav-icon fas fa-cash-register"></i>
-                  <p style="color:white">Ventas</p>
-                </a>
-              </li>
+              <?php foreach ($seccion_menu['items'] as $item_menu) { ?>
+                <?php if ($item_menu['hijos']) { ?>
+                  <li class="nav-item has-treeview">
+                    <a href="#" class="nav-link">
+                      <i class="nav-icon <?php echo htmlspecialchars((string) $item_menu['icono'], ENT_QUOTES, 'UTF-8'); ?>"></i>
+                      <p style="color:white"><?php echo htmlspecialchars($item_menu['titulo'], ENT_QUOTES, 'UTF-8'); ?> <i class="right fas fa-angle-left"></i></p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                      <?php foreach ($item_menu['hijos'] as $hijo_menu) { ?>
+                        <li class="nav-item">
+                          <a href="#" onclick="cargar_contenido('contenido_principal',<?php echo htmlspecialchars(json_encode($hijo_menu['vista'], JSON_UNESCAPED_SLASHES), ENT_QUOTES, 'UTF-8'); ?>)" class="nav-link">
+                            <i class="nav-icon <?php echo htmlspecialchars((string) $hijo_menu['icono'], ENT_QUOTES, 'UTF-8'); ?>"></i>
+                            <p style="color:white"><?php echo htmlspecialchars($hijo_menu['titulo'], ENT_QUOTES, 'UTF-8'); ?></p>
+                          </a>
+                        </li>
+                      <?php } ?>
+                    </ul>
+                  </li>
+                <?php } else { ?>
+                  <li class="nav-item">
+                    <a href="#" onclick="cargar_contenido('contenido_principal',<?php echo htmlspecialchars(json_encode($item_menu['vista'], JSON_UNESCAPED_SLASHES), ENT_QUOTES, 'UTF-8'); ?>)" class="nav-link">
+                      <i class="nav-icon <?php echo htmlspecialchars((string) $item_menu['icono'], ENT_QUOTES, 'UTF-8'); ?>"></i>
+                      <p style="color:white"><?php echo htmlspecialchars($item_menu['titulo'], ENT_QUOTES, 'UTF-8'); ?></p>
+                    </a>
+                  </li>
+                <?php } ?>
               <?php } ?>
-
-              <?php if (modulo_activo('inventario')) { ?>
-              <li class="nav-item">
-                <a href="#" onclick="cargar_contenido('contenido_principal','inventario/view_varillaje.php')" class="nav-link">
-                  <i class="nav-icon fas fa-ruler-vertical"></i>
-                  <p style="color:white">Varillaje</p>
-                </a>
-              </li>
-              <?php } ?>
-
-              <!-- MIS CRÉDITOS -->
-              <li class="nav-item">
-                <a href="#" onclick="cargar_contenido('contenido_principal','creditos/view_creditos_pendientes.php')" class="nav-link">
-                  <i class="nav-icon fas fa-credit-card"></i>
-                  <p style="color:white">Mis Créditos</p>
-                </a>
-              </li>
-
-              <!-- MIS REPORTES -->
-              <li class="nav-item">
-                <a href="#" onclick="cargar_contenido('contenido_principal','reportes/view_mis_reportes.php')" class="nav-link">
-                  <i class="nav-icon fas fa-file-alt"></i>
-                  <p style="color:white">Mis Reportes</p>
-                </a>
-              </li>
-
-              <!-- CLIENTES -->
-              <li class="nav-item">
-                <a href="#" onclick="cargar_contenido('contenido_principal','clientes/view_clientes.php')" class="nav-link">
-                  <i class="nav-icon fas fa-user-friends"></i>
-                  <p style="color:white">Clientes</p>
-                </a>
-              </li>
-
             <?php } ?>
-
-            <!-- MI PERFIL (Ambos roles) -->
-            <li class="header text-center" style="color:#FFFFFF; background-color:#023D77; border-radius: 10px;">
-              <b>MI CUENTA</b>
-            </li>
-            <li class="nav-item">
-              <a href="#" onclick="cargar_contenido('contenido_principal','usuario/view_mi_perfil.php')" class="nav-link">
-                <i class="nav-icon fas fa-user-circle"></i>
-                <p style="color:white">Mi Perfil</p>
-              </a>
-            </li>
-
           </ul>
         </nav>
       </div>
@@ -396,6 +171,7 @@ require_once __DIR__ . '/../controller/_bootstrap.php';
   <script src="../plantilla/plugins/jquery/jquery.min.js"></script>
   <script>
     // Token CSRF en toda petición AJAX, y respuesta común a sesión vencida o falta de permisos.
+    window.CAPACIDADES = <?php echo json_encode($capacidades === null ? '*' : array_values($capacidades)); ?>;
     $.ajaxSetup({ headers: { 'X-CSRF-Token': <?php echo json_encode(token_csrf()); ?> } });
     $(document).ajaxError(function(evento, xhr) {
       if (xhr.status === 401) {
@@ -438,12 +214,9 @@ require_once __DIR__ . '/../controller/_bootstrap.php';
     }
 
     $(document).ready(function() {
-      // Cargar dashboard automáticamente según el rol
-      <?php if ($_SESSION['S_ROL'] == "ADMINISTRADOR") { ?>
-        cargar_contenido('contenido_principal', 'reportes/view_dashboard.php');
-      <?php } else if ($_SESSION['S_ROL'] == "GRIFERO") { ?>
-        cargar_contenido('contenido_principal', 'turnos/view_registrar_turno.php');
-      <?php } ?>
+      // Pantalla inicial según el rol
+      var vista_inicio = <?php echo json_encode($vista_inicio); ?>;
+      if (vista_inicio) { cargar_contenido('contenido_principal', vista_inicio); }
     });
 
   </script>

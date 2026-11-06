@@ -13,7 +13,13 @@ function cargar_configuracion() {
     estado_secreto('decolecta_token', datos.valores.decolecta_token_configurado);
 
     var roles = (datos.valores.ia_roles || '').split(',');
-    $('.ia_rol').each(function () { this.checked = roles.indexOf(this.value) !== -1; });
+    var cajaRoles = $('#lista_ia_roles').empty();
+    datos.roles.forEach(function (rol) {
+      var idRol = 'ia_rol_' + rol;
+      cajaRoles.append($('<div class="form-check form-check-inline"></div>')
+        .append($('<input type="checkbox" class="form-check-input ia_rol">').attr('id', idRol).val(rol).prop('checked', roles.indexOf(rol) !== -1))
+        .append($('<label class="form-check-label"></label>').attr('for', idRol).text(rol)));
+    });
 
     var elegidas = (datos.valores.inicio_alertas || '').split(',');
     var lista = $('#lista_alertas').empty();

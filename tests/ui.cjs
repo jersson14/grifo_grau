@@ -298,6 +298,66 @@ const espera = ms => new Promise(r => setTimeout(r, ms));
   comprobar('Configuración permite elegir los avisos', (await a.$$('.alerta_opcion')).length === 8);
   comprobar('sin errores en caja, avisos y precios', a.errores.length === 0, a.errores.slice(0, 3).join(' | '));
 
+  console.log('\n6d. Roles y menú desde la interfaz');
+  a.errores.length = 0;
+  await abrir(a, 'administracion/view_roles.php');
+  await a.waitForFunction(() => document.querySelector('#cuerpo_roles').innerText.includes('Supervisor'));
+  await a.click('#btn_nuevo_rol'); await abrirModalListo(a, '#modal_rol');
+  await a.type('#rol_nombre', 'Cajero');
+  await a.select('#rol_inicio', 'caja/view_caja.php');
+  await a.click('#cap_caja_gestionar');
+  await a.click('#cap_ver_todos');
+  await pantalla(a, '14_modal_rol');
+  await a.click('#form_rol button[type=submit]');
+  await ocultoModal(a, '#modal_rol'); await cerrarAviso(a); await a.waitForNetworkIdle({ idleTime: 400 });
+  comprobar('crea un rol desde la pantalla', (await a.$eval('#cuerpo_roles', e => e.innerText)).includes('Cajero'));
+  await pantalla(a, '15_roles');
+  await clicTexto(a, '#cuerpo_roles tr:first-child button', 'Editar'); await abrirModalListo(a, '#modal_rol');
+  comprobar('el administrador no muestra permisos que quitar', (await a.$$('.rol_cap')).length === 0);
+  await a.evaluate(() => $('#modal_rol').modal('hide')); await ocultoModal(a, '#modal_rol');
+
+  await abrir(a, 'administracion/view_menu.php');
+  await a.waitForFunction(() => document.querySelector('#cuerpo_menu').innerText.includes('Dashboard'));
+  await pantalla(a, '16_editor_menu');
+  await a.evaluate(() => [...document.querySelectorAll('#cuerpo_menu tr')].find(t => t.innerText.includes('Surtidores')).querySelector('[aria-label="Subir Surtidores"]').click());
+  await a.waitForNetworkIdle({ idleTime: 400 });
+  await a.evaluate(() => [...[...document.querySelectorAll('#cuerpo_menu tr')].find(t => t.innerText.includes('Surtidores')).querySelectorAll('button')].find(b => b.innerText === 'Editar').click());
+  await abrirModalListo(a, '#modal_menu');
+  await a.$eval('#menu_titulo', e => e.value = ''); await a.type('#menu_titulo', 'Mangueras');
+  await a.click('#form_menu button[type=submit]');
+  await ocultoModal(a, '#modal_menu'); await cerrarAviso(a); await a.waitForNetworkIdle({ idleTime: 400 });
+  await a.reload({ waitUntil: 'networkidle2' });
+  const lateral = await a.evaluate(() => document.querySelector('.main-sidebar').innerText);
+  comprobar('el menú refleja el cambio y el nuevo orden', lateral.includes('Mangueras') && !lateral.includes('Surtidores') && lateral.indexOf('Mangueras') < lateral.indexOf('Productos'), lateral);
+  await abrir(a, 'administracion/view_auditoria.php');
+  await a.waitForFunction(() => document.querySelector('#cuerpo_auditoria').innerText.includes('guardar_menu'), { timeout: 10000 });
+  comprobar('la auditoría muestra lo que se acaba de hacer', true);
+  await pantalla(a, '17_auditoria');
+  comprobar('sin errores en las pantallas de administración', a.errores.length === 0, a.errores.slice(0, 3).join(' | '));
+
+  console.log('\n6e. Cada rol abre cada opción de su menú');
+  await a.evaluate(async () => {
+    for (const [u, r] of [['sup_ui', 'SUPERVISOR'], ['cont_ui', 'CONTADOR'], ['caj_ui', 'CAJERO']]) {
+      await $.post('../controller/usuario/controlador_registro_usuario.php', { dni: '1', nombre: 'PRUEBA', apelli: r, correo: '', tele: '', dire: '', usu: u, contra: 'clave12345', rol: r });
+    }
+  });
+  for (const [usuario, clave] of [['grifero1', 'grifero123'], ['sup_ui', 'clave12345'], ['cont_ui', 'clave12345'], ['caj_ui', 'clave12345'], ['admin', 'admin123']]) {
+    const p = await sesion(usuario, clave);
+    const inicial = p.errores.slice();
+    comprobar(usuario + ': la pantalla inicial abre sin errores', inicial.length === 0, inicial.slice(0, 3).join(' | '));
+    const vistas = await p.evaluate(() => [...document.querySelectorAll('.nav-sidebar a[onclick]')].map(x => x.getAttribute('onclick').match(/"([^"]+\.php)"/)[1]));
+    comprobar(usuario + ': tiene opciones en su menú', vistas.length > 0);
+    for (const v of vistas) {
+      p.errores.length = 0;
+      await abrir(p, v);
+      await espera(200);
+      comprobar(usuario + ' abre ' + v, p.errores.length === 0, p.errores.slice(0, 4).join(' | '));
+    }
+    await p.browserContext().close();
+  }
+  await a.evaluate(() => $.post('../controller/administracion/controlador_mover_menu.php', { id_item: 203, direccion: 'ABAJO' }));
+  await a.evaluate(() => $.post('../controller/administracion/controlador_guardar_menu.php', { id_item: 203, titulo: 'Surtidores', icono: 'fas fa-tint', visible: 1, roles: '[]' }));
+
   console.log('\n7. Sesión vencida y cierre');
   await a.evaluate(() => { window.__marca = 1; });
   await g.goto(BASE + '/controller/usuario/controlador_cerrar_sesion.php', { waitUntil: 'networkidle2' });

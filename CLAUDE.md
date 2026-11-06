@@ -16,8 +16,8 @@ Rules for this work:
 - Don't change `main` unless the owner approves a specific production fix.
 - Don't copy the DNI/RUC API token into docs, commits or chat. It is gone from the code but remains in git history until revoked (task 1.1).
 - Every database change is a numbered migration in `database/migrations/`, applied with `php database/migrate.php`.
-- Every controller and view starts with `require_once __DIR__ . '/../_bootstrap.php';` (adjust the path). Access is deny-by-default: anything not listed in `config/permisos.php` is `ADMINISTRADOR` only. It also enforces CSRF on POST, and `$.ajaxSetup` in `view/index.php` sends the token.
-- Run `php tests/smoke.php` after changing auth, shifts or credits. It needs the demo data on a local database.
+- Every controller and view starts with `require_once __DIR__ . '/../_bootstrap.php';` (adjust the path). Access is deny-by-default: a route not listed in `config/capacidades.php` or `config/permisos.php` is `ADMINISTRADOR` only. Add new routes to a capability and check `puede()` instead of comparing role names. It also enforces CSRF on POST, and `$.ajaxSetup` in `view/index.php` sends the token.
+- Run `php tests/smoke.php` after changing auth, shifts or credits, and `php tests/roles.php` after changing permissions. It needs the demo data on a local database.
 - Never leave `ANTHROPIC_BASE_URL` in `.env` outside chatbot tests: requests would go to the mock.
 - Configurable behavior belongs in the database and the admin UI, not in code.
 - Optional modules (electronic invoicing, AI chatbot) stay behind an on/off switch and must never block core shift operations.
@@ -75,7 +75,7 @@ $pdo = conexionBD::conexionPDO();  // returns PDO instance
 - **Surtidores:** 12 pumps in 2 machines with codes BS1/BS2, R1/R2, P1/P2. Each assigned a fuel type: Diesel B5, Regular 84, or Premium 95.
 - **Créditos:** Customer credit sales tied to a turno, tracked with vale numbers, payment history, and overdue alerts.
 - **Pagos:** 6 payment methods — YAPE, BCP, VISA (require `codigo_operacion`), EFECTIVO, DESCUENTO, OTROS_GASTOS (no code required).
-- **Roles:** `ADMINISTRADOR` (full access) and `GRIFERO` (limited to shift operations).
+- **Roles:** editable in the UI (`roles`, `roles_capacidades`). `ADMINISTRADOR` always has everything. The sidebar comes from `menu_items`: new screens need a row there.
 
 ## Adding a New Feature
 

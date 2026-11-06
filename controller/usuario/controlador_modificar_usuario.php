@@ -14,6 +14,8 @@ $dire   = strtoupper(htmlspecialchars($_POST['dire'], ENT_QUOTES, 'UTF-8'));
 $usu    = htmlspecialchars($_POST['usu'], ENT_QUOTES, 'UTF-8');
 $rol    = strtoupper(htmlspecialchars($_POST['rol'], ENT_QUOTES, 'UTF-8'));
 
+$MU->Validar_Cambio_Rol($id, $rol);
+
 // La foto actual se toma de la base de datos, nunca de lo que envía el navegador.
 $fotoActual = $MU->Obtener_Foto_Usuario($id);
 $ruta       = $fotoActual;

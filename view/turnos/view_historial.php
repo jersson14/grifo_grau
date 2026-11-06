@@ -388,8 +388,7 @@ function Listar_Historial_Turnos() {
                     botones += "<button class='imprimir btn btn-primary btn-sm' title='Imprimir'><i class='fas fa-print'></i></button>";
                     
                     // Botón eliminar solo para ADMINISTRADOR
-                    var rol_usuario = $("#txtprincipalrol").val();
-                    if (rol_usuario == 'ADMINISTRADOR') {
+                    if (G.puede('turnos_eliminar')) {
                         botones += "&nbsp;<button class='eliminar btn btn-danger btn-sm' title='Eliminar Turno'><i class='fas fa-trash'></i></button>";
                     }
                     

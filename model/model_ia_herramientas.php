@@ -15,6 +15,11 @@ class Modelo_IA_Herramientas extends conexionBD
     {
     }
 
+    private function verTodos(): bool
+    {
+        return puede('ver_todos');
+    }
+
     public function Definiciones(): array
     {
         $rango = [
@@ -73,7 +78,7 @@ class Modelo_IA_Herramientas extends conexionBD
             ];
         }
 
-        if ($this->rol === 'ADMINISTRADOR') {
+        if ($this->verTodos()) {
             $definiciones[] = [
                 'name' => 'ranking_griferos',
                 'description' => 'Griferos ordenados por ventas en un rango de fechas, con turnos trabajados y faltantes acumulados.',
@@ -114,7 +119,7 @@ class Modelo_IA_Herramientas extends conexionBD
                                            WHERE t.estado = 'ACTIVO' ORDER BY t.nombre", []);
                 break;
             case 'ranking_griferos':
-                if ($this->rol !== 'ADMINISTRADOR') {
+                if (!$this->verTodos()) {
                     throw new InvalidArgumentException('Herramienta no permitida para este usuario.');
                 }
                 $filas = $this->Ranking($entrada);
@@ -153,7 +158,7 @@ class Modelo_IA_Herramientas extends conexionBD
                 FROM reportes_turno
                 WHERE estado = \'CERRADO\' AND fecha_reporte BETWEEN ? AND ?';
         $params = [$desde, $hasta];
-        if ($this->rol !== 'ADMINISTRADOR') {
+        if (!$this->verTodos()) {
             $sql .= ' AND id_usuario = ?';
             $params[] = $this->idUsuario;
         }
@@ -173,7 +178,7 @@ class Modelo_IA_Herramientas extends conexionBD
                 INNER JOIN usuario u ON rt.id_usuario = u.id_usuario
                 WHERE rt.fecha_reporte BETWEEN ? AND ?";
         $params = [$desde, $hasta];
-        if ($this->rol !== 'ADMINISTRADOR') {
+        if (!$this->verTodos()) {
             $sql .= ' AND rt.id_usuario = ?';
             $params[] = $this->idUsuario;
         }

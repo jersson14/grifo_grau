@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/../../controller/_bootstrap.php';
-$esAdmin = $_SESSION['S_ROL'] === 'ADMINISTRADOR';
+$esAdmin = puede('ventas_gestionar');
 ?>
 <script src="../js/console_ventas.js?rev=<?php echo time(); ?>"></script>
 

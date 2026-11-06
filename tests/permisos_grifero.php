@@ -13,9 +13,20 @@ $raiz = dirname(__DIR__);
 chdir($raiz);
 $permisos = require 'config/permisos.php';
 
+/** Rutas del rol GRIFERO con sus capacidades por defecto. */
+function rutas_grifero(array $permisos): array
+{
+    $catalogo = require 'config/capacidades.php';
+    $rutas = array_merge($permisos['base'], $permisos['propios'], $permisos['publico']);
+    foreach (['turnos_registrar', 'dashboard_ver', 'clientes_gestionar', 'creditos_cobrar', 'ventas_registrar', 'varillaje_registrar'] as $capacidad) {
+        $rutas = array_merge($rutas, $catalogo[$capacidad][2]);
+    }
+    return array_unique($rutas);
+}
+
 function permitido(string $ruta, array $permisos): bool
 {
-    foreach (array_merge($permisos['griferos'], $permisos['propios'], $permisos['publico']) as $patron) {
+    foreach (rutas_grifero($permisos) as $patron) {
         if ($patron === $ruta || (substr($patron, -1) === '*' && strpos($ruta, substr($patron, 0, -1)) === 0)) {
             return true;
         }
@@ -23,7 +34,7 @@ function permitido(string $ruta, array $permisos): bool
     return false;
 }
 
-$vistas = array_filter(array_merge($permisos['griferos'], $permisos['propios']), fn($p) => strpos($p, 'view/') === 0 && substr($p, -4) === '.php');
+$vistas = array_filter(rutas_grifero($permisos), fn($p) => strpos($p, 'view/') === 0 && substr($p, -4) === '.php');
 
 foreach ($vistas as $vista) {
     if (!is_file($vista)) {

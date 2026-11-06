@@ -319,7 +319,7 @@
                     </div>
                 </div>
 
-                <?php if ($_SESSION['S_ROL'] === 'ADMINISTRADOR') { ?>
+                <?php if (puede('creditos_gestionar')) { ?>
                 <!-- BOTÓN REVERTIR MONTO -->
                 <div class="row mb-2">
                     <div class="col-md-12">

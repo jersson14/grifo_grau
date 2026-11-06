@@ -8,12 +8,6 @@ if (!isset($_SESSION['S_ID'])) {
     exit;
 }
 
-// Validar que sea ADMINISTRADOR
-if ($_SESSION['S_ROL'] != 'ADMINISTRADOR') {
-    echo json_encode(array('success' => false, 'message' => 'No tiene permisos para eliminar turnos. Solo los administradores pueden realizar esta acción.'));
-    exit;
-}
-
 // Validar parámetros
 if (!isset($_POST['id_reporte']) || !isset($_POST['motivo'])) {
     echo json_encode(array('success' => false, 'message' => 'Faltan parámetros requeridos'));

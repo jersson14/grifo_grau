@@ -14,8 +14,7 @@ function Cargar_Griferos() {
         $("#txt_grifero").html(opciones);
         
         // Si el usuario logueado es grifero, seleccionarlo automáticamente
-        var rol_usuario = $("#txtprincipalrol").val();
-        if (rol_usuario == 'GRIFERO') {
+        if (!G.puede('ver_todos')) {
             var id_usuario = $("#txtprincipalid").val();
             $("#txt_grifero").val(id_usuario);
             $("#txt_grifero").prop('disabled', true); // Deshabilitar para que no pueda cambiar
@@ -955,7 +954,7 @@ function Cerrar_Turno_Final() {
                         // Imprimir el reporte automáticamente
                         Imprimir_Reporte(id_reporte);
                         // Redirigir al historial
-                        cargar_contenido('contenido_principal', $('#txtprincipalrol').val() === 'ADMINISTRADOR' ? 'turnos/view_historial.php' : 'reportes/view_mis_reportes.php');
+                        cargar_contenido('contenido_principal', G.puede('turnos_historial') ? 'turnos/view_historial.php' : 'reportes/view_mis_reportes.php');
                     });
                 } else {
                     Swal.fire({
@@ -1640,7 +1639,7 @@ function Registrar_Turno_Completo() {
                             Imprimir_Reporte(resp.id_reporte);
                         }
                         // Redirigir al historial
-                        cargar_contenido('contenido_principal', $('#txtprincipalrol').val() === 'ADMINISTRADOR' ? 'turnos/view_historial.php' : 'reportes/view_mis_reportes.php');
+                        cargar_contenido('contenido_principal', G.puede('turnos_historial') ? 'turnos/view_historial.php' : 'reportes/view_mis_reportes.php');
                     });
                 } else {
                     Swal.fire({

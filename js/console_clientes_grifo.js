@@ -69,7 +69,7 @@ function Listar_Clientes() {
             },
             { "data": "usuario_registro" },
             {
-                "defaultContent": "<button class='ver btn btn-info btn-sm' title='Ver Detalle'><i class='fas fa-eye'></i></button>&nbsp;<button class='editar btn btn-warning btn-sm' title='Editar'><i class='fas fa-edit'></i></button>" + ($('#txtprincipalrol').val() === 'ADMINISTRADOR' ? "&nbsp;<button class='cambiar_estado btn btn-secondary btn-sm' title='Cambiar Estado'><i class='fas fa-toggle-on'></i></button>" : '')
+                "defaultContent": "<button class='ver btn btn-info btn-sm' title='Ver Detalle'><i class='fas fa-eye'></i></button>&nbsp;<button class='editar btn btn-warning btn-sm' title='Editar'><i class='fas fa-edit'></i></button>" + (G.puede('clientes_estado') ? "&nbsp;<button class='cambiar_estado btn btn-secondary btn-sm' title='Cambiar Estado'><i class='fas fa-toggle-on'></i></button>" : '')
             }
         ],
         "language": idioma_espanol,

@@ -96,8 +96,7 @@
               <div class="col-md-3 form-group"><label for="ia_limite_mensual_usd">Límite mensual (USD)</label><input type="number" step="1" min="0" class="form-control" id="ia_limite_mensual_usd" name="ia_limite_mensual_usd"></div>
               <div class="col-md-5 form-group">
                 <label class="d-block">Roles con acceso</label>
-                <div class="form-check form-check-inline"><input class="form-check-input ia_rol" type="checkbox" id="ia_rol_admin" value="ADMINISTRADOR"><label class="form-check-label" for="ia_rol_admin">Administrador</label></div>
-                <div class="form-check form-check-inline"><input class="form-check-input ia_rol" type="checkbox" id="ia_rol_grifero" value="GRIFERO"><label class="form-check-label" for="ia_rol_grifero">Grifero (solo sus turnos)</label></div>
+                <div id="lista_ia_roles"></div>
                 <input type="hidden" id="ia_roles" name="ia_roles">
               </div>
               <div class="col-12"><button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Guardar</button></div>

@@ -17,12 +17,12 @@ Actualizado el 2026-11-06. Todo está en commits locales, sin publicar.
 | Área | Estado |
 |---|---|
 | Fases 0 y 1 | Base y seguridad hechas y probadas sobre el **esquema provisional**. Falta contrastar con producción |
-| Fase 3 | Hecho: panel de Configuración, módulos activables y avisos configurables en el Dashboard (3.1, 3.2 y 3.5 parciales). Falta: menú dinámico, roles editables, catálogos, widgets por rol y pantalla de auditoría |
+| Fase 3 | Hecho: Configuración, módulos activables, avisos en el Dashboard, menú editable, roles con permisos editables y auditoría. Falta: admitir cualquier cantidad de surtidores en el formulario de turno (3.6), notificaciones (3.8), asistente de instalación (3.9) y widgets por rol |
 | Fase 6 | Chatbot funcional probado contra una **API simulada**. Falta: probarlo con una clave real (6.7) y añadir streaming |
 | Fase 4 | Hecho y probado: tanques, kardex, varillaje, compras con cuentas por pagar, ventas individuales, precios (historial y programación) y caja con arqueo y depósitos (4.1 a 4.6). Falta: tienda, flotas, gastos, personal, reportes y cumplimiento sectorial |
 | Fases 2, 5 y 7 | Sin empezar. El módulo de facturación aparece en Configuración, pero su interruptor solo muestra el selector de comprobante en Ventas: no emite nada |
 
-**Pruebas:** `php tests/smoke.php`, `php tests/inventario.php`, `php tests/caja.php`, `tests/chatbot.php` y `tests/ui.cjs` en Edge real (estos dos, ver su cabecera). `php tests/permisos_grifero.php` lista lo que las pantallas del grifero piden y no se le permite: hay que revisarlo al cambiar permisos.
+**Pruebas:** `php tests/smoke.php`, `php tests/inventario.php`, `php tests/caja.php`, `tests/chatbot.php` y `tests/ui.cjs` en Edge real (estos dos, ver su cabecera). `php tests/roles.php` cubre roles, menú y auditoría. `php tests/permisos_grifero.php` lista lo que las pantallas del grifero piden y no se le permite: hay que revisarlo al cambiar permisos.
 
 **Pendiente del dueño:**
 
@@ -35,12 +35,13 @@ Actualizado el 2026-11-06. Todo está en commits locales, sin publicar.
 **Pendiente parcial en estas fases:**
 
 - **0.5:** las vistas `turno manual` usan tablas que los modelos no usan, y los controladores `dashboard/*` de `turnos` solo los llama código sin uso. Se conservan hasta confirmar con el esquema real.
-- **1.4:** un grifero aún puede consultar por ID el detalle o PDF del turno de otro.
+- **1.4:** quien no tiene la capacidad «ver todos» ya solo lista lo suyo, pero aún puede consultar por ID el detalle o PDF de un turno ajeno.
 - **1.8:** las contraseñas ya no pasan por `htmlspecialchars`; el resto de datos, sí.
 - **1.10:** sigue habiendo controladores que muestran `getMessage()`.
 - **Ventas y caja:** las ventas individuales no alteran el cuadre del turno. Se concilian en galones y, en Caja → Medios, en soles contra lo declarado. Falta decidir si deben prellenar los pagos al cerrar.
 - **Precios:** un cambio de precio se aplica a todo el turno que se registre después. No se puede dividir un turno con dos precios; por eso conviene programar los cambios al inicio de un turno.
-- **Permisos:** griferos ya no pueden anular, editar ni eliminar créditos, ni eliminar clientes. Hay que confirmar que es lo deseado.
+- **Permisos:** por defecto, los griferos no pueden editar, anular ni eliminar créditos, ni activar o desactivar clientes. Se cambia en Roles y permisos, sin tocar código.
+- **Auditoría:** registra quién hizo qué y con qué datos, no el valor anterior de cada campo.
 
 ### Parche de seguridad para producción
 
@@ -209,11 +210,11 @@ Es la base de lo que pediste: que todo se maneje desde el menú.
   - **Impuestos:** IGV parametrizable, sin valores fijos en el código.
   - **Integraciones:** DNI/RUC, facturación, IA, correo y copias de seguridad.
 - [ ] **3.2** Tabla `modulos` con interruptores desde la interfaz. Un módulo apagado desaparece del menú **y** su controlador responde 403.
-- [ ] **3.3** Menú dinámico guardado en base de datos: orden, íconos y visibilidad por rol, reemplazando el HTML fijo de `view/index.php`.
-- [ ] **3.4** Roles y permisos editables. Además de `ADMINISTRADOR` y `GRIFERO`, añadir `SUPERVISOR` y `CONTADOR`.
+- [x] **3.3** Menú dinámico guardado en base de datos: orden, íconos y visibilidad por rol, reemplazando el HTML fijo de `view/index.php`.
+- [x] **3.4** Roles y permisos editables. Además de `ADMINISTRADOR` y `GRIFERO`, añadir `SUPERVISOR` y `CONTADOR`.
 - [ ] **3.5** *(parcial)* Página principal configurable: widgets por rol, ventas del día, stock, créditos vencidos, turnos abiertos y alertas. Se elimina el dashboard oculto y se corrigen los indicadores.
 - [ ] **3.6** Editor de catálogos: productos, surtidores, mangueras, máquinas y tipos de pago. Hoy el sistema asume 12 surtidores en 2 máquinas; debe admitir cualquier cantidad.
-- [ ] **3.7** *(parcial)* Bitácora de auditoría consultable: quién, qué, cuándo, antes y después.
+- [x] **3.7** Bitácora de auditoría consultable: quién, qué, cuándo, antes y después.
 - [ ] **3.8** Notificaciones internas: créditos vencidos, stock bajo y turnos sin validar.
 - [ ] **3.9** Asistente de instalación inicial para un grifo nuevo.
 
@@ -320,3 +321,5 @@ Permite preguntar en lenguaje natural, por ejemplo: «¿Cuántos galones de Prem
 | 2026-11-06 | Al registrar un turno, el precio y la lectura inicial los decide el servidor | El navegador podía alterarlos y cambiar las ventas |
 | 2026-11-06 | Los precios programados se aplican al usarlos, no con una tarea programada | El hosting compartido puede no tener cron |
 | 2026-11-06 | Se ocultan al grifero los botones de crédito y cliente que no puede usar | Pendiente de que el dueño confirme esos permisos |
+| 2026-11-06 | Los permisos son capacidades definidas en código y asignadas a roles desde la interfaz | Una ruta nueva exige una decisión en el catálogo; los roles se administran sin programar |
+| 2026-11-06 | El rol y el estado del usuario se leen en cada petición | Un cambio o una baja surte efecto de inmediato, a cambio de una consulta más |

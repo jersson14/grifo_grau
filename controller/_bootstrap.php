@@ -6,6 +6,7 @@
  * config/permisos.php, que niega por defecto) y token CSRF en cada POST.
  */
 require_once dirname(__DIR__) . '/config/env.php';
+require_once dirname(__DIR__) . '/model/model_conexion.php';
 
 date_default_timezone_set('America/Lima');
 ini_set('display_errors', '0');
@@ -70,8 +71,95 @@ function ruta_coincide(string $ruta, array $patrones): bool
 
 function modulo_activo(string $codigo): bool
 {
-    require_once dirname(__DIR__) . '/model/model_configuracion.php';
-    return Modelo_Configuracion::Modulo_Activo($codigo);
+    static $cache = [];
+    if (!isset($cache[$codigo])) {
+        require_once dirname(__DIR__) . '/model/model_configuracion.php';
+        $cache[$codigo] = Modelo_Configuracion::Modulo_Activo($codigo);
+    }
+    return $cache[$codigo];
+}
+
+function es_administrador(): bool
+{
+    return ($_SESSION['S_ROL'] ?? '') === 'ADMINISTRADOR';
+}
+
+/** Capacidades del usuario en sesión, o null si es administrador (las tiene todas). */
+function capacidades_sesion(): ?array
+{
+    static $cache = null;
+    static $rol = null;
+    if (es_administrador()) {
+        return null;
+    }
+    if ($cache === null || $rol !== $_SESSION['S_ROL']) {
+        require_once dirname(__DIR__) . '/model/model_roles.php';
+        $rol = $_SESSION['S_ROL'];
+        $cache = Modelo_Roles::Capacidades_De($rol);
+    }
+    return $cache;
+}
+
+function puede(string $capacidad): bool
+{
+    $capacidades = capacidades_sesion();
+    return $capacidades === null || in_array($capacidad, $capacidades, true);
+}
+
+/** Si el rol del usuario en sesión da acceso a la ruta. Lo que no está en el catálogo es solo para administradores. */
+function ruta_permitida(string $ruta): bool
+{
+    $capacidades = capacidades_sesion();
+    if ($capacidades === null) {
+        return true;
+    }
+    $catalogo = require dirname(__DIR__) . '/config/capacidades.php';
+    foreach ($capacidades as $capacidad) {
+        if (isset($catalogo[$capacidad]) && ruta_coincide($ruta, $catalogo[$capacidad][2])) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/** Si la ruta es usable ahora: incluye tener permiso y que su módulo esté activo. */
+function ruta_accesible(string $ruta): bool
+{
+    $permisos = require dirname(__DIR__) . '/config/permisos.php';
+    foreach ($permisos['modulos'] as $patron => $modulo) {
+        if (ruta_coincide($ruta, [$patron]) && !modulo_activo($modulo)) {
+            return false;
+        }
+    }
+    return ruta_coincide($ruta, $permisos['propios']) || ruta_permitida($ruta);
+}
+
+/**
+ * Registra toda acción que modifica datos, sin contraseñas ni claves. Corre al terminar la
+ * petición, de modo que un fallo aquí nunca afecta a la operación.
+ */
+function auditar_peticion(string $ruta): void
+{
+    $accion = str_replace(['controlador_', '.php'], '', basename($ruta));
+    if (!preg_match('/^(regist|guardar|modific|cambiar|anular|eliminar|actualizar|agregar|abrir|cerrar|pagar|revertir|validar|asignar|aplicar|resolver|programar|cancelar|mover|editar)/', $accion)) {
+        return;
+    }
+    try {
+        $datos = [];
+        foreach ($_POST as $clave => $valor) {
+            if (preg_match('/contra|clave|pass|token|key|secret|^con$|^c$/i', (string) $clave)) {
+                $datos[$clave] = '***';
+            } else {
+                $datos[$clave] = $valor;
+            }
+        }
+        $detalle = 'HTTP ' . http_response_code() . ' ' . json_encode($datos, JSON_UNESCAPED_UNICODE);
+        $c = conexionBD::conexionPDO();
+        $c->prepare('INSERT INTO auditoria (id_usuario, usuario, accion, detalle, ip) VALUES (?, ?, ?, ?, ?)')
+          ->execute([$_SESSION['S_ID'] ?? null, $_SESSION['S_USU'] ?? null, $accion, mb_substr($detalle, 0, 2000), $_SERVER['REMOTE_ADDR'] ?? null]);
+    } catch (Throwable $e) {
+        error_log('No se pudo registrar la auditoría: ' . $e->getMessage());
+    }
 }
 
 /**
@@ -132,10 +220,23 @@ function verificar_acceso(): void
     }
     $_SESSION['S_ACTIVIDAD'] = time();
 
-    $esAdmin = ($_SESSION['S_ROL'] ?? '') === 'ADMINISTRADOR';
-    $propio  = ruta_coincide($ruta, $permisos['propios']);
+    // El rol y el estado se leen en cada petición: un cambio o una baja surten efecto de inmediato.
+    $c = conexionBD::conexionPDO();
+    if ($c === null) {
+        denegar_acceso(503, 'El sistema no está disponible en este momento.');
+    }
+    $query = $c->prepare('SELECT usu_rol, usu_estatus FROM usuario WHERE id_usuario = ?');
+    $query->execute([$_SESSION['S_ID']]);
+    $cuenta = $query->fetch(PDO::FETCH_ASSOC);
+    if (!$cuenta || $cuenta['usu_estatus'] !== 'ACTIVO') {
+        session_unset();
+        session_destroy();
+        denegar_acceso(401, 'Su usuario ya no está activo.');
+    }
+    $_SESSION['S_ROL'] = $cuenta['usu_rol'];
 
-    if (!$esAdmin && !$propio && !ruta_coincide($ruta, $permisos['griferos'])) {
+    $propio = ruta_coincide($ruta, $permisos['propios']);
+    if (!$propio && !ruta_coincide($ruta, $permisos['base']) && !ruta_permitida($ruta)) {
         denegar_acceso(403, 'No tiene permisos para realizar esta acción.');
     }
 
@@ -152,8 +253,8 @@ function verificar_acceso(): void
         }
     }
 
-    // Quien no es administrador solo actúa en nombre propio, envíe lo que envíe el navegador.
-    if ($propio || !$esAdmin) {
+    // Sin la capacidad de ver a todos, solo se actúa en nombre propio, envíe lo que envíe el navegador.
+    if ($propio || !puede('ver_todos')) {
         foreach (['id_usuario', 'idusuario', 'filtro_usuario'] as $campo) {
             if (isset($_POST[$campo]) || $campo === 'filtro_usuario') {
                 $_POST[$campo] = $_SESSION['S_ID'];
@@ -162,6 +263,10 @@ function verificar_acceso(): void
                 $_GET[$campo] = $_SESSION['S_ID'];
             }
         }
+    }
+
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        register_shutdown_function('auditar_peticion', $ruta);
     }
 }
 

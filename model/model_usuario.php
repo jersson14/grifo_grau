@@ -71,7 +71,7 @@
             $_SESSION['S_ROL']          = $fila['usu_rol'];
             $_SESSION['S_NOMBRE']       = $fila['usu_nombre'];
             $_SESSION['S_COMPLETOS']    = trim($fila['usu_nombre'] . ' ' . $fila['usu_apellido']);
-            $_SESSION['S_FOTO']         = $fila['usu_foto'];
+            $_SESSION['S_FOTO']         = self::Foto_Mostrable($fila['usu_foto']);
             $_SESSION['S_FOTO_EMPRESA'] = $empresa['logo'] ?? '';
             $_SESSION['S_RAZON']        = $empresa['nombre'] ?? '';
             $_SESSION['S_ACTIVIDAD']    = time();
@@ -83,6 +83,61 @@
         private function Registrar_Auditoria($c, $id_usuario, $usuario, $accion, $ip){
             $query = $c->prepare("INSERT INTO auditoria (id_usuario, usuario, accion, ip) VALUES (?, ?, ?, ?)");
             $query->execute(array($id_usuario, $usuario, $accion, $ip));
+        }
+
+        /**
+         * Impide crear administradores o tocar sus cuentas sin serlo, asignar roles inexistentes
+         * y dejar el sistema sin administradores activos. Responde 403 y termina si no procede.
+         */
+        public function Validar_Cambio_Rol($id, $rolNuevo){
+            $c = conexionBD::conexionPDO();
+            $rolActual = null;
+            if ($id !== null) {
+                $query = $c->prepare("SELECT usu_rol FROM usuario WHERE id_usuario = ?");
+                $query->execute(array($id));
+                $rolActual = $query->fetchColumn();
+            }
+            if ($rolNuevo !== null) {
+                $existe = $c->prepare("SELECT COUNT(*) FROM roles WHERE codigo = ?");
+                $existe->execute(array($rolNuevo));
+                if (!$existe->fetchColumn()) {
+                    denegar_acceso(403, 'El rol indicado no existe.');
+                }
+            }
+            if (!es_administrador() && ($rolNuevo === 'ADMINISTRADOR' || $rolActual === 'ADMINISTRADOR')) {
+                denegar_acceso(403, 'Solo un administrador puede gestionar cuentas de administrador.');
+            }
+            if ($rolActual === 'ADMINISTRADOR' && $rolNuevo !== null && $rolNuevo !== 'ADMINISTRADOR' && $this->Administradores_Activos($id) === 0) {
+                denegar_acceso(403, 'Debe quedar al menos un administrador activo.');
+            }
+        }
+
+        public function Validar_Cambio_Estatus($id, $estatus){
+            $this->Validar_Cambio_Rol($id, null);
+            if ($estatus === 'ACTIVO') {
+                return;
+            }
+            if ($id === (int) $_SESSION['S_ID']) {
+                denegar_acceso(403, 'No puede desactivar su propia cuenta.');
+            }
+            $c = conexionBD::conexionPDO();
+            $query = $c->prepare("SELECT usu_rol FROM usuario WHERE id_usuario = ?");
+            $query->execute(array($id));
+            if ($query->fetchColumn() === 'ADMINISTRADOR' && $this->Administradores_Activos($id) === 0) {
+                denegar_acceso(403, 'Debe quedar al menos un administrador activo.');
+            }
+        }
+
+        private function Administradores_Activos($excepto){
+            $c = conexionBD::conexionPDO();
+            $query = $c->prepare("SELECT COUNT(*) FROM usuario WHERE usu_rol = 'ADMINISTRADOR' AND usu_estatus = 'ACTIVO' AND id_usuario <> ?");
+            $query->execute(array($excepto));
+            return (int) $query->fetchColumn();
+        }
+
+        /** Las cuentas antiguas sin foto guardaron la ruta de la carpeta, que no es una imagen. */
+        public static function Foto_Mostrable($foto){
+            return ($foto === null || $foto === '' || substr($foto, -1) === '/') ? 'img/avatar.png' : $foto;
         }
 
         public function Obtener_Foto_Usuario($id){
@@ -101,6 +156,7 @@
             $resultado = $query->fetchAll(PDO::FETCH_ASSOC);
             foreach($resultado as $resp){
                 unset($resp['usu_contrasenia']);
+                $resp['usu_foto'] = self::Foto_Mostrable($resp['usu_foto'] ?? null);
                 $arreglo["data"][]=$resp;
             }
             return $arreglo;

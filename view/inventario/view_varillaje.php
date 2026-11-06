@@ -39,4 +39,4 @@
   </div>
 </div>
 
-<script>iniciar_varillaje(<?php echo json_encode($_SESSION['S_ROL'] === 'ADMINISTRADOR'); ?>);</script>
+<script>iniciar_varillaje(<?php echo json_encode(puede('inventario_gestionar')); ?>);</script>

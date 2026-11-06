@@ -1,4 +1,5 @@
-<?php require_once __DIR__ . '/../../controller/_bootstrap.php'; ?>
+<?php require_once __DIR__ . '/../../controller/_bootstrap.php';
+require_once __DIR__ . '/../../model/model_roles.php'; ?>
 <script src="../js/console_usuario.js?rev=<?php echo time();?>"></script>
 
 <div class="content-header">
@@ -142,8 +143,7 @@
                         <label>Rol <span class="text-danger">*</span></label>
                         <select class="form-control" id="select_rol_editar">
                             <option value="">-- Seleccione --</option>
-                            <option value="ADMINISTRADOR">ADMINISTRADOR</option>
-                            <option value="GRIFERO">GRIFERO</option>
+                            <?php foreach (Modelo_Roles::Codigos() as $codigo_rol) { if ($codigo_rol !== 'ADMINISTRADOR' || es_administrador()) { ?><option value="<?php echo htmlspecialchars($codigo_rol, ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($codigo_rol, ENT_QUOTES, 'UTF-8'); ?></option><?php } } ?>
                         </select>
                     </div>
                 </div>
@@ -239,8 +239,7 @@
                         <label>Rol <span class="text-danger">*</span></label>
                         <select class="form-control" id="select_rol_editar2">
                             <option value="">-- Seleccione --</option>
-                            <option value="ADMINISTRADOR">ADMINISTRADOR</option>
-                            <option value="GRIFERO">GRIFERO</option>
+                            <?php foreach (Modelo_Roles::Codigos() as $codigo_rol) { if ($codigo_rol !== 'ADMINISTRADOR' || es_administrador()) { ?><option value="<?php echo htmlspecialchars($codigo_rol, ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($codigo_rol, ENT_QUOTES, 'UTF-8'); ?></option><?php } } ?>
                         </select>
                     </div>
                 </div>

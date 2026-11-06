@@ -76,7 +76,8 @@ class Modelo_Configuracion extends conexionBD
                     }
                     break;
                 case 'roles':
-                    $roles = array_intersect(array_map('trim', explode(',', $valor)), ['ADMINISTRADOR', 'GRIFERO']);
+                    require_once __DIR__ . '/model_roles.php';
+                    $roles = array_intersect(array_map('trim', explode(',', $valor)), Modelo_Roles::Codigos());
                     $valor = implode(',', $roles);
                     break;
                 case 'lista':

@@ -5,6 +5,11 @@ function Fecha_Local(valor) {
 
 // Utilidades comunes de las pantallas nuevas. Los valores se insertan como texto, nunca como HTML.
 var G = {
+  // CAPACIDADES lo define view/index.php: '*' para el administrador.
+  puede: function (capacidad) {
+    return window.CAPACIDADES === '*' || (window.CAPACIDADES || []).indexOf(capacidad) !== -1;
+  },
+
   post: function (url, datos, alTerminar) {
     return $.post(url, datos, function (r) {
       if (r && r.success === false) {
