@@ -1,14 +1,12 @@
 <?php
+require_once __DIR__ . '/../../config/env.php';
 date_default_timezone_set('America/Lima');
 
-$mysqli = new mysqli("localhost", "root", "", "grifo_grau", 3307);
+$mysqli = new mysqli(env('DB_HOST', '127.0.0.1'), env('DB_USER', 'root'), env('DB_PASS', ''), env('DB_NAME'), (int) env('DB_PORT', '3306'));
 
-// Verificar conexión
 if ($mysqli->connect_errno) {
-    echo "Falló la conexión a MySQL: (" . $mysqli->connect_errno . ") " . $mysqli->connect_error;
-    exit();
+    error_log('Fallo la conexion a MySQL: ' . $mysqli->connect_error);
+    exit('No se pudo conectar a la base de datos.');
 }
 
-// Configurar zona horaria en MySQL
 $mysqli->query("SET time_zone = '-05:00'");
-?>

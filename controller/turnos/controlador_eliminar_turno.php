@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once __DIR__ . '/../_bootstrap.php';
 require_once '../../model/model_turnos.php';
 
 // Validar que el usuario esté logueado

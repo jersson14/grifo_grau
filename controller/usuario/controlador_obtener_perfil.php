@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../_bootstrap.php';
 header('Content-Type: application/json');
 
 try {
@@ -19,11 +20,13 @@ try {
     $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
     
     if ($usuario) {
+        unset($usuario['usu_contrasenia']);
         echo json_encode($usuario);
     } else {
         echo json_encode(['error' => 'Usuario no encontrado']);
     }
 } catch (Exception $e) {
-    echo json_encode(['error' => $e->getMessage()]);
+    error_log('Error al obtener perfil: ' . $e->getMessage());
+    echo json_encode(['error' => 'No se pudo obtener el perfil']);
 }
 ?>

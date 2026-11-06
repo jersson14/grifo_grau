@@ -1,3 +1,4 @@
+<?php require_once __DIR__ . '/../../controller/_bootstrap.php'; ?>
 <script src="../js/console_turnos_manual.js?rev=<?php echo time(); ?>"></script>
 
 <style>

@@ -6,6 +6,20 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Sistema de Gestión de Grifo — a gas station management web application built with plain PHP (no framework). Manages shifts, fuel sales, customer credits, pump readings, and reports for a service station in Peru.
 
+## Current Work: Grifo 2
+
+`main` is in production. All improvement work happens on branch `grifo2` with local database `grifo2`.
+
+**Read [docs/PLAN_GRIFO2.md](docs/PLAN_GRIFO2.md) before starting work.** It holds the audit, phases, pending decisions and checklist. Mark tasks done and record decisions there as work progresses.
+
+Rules for this work:
+- Don't change `main` unless the owner approves a specific production fix.
+- Don't copy the DNI/RUC API token into docs, commits or chat. It is still hardcoded in the repo until task 1.1.
+- Every database change is a numbered migration in `database/migrations/`.
+- Every new controller must require authentication and an explicit permission. Don't copy existing controllers as a template until Phase 1 is done: most have no access control.
+- Configurable behavior belongs in the database and the admin UI, not in code.
+- Optional modules (electronic invoicing, AI chatbot) stay behind an on/off switch and must never block core shift operations.
+
 ## Running the Application
 
 **Docker (recommended):**
@@ -16,8 +30,9 @@ stop.bat        # stops containers
 
 **Manual (XAMPP):**
 - Place project under `htdocs/grifo_grau`
-- MySQL on port 3307, database `grifo_grau`, user `root`, no password
-- Import `database/init.sql`, then `database/tipos_pago.sql`, then `database/fix_ventas_credito.sql`
+- MySQL on port 3307, user `root`, no password. Database `grifo2` on branch `grifo2`, `grifo_grau` on `main`
+- `model/model_conexion.php` is gitignored, so the database name is a local setting. Switching branches doesn't change it
+- `database/init.sql` is an empty placeholder: **the repo has no base schema**. A fresh install needs a production dump (plan task 0.1) before `database/tipos_pago.sql` and `database/fix_ventas_credito.sql`
 - Access at `http://localhost/grifo_grau`
 
 **Default credentials:**
@@ -47,7 +62,8 @@ All models extend `conexionBD` from `model/model_conexion.php`:
 ```php
 $pdo = conexionBD::conexionPDO();  // returns PDO instance
 ```
-- Host: `localhost:3307`, DB: `grifo_grau`, charset: `utf8`
+- Host: `localhost:3307`, charset: `utf8`
+- `controlador_guardar_turno_manual.php` and `controlador_cerrar_turno_manual.php` bypass this with their own hardcoded mysqli connection to `grifo_grau` (plan task 0.4)
 - Timezone forced to `America/Lima` (UTC-5) on every connection
 
 ## Key Domain Concepts

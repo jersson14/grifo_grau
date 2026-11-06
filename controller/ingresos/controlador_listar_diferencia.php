@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../_bootstrap.php';
     require '../../model/model_ingresos.php';
     $MIN = new Modelo_Ingresos();//Instaciamos
     $consulta = $MIN->Listar_diferencia();

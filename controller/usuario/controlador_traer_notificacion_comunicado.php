@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../_bootstrap.php';
     require '../../model/model_comunicados.php';
     $MU = new Modelo_Comunicados();//Instaciamos
     $consulta = $MU->Listar_notificacion();

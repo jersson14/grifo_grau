@@ -17,61 +17,41 @@ function Iniciar_Sesion(){
             u:usu,
             c:con
         }
-    }).done(function(resp){
-       let data = JSON.parse(resp)
-       if(data.length>0){
-            if(data[0][7]=="INACTIVO"){
-                return  Swal.fire({
-                    icon: 'warning',
-                    title: 'Mensaje de Advertencia',
-                    text: 'El usuario: '+usu+' se encuentra inactivo',
-                    heightAuto: false
-                  });  
-            }$.ajax({
-                url:'controller/usuario/controlador_crear_sesion.php',
-                type: 'POST',
-                data:{
-                    idusuario:data[0][0],
-                    nombres:data[0][2], //solo nombre
-                    solonombres:data[0][4], // nombres completos
-                    usuario:data[0][7],
-                    rol:data[0][9],   
-                    foto:data[0][15], // foto de usuario
-                    foto_empresa:data[0][17],                  // foto de empresa
-                    razon:data[0][18]       // razón de la empresa
-
-                }
-            }).done(function(resp){
-                let timerInterval
-                Swal.fire({
-                  title: 'Bienvenido al Sistema',
-                  html: 'Seras redireccionado en <b></b> milliseconds.',
-                  icon: 'success',
-                  timer: 1200,
-                  timerProgressBar: true,
-                  heightAuto: false,
-                  didOpen: () => {
-                    Swal.showLoading()
-                    const b = Swal.getHtmlContainer().querySelector('b')
-                    timerInterval = setInterval(() => {
-                      b.textContent = Swal.getTimerLeft()
-                    }, 100)
-                  },
-                  willClose: () => {
-                    clearInterval(timerInterval)
-                  }
-                }).then((result) => {
-                  /* Read more about handling dismissals below */
-                  if (result.dismiss === Swal.DismissReason.timer) {
-                    location.reload();
-                  }
-                })            
+    }).done(function(data){
+       if(data.ok){
+            let timerInterval
+            Swal.fire({
+              title: 'Bienvenido al Sistema',
+              html: 'Seras redireccionado en <b></b> milliseconds.',
+              icon: 'success',
+              timer: 1200,
+              timerProgressBar: true,
+              heightAuto: false,
+              didOpen: () => {
+                Swal.showLoading()
+                const b = Swal.getHtmlContainer().querySelector('b')
+                timerInterval = setInterval(() => {
+                  b.textContent = Swal.getTimerLeft()
+                }, 100)
+              },
+              willClose: () => {
+                clearInterval(timerInterval)
+              }
+            }).then((result) => {
+              if (result.dismiss === Swal.DismissReason.timer) {
+                location.reload();
+              }
             })
        }else{
+        const mensajes = {
+            inactivo: 'El usuario: '+usu+' se encuentra inactivo',
+            bloqueado: 'Demasiados intentos fallidos. Vuelva a intentarlo en 15 minutos.',
+            servicio: 'No se pudo conectar con el sistema. Inténtelo más tarde.'
+        };
         Swal.fire({
             icon: 'error',
             title: 'Mensaje de Error',
-            text: 'Usuario o Contraseña Incorrectos',
+            text: mensajes[data.motivo] || 'Usuario o Contraseña Incorrectos',
             heightAuto: false
           });
 
@@ -79,14 +59,15 @@ function Iniciar_Sesion(){
     })
 }
 
+// "Recuérdame" guarda solo el nombre de usuario: una contraseña en localStorage
+// quedaría legible en el navegador.
 function recuerdame(){
-    if(rmcheck.checked && usuarioInput.value !="" && passInput.value !=""){
+    localStorage.removeItem('pass');
+    if(rmcheck.checked && usuarioInput.value !=""){
         localStorage.usuario     = usuarioInput.value;
-        localStorage.pass        = passInput.value;
         localStorage.checkbox    = rmcheck.value;
     }else{
         localStorage.usuario     = "";
-        localStorage.pass        = "";
         localStorage.checkbox    = "";
     }
 }

@@ -1,3 +1,4 @@
+<?php require_once __DIR__ . '/../../controller/_bootstrap.php'; ?>
 <script src="../js/console_clientes_grifo.js?rev=<?php echo time(); ?>"></script>
 
 <div class="content-header">

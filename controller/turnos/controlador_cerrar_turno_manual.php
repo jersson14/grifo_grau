@@ -1,14 +1,15 @@
 <?php
+require_once __DIR__ . '/../_bootstrap.php';
 require_once '../../model/model_conexion.php';
 
 $id_reporte = htmlspecialchars($_POST['id_reporte'], ENT_QUOTES, 'UTF-8');
 
 // Obtener conexión MySQLi
-$host = "localhost";
-$port = "3307";
-$usuario = "root";
-$contrasena = "";
-$bdName = "grifo_grau";
+$host = env('DB_HOST', '127.0.0.1');
+$port = (int) env('DB_PORT', '3306');
+$usuario = env('DB_USER', 'root');
+$contrasena = env('DB_PASS', '');
+$bdName = env('DB_NAME');
 
 $conn = new mysqli($host, $usuario, $contrasena, $bdName, $port);
 

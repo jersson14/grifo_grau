@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../_bootstrap.php';
 require_once '../../model/model_creditos.php';
 
 header('Content-Type: application/json');

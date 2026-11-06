@@ -1,3 +1,4 @@
+<?php require_once __DIR__ . '/../_bootstrap.php'; ?>
 
 <?php
     require '../../model/model_usuario.php';

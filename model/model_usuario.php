@@ -3,22 +3,95 @@
 
     class Modelo_Usuario extends conexionBD{
         
-        public function Verificar_Usuario($usu,$con){
-            $c = conexionBD::conexionPDO();
-            $sql = "CALL SP_VERIFICAR_USUARIO(?)";
-            $arreglo = array();
-            $query = $c->prepare($sql);
-            $query->bindParam(1,$usu);
-            $query->execute();
-            $resultado = $query->fetchAll();
-            foreach($resultado as $resp){
-                if(password_verify($con,$resp['usu_contrasenia'])){
-                    $arreglo[]=$resp;
-                }
+        /**
+         * Verifica las credenciales y crea la sesión en el servidor.
+         * Nunca devuelve datos del usuario al navegador: solo el resultado.
+         */
+        public function Iniciar_Sesion($usuario, $contrasena, $ip){
+            $generico = array('ok' => false, 'motivo' => 'credenciales');
+            if ($usuario === '' || $contrasena === '') {
+                return $generico;
             }
-            return $arreglo;
-            conexionBD::cerrar_conexion();
-        } 
+
+            $c = conexionBD::conexionPDO();
+            if ($c === null) {
+                return array('ok' => false, 'motivo' => 'servicio');
+            }
+
+            $clave = hash('sha256', strtolower($usuario) . '|' . $ip);
+            $query = $c->prepare("SELECT intentos, bloqueado_hasta FROM login_intentos WHERE clave = ?");
+            $query->execute(array($clave));
+            $intento = $query->fetch(PDO::FETCH_ASSOC);
+            if ($intento && $intento['bloqueado_hasta'] !== null && strtotime($intento['bloqueado_hasta']) > time()) {
+                return array('ok' => false, 'motivo' => 'bloqueado');
+            }
+
+            $query = $c->prepare("SELECT * FROM usuario WHERE usu_usuario = ? LIMIT 1");
+            $query->execute(array($usuario));
+            $fila = $query->fetch(PDO::FETCH_ASSOC);
+
+            // Las cuentas antiguas guardaron el hash de la contraseña pasada por htmlspecialchars.
+            $escapada = htmlspecialchars($contrasena, ENT_QUOTES, 'UTF-8');
+            $valida   = $fila && password_verify($contrasena, $fila['usu_contrasenia']);
+            $antigua  = $fila && !$valida && password_verify($escapada, $fila['usu_contrasenia']);
+
+            if (!$valida && !$antigua) {
+                $intentos = ($intento ? (int) $intento['intentos'] : 0) + 1;
+                $bloqueo  = $intentos >= 5 ? date('Y-m-d H:i:s', time() + 900) : null;
+                $query = $c->prepare("REPLACE INTO login_intentos (clave, intentos, bloqueado_hasta, actualizado_en) VALUES (?, ?, ?, NOW())");
+                $query->execute(array($clave, $bloqueo ? 0 : $intentos, $bloqueo));
+                $this->Registrar_Auditoria($c, null, $usuario, 'LOGIN_FALLIDO', $ip);
+                return $bloqueo ? array('ok' => false, 'motivo' => 'bloqueado') : $generico;
+            }
+
+            if ($fila['usu_estatus'] !== 'ACTIVO') {
+                return array('ok' => false, 'motivo' => 'inactivo');
+            }
+
+            if ($antigua || password_needs_rehash($fila['usu_contrasenia'], PASSWORD_DEFAULT)) {
+                $query = $c->prepare("UPDATE usuario SET usu_contrasenia = ? WHERE id_usuario = ?");
+                $query->execute(array(password_hash($contrasena, PASSWORD_DEFAULT), $fila['id_usuario']));
+            }
+
+            $query = $c->prepare("DELETE FROM login_intentos WHERE clave = ?");
+            $query->execute(array($clave));
+
+            $empresa = array();
+            try {
+                $query = $c->query("CALL SP_LISTAR_EMPRESA()");
+                $empresa = $query->fetch(PDO::FETCH_ASSOC) ?: array();
+                $query->closeCursor();
+            } catch (PDOException $e) {
+                error_log('No se pudo leer la empresa al iniciar sesion: ' . $e->getMessage());
+            }
+
+            session_regenerate_id(true);
+            $_SESSION['S_ID']           = $fila['id_usuario'];
+            $_SESSION['S_USU']          = $fila['usu_usuario'];
+            $_SESSION['S_ROL']          = $fila['usu_rol'];
+            $_SESSION['S_NOMBRE']       = $fila['usu_nombre'];
+            $_SESSION['S_COMPLETOS']    = trim($fila['usu_nombre'] . ' ' . $fila['usu_apellido']);
+            $_SESSION['S_FOTO']         = $fila['usu_foto'];
+            $_SESSION['S_FOTO_EMPRESA'] = $empresa['logo'] ?? '';
+            $_SESSION['S_RAZON']        = $empresa['nombre'] ?? '';
+            $_SESSION['S_ACTIVIDAD']    = time();
+
+            $this->Registrar_Auditoria($c, $fila['id_usuario'], $fila['usu_usuario'], 'LOGIN', $ip);
+            return array('ok' => true);
+        }
+
+        private function Registrar_Auditoria($c, $id_usuario, $usuario, $accion, $ip){
+            $query = $c->prepare("INSERT INTO auditoria (id_usuario, usuario, accion, ip) VALUES (?, ?, ?, ?)");
+            $query->execute(array($id_usuario, $usuario, $accion, $ip));
+        }
+
+        public function Obtener_Foto_Usuario($id){
+            $c = conexionBD::conexionPDO();
+            $query = $c->prepare("SELECT usu_foto FROM usuario WHERE id_usuario = ?");
+            $query->execute(array($id));
+            return $query->fetchColumn();
+        }
+
         public function Listar_Usuario(){
             $c = conexionBD::conexionPDO();
             $sql = "CALL SP_LISTAR_USUARIO()";
@@ -27,6 +100,7 @@
             $query->execute();
             $resultado = $query->fetchAll(PDO::FETCH_ASSOC);
             foreach($resultado as $resp){
+                unset($resp['usu_contrasenia']);
                 $arreglo["data"][]=$resp;
             }
             return $arreglo;

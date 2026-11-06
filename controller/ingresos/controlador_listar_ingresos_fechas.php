@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../_bootstrap.php';
     require '../../model/model_ingresos.php';
     $MIN = new Modelo_Ingresos();//Instaciamos
     $fechainicio = htmlspecialchars($_POST['fechainicio'],ENT_QUOTES,'UTF-8');

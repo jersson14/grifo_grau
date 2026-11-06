@@ -1,0 +1,6 @@
+# Archivos internos que nunca se sirven por web
+<FilesMatch "(^\.|\.(sql|md|bat|lock|yml|example)$|^composer\.json$|^Dockerfile$)">
+    Require all denied
+</FilesMatch>
+
+Options -Indexes

@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../_bootstrap.php';
     require '../../model/model_indicadores.php';
     $MI = new Modelo_Indicadores();//Instaciamos
     $id = strtoupper(htmlspecialchars($_POST['id'],ENT_QUOTES,'UTF-8'));

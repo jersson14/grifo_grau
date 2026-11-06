@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../_bootstrap.php';
     require_once '../../model/model_usuario.php';
     $MU = new Modelo_Usuario();//Instaciamos
     $consulta = $MU->Listar_Usuario();

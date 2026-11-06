@@ -1,11 +1,5 @@
 <?php
-// Configurar zona horaria de Lima, Perú (UTC-5)
-date_default_timezone_set('America/Lima');
-
-session_start();
-if (!isset($_SESSION['S_ID'])) {
-  header('Location: ../index.php');
-}
+require_once __DIR__ . '/../controller/_bootstrap.php';
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -552,6 +546,18 @@ if (!isset($_SESSION['S_ID'])) {
 
   <!-- Scripts -->
   <script src="../plantilla/plugins/jquery/jquery.min.js"></script>
+  <script>
+    // Token CSRF en toda petición AJAX, y respuesta común a sesión vencida o falta de permisos.
+    $.ajaxSetup({ headers: { 'X-CSRF-Token': <?php echo json_encode(token_csrf()); ?> } });
+    $(document).ajaxError(function(evento, xhr) {
+      if (xhr.status === 401) {
+        window.location.href = '../index.php';
+      } else if (xhr.status === 403 && window.Swal) {
+        var r = xhr.responseJSON || {};
+        Swal.fire('Acceso denegado', r.message || 'No tiene permisos para realizar esta acción.', 'warning');
+      }
+    });
+  </script>
   <script src="../plantilla/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
   <script src="../plantilla/dist/js/adminlte.min.js"></script>
   <script src="../utilitario/DataTables/datatables.min.js"></script>

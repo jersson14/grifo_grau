@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../_bootstrap.php';
 require_once '../../model/model_productos.php';
 
 $MProductos = new Modelo_Productos();

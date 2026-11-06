@@ -1,12 +1,13 @@
 <?php
+require_once __DIR__ . '/../_bootstrap.php';
 require_once '../../model/model_conexion.php';
 
 $conexion = conexion();
 
 // Contar créditos por estado
-$sql_pendientes = "SELECT COUNT(*) as total FROM creditos WHERE estado = 'PENDIENTE' AND saldo_pendiente > 0";
-$sql_pagados = "SELECT COUNT(*) as total FROM creditos WHERE estado = 'PAGADO'";
-$sql_vencidos = "SELECT COUNT(*) as total FROM creditos WHERE estado = 'PENDIENTE' AND fecha_vencimiento < CURDATE()";
+$sql_pendientes = "SELECT COUNT(*) as total FROM ventas_credito WHERE estado = 'PENDIENTE' AND saldo_pendiente > 0";
+$sql_pagados = "SELECT COUNT(*) as total FROM ventas_credito WHERE estado = 'PAGADO'";
+$sql_vencidos = "SELECT COUNT(*) as total FROM ventas_credito WHERE estado = 'PENDIENTE' AND fecha_vencimiento < CURDATE()";
 
 $pendientes = 0;
 $pagados = 0;

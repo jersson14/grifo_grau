@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../_bootstrap.php';
     require '../../model/model_pagos.php';
     $MPA = new Modelo_Pagos();//Instaciamos
     $consulta = $MPA->Listar_Pagos();

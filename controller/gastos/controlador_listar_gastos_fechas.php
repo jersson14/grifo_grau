@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../_bootstrap.php';
     require '../../model/model_gastos.php';
     $MGA = new Modelo_Gastos();//Instaciamos
     $indica = htmlspecialchars($_POST['indica'],ENT_QUOTES,'UTF-8');
