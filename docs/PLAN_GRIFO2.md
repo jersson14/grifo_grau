@@ -25,11 +25,17 @@ Actualizado el 2026-11-06. Todo está en commits locales, sin publicar.
 
 **Pruebas:** `php tests/smoke.php`, `php tests/inventario.php`, `php tests/caja.php`, `tests/chatbot.php` y `tests/ui.cjs` en Edge real (estos dos, ver su cabecera). `php tests/roles.php` cubre roles, menú y auditoría. `php tests/permisos_grifero.php` lista lo que las pantallas del grifero piden y no se le permite: hay que revisarlo al cambiar permisos.
 
-**Pendiente del dueño:**
+### Para el final: configuración a cargo del dueño
 
-1. Revocar el token DNI/RUC: sigue en el historial de git. Después, guardar el nuevo en Configuración → Integraciones.
-2. Exportar el esquema de producción (tarea 0.1).
-3. Conseguir una clave de API para probar el chatbot.
+Decidido por el dueño el 2026-11-06: se retoma al terminar el desarrollo, antes de pasar a producción.
+
+1. [ ] **Token de Decolecta:** revocarlo y pegar el nuevo en Configuración → Integraciones. Sigue en el historial de git. Al revocarlo, la consulta DNI/RUC deja de funcionar en producción hasta aplicar el parche.
+2. [ ] **Esquema de producción:** en cPanel → phpMyAdmin → Exportar → Personalizado, solo Estructura y con rutinas. Guardarlo como `database/schema/produccion.sql` y contrastar con el esquema provisional.
+3. [ ] **Nubefact en modo demo:** pedir la activación de la API (soporte@nubefact.com o WhatsApp 955 598762), pegar la ruta y el token en Configuración → Integraciones y hacer la primera emisión de prueba.
+4. [ ] **Contador:** validar los puntos indicados abajo.
+5. [ ] **Clave de API de Anthropic:** pegarla en Configuración → Chatbot de IA y probar el chatbot real.
+
+Las credenciales se pegan siempre en Configuración, nunca en el chat.
 
 **Validar en el modo demo de Nubefact, porque sus ejemplos no lo cubren:**
 
