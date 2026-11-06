@@ -54,6 +54,7 @@
               <div class="col-md-3 form-group"><label for="credito_dias">Días de crédito por defecto</label><input type="number" min="0" max="365" class="form-control" id="credito_dias" name="credito_dias"></div>
               <div class="col-md-3 form-group"><label for="turno_tolerancia_soles">Tolerancia de diferencia en caja (S/)</label><input type="number" step="0.01" min="0" class="form-control" id="turno_tolerancia_soles" name="turno_tolerancia_soles"></div>
               <div class="col-md-3 form-group"><label for="moneda_simbolo">Símbolo de moneda</label><input class="form-control" id="moneda_simbolo" name="moneda_simbolo" maxlength="5"></div>
+              <div class="col-md-3 form-group"><label for="varillaje_tolerancia_pct">Tolerancia de varillaje (%)</label><input type="number" step="0.01" min="0" max="100" class="form-control" id="varillaje_tolerancia_pct" name="varillaje_tolerancia_pct"></div>
               <div class="col-12"><button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Guardar</button></div>
             </form>
           </div>

@@ -19,9 +19,10 @@ Actualizado el 2026-11-06. Todo está en commits locales, sin publicar.
 | Fases 0 y 1 | Base y seguridad hechas y probadas sobre el **esquema provisional**. Falta contrastar con producción |
 | Fase 3 | Hecho: panel de Configuración, módulos activables (3.1 y 3.2 parciales). Falta: menú dinámico, roles editables, página principal, catálogos |
 | Fase 6 | Chatbot funcional probado contra una **API simulada**. Falta: probarlo con una clave real (6.7) y añadir streaming |
-| Fases 2, 4, 5 y 7 | Sin empezar. El módulo de facturación aparece en Configuración, pero su interruptor todavía no hace nada |
+| Fase 4 | Hecho y probado: tanques, kardex, varillaje, compras con cuentas por pagar y ventas individuales conciliadas con lecturas (4.1, 4.2, 4.3 y 4.6). Falta: precios, caja, tienda, flotas, gastos, personal, reportes y cumplimiento sectorial |
+| Fases 2, 5 y 7 | Sin empezar. El módulo de facturación aparece en Configuración, pero su interruptor solo muestra el selector de comprobante en Ventas: no emite nada |
 
-**Pruebas:** `php tests/smoke.php` (50 comprobaciones). Para el chatbot, ver la cabecera de `tests/chatbot.php` (39).
+**Pruebas:** `php tests/smoke.php` (50), `php tests/inventario.php` (75), `tests/chatbot.php` (39, ver su cabecera) y `tests/ui.cjs` en Edge real (51, ver su cabecera).
 
 **Pendiente del dueño:**
 
@@ -35,6 +36,7 @@ Actualizado el 2026-11-06. Todo está en commits locales, sin publicar.
 - **1.4:** un grifero aún puede consultar por ID el detalle o PDF del turno de otro.
 - **1.8:** las contraseñas ya no pasan por `htmlspecialchars`; el resto de datos, sí.
 - **1.10:** sigue habiendo controladores que muestran `getMessage()`.
+- **Ventas y caja:** las ventas individuales aún no alimentan el cuadre de caja del turno; solo se concilian en galones con las lecturas.
 - **Permisos:** griferos ya no pueden anular, editar ni eliminar créditos, ni eliminar clientes. Hay que confirmar que es lo deseado.
 
 ### Parche de seguridad para producción
@@ -216,12 +218,12 @@ Es la base de lo que pediste: que todo se maneje desde el menú.
 
 Reglas legales y tributarias: validar con el contador antes de implementar.
 
-- [ ] **4.1 Tanques e inventario:** capacidad, stock teórico, alertas de mínimo y kardex de combustible.
-- [ ] **4.2 Varillaje y mermas:** medición diaria, stock físico contra teórico y tolerancias.
-- [ ] **4.3 Compras y proveedores:** pedidos, recepción de cisterna, descarga a tanque, documentos y cuentas por pagar.
+- [x] **4.1 Tanques e inventario:** capacidad, stock teórico, alertas de mínimo y kardex de combustible.
+- [x] **4.2 Varillaje y mermas:** medición diaria, stock físico contra teórico y tolerancias.
+- [x] **4.3 Compras y proveedores:** pedidos, recepción de cisterna, descarga a tanque, documentos y cuentas por pagar.
 - [ ] **4.4 Precios:** historial por producto, vigencia programada, y turnos que conservan el precio aplicado. Revisar el caso de un cambio de precio durante un turno.
 - [ ] **4.5 Caja:** apertura, arqueo por turno, faltantes y sobrantes por grifero, depósitos bancarios y conciliación Yape/POS.
-- [ ] **4.6 Ventas individuales:** registro de cada venta con surtidor, cliente y placa, conciliado con las lecturas del turno. **Es requisito de la facturación.**
+- [x] **4.6 Ventas individuales:** registro de cada venta con surtidor, cliente y placa, conciliado con las lecturas del turno. **Es requisito de la facturación.**
 - [ ] **4.7 Tienda y lubricantes:** productos no combustibles con stock.
 - [ ] **4.8 Flotas y créditos avanzados:** línea de crédito con bloqueo, placas y conductores autorizados, estado de cuenta en PDF y envío por correo.
 - [ ] **4.9 Gastos e ingresos:** integrar al menú los módulos existentes y añadir categorías.
@@ -309,3 +311,6 @@ Permite preguntar en lenguaje natural, por ejemplo: «¿Cuántos galones de Prem
 | 2026-11-06 | Facturación e IA detrás de interfaces de proveedor | Son opcionales y deben poder cambiar de proveedor |
 | 2026-11-06 | Esquema provisional reconstruido desde el código | No hay volcado de producción disponible; se contrasta en 0.5 |
 | 2026-11-06 | El chatbot usa solo consultas predefinidas, sin SQL libre | Menos riesgo; 6.4 queda para cuando haga falta |
+| 2026-11-06 | Stock y ventas se aplican al cierre en un punto de guardado propio | Un fallo del módulo no debe impedir cerrar un turno |
+| 2026-11-06 | Una compra que excede la capacidad del tanque avisa, pero no bloquea | El stock teórico puede estar desfasado respecto al real |
+| 2026-11-06 | Nuevas tablas sin claves foráneas hacia tablas heredadas | Sus tipos no están contrastados con producción |

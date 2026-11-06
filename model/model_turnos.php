@@ -1,5 +1,6 @@
 <?php
 require_once 'model_conexion.php';
+require_once 'model_eventos_turno.php';
 
 class Modelo_Turnos extends conexionBD {
     
@@ -433,7 +434,9 @@ class Modelo_Turnos extends conexionBD {
             
             // Actualizar las lecturas actuales de los surtidores (usando la misma conexión)
             $this->Actualizar_Lecturas_Surtidores($id_reporte, $c);
-            
+
+            Eventos_Turno::Al_Cerrar($c, (int) $id_reporte);
+
             $c->commit();
             return 1;
         } catch (Exception $e) {
@@ -709,7 +712,9 @@ class Modelo_Turnos extends conexionBD {
             
             // 1. Revertir las lecturas de los surtidores ANTES de eliminar
             $this->Revertir_Lecturas_Surtidores($id_reporte, $c);
-            
+
+            Eventos_Turno::Al_Eliminar($c, (int) $id_reporte);
+
             // 2. Eliminar créditos asociados (que no tienen pagos, ya verificado)
             $sql_delete_creditos = "DELETE FROM ventas_credito WHERE id_reporte = ?";
             $stmt_creditos = $c->prepare($sql_delete_creditos);

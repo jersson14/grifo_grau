@@ -1,5 +1,6 @@
 <?php
 require_once 'model_conexion.php';
+require_once 'model_configuracion.php';
 
 /**
  * Consultas de solo lectura que el chatbot puede ejecutar. El modelo elige la herramienta y
@@ -63,6 +64,15 @@ class Modelo_IA_Herramientas extends conexionBD
             ],
         ];
 
+        if (Modelo_Configuracion::Modulo_Activo('inventario')) {
+            $definiciones[] = [
+                'name' => 'stock_tanques',
+                'description' => 'Stock teórico actual de cada tanque activo, con su capacidad, stock mínimo y si está bajo.',
+                'inputSchema' => ['type' => 'object', 'additionalProperties' => false, 'properties' => (object) [], 'required' => []],
+                'strict' => true,
+            ];
+        }
+
         if ($this->rol === 'ADMINISTRADOR') {
             $definiciones[] = [
                 'name' => 'ranking_griferos',
@@ -93,6 +103,15 @@ class Modelo_IA_Herramientas extends conexionBD
                 break;
             case 'precios_y_surtidores':
                 $filas = $this->Precios();
+                break;
+            case 'stock_tanques':
+                if (!Modelo_Configuracion::Modulo_Activo('inventario')) {
+                    throw new InvalidArgumentException('El módulo de inventario está desactivado.');
+                }
+                $filas = $this->Consultar("SELECT t.nombre AS tanque, p.nombre AS combustible, t.stock_actual, t.capacidad_galones, t.stock_minimo,
+                                                  IF(t.stock_actual <= t.stock_minimo, 'SI', 'NO') AS stock_bajo
+                                           FROM tanques t LEFT JOIN productos p ON t.id_producto = p.id_producto
+                                           WHERE t.estado = 'ACTIVO' ORDER BY t.nombre", []);
                 break;
             case 'ranking_griferos':
                 if ($this->rol !== 'ADMINISTRADOR') {

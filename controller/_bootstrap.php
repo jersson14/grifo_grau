@@ -74,6 +74,33 @@ function modulo_activo(string $codigo): bool
     return Modelo_Configuracion::Modulo_Activo($codigo);
 }
 
+/**
+ * Ejecuta la acción de un controlador y responde en JSON. Los errores de validación
+ * (DomainException) llegan al usuario; cualquier otro se registra y se oculta.
+ */
+function responder_json(callable $accion): void
+{
+    header('Content-Type: application/json; charset=utf-8');
+    try {
+        $datos = $accion();
+        echo json_encode(['success' => true] + (is_array($datos) ? $datos : []));
+    } catch (DomainException $e) {
+        echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+    } catch (Throwable $e) {
+        error_log(ruta_script_actual() . ': ' . $e->getMessage());
+        echo json_encode(['success' => false, 'message' => 'No se pudo completar la operación.']);
+    }
+}
+
+/** Rango de fechas de un filtro. Por defecto, el mes en curso. */
+function rango_fechas(): array
+{
+    $valida = fn($f) => is_string($f) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $f);
+    $desde = $_POST['desde'] ?? '';
+    $hasta = $_POST['hasta'] ?? '';
+    return [$valida($desde) ? $desde : date('Y-m-01'), $valida($hasta) ? $hasta : date('Y-m-d')];
+}
+
 function token_csrf(): string
 {
     if (empty($_SESSION['CSRF'])) {
@@ -112,8 +139,10 @@ function verificar_acceso(): void
         denegar_acceso(403, 'No tiene permisos para realizar esta acción.');
     }
 
-    if (isset($permisos['modulos'][$ruta]) && !modulo_activo($permisos['modulos'][$ruta])) {
-        denegar_acceso(403, 'Este módulo está desactivado.');
+    foreach ($permisos['modulos'] as $patron => $modulo) {
+        if (ruta_coincide($ruta, [$patron]) && !modulo_activo($modulo)) {
+            denegar_acceso(403, 'Este módulo está desactivado.');
+        }
     }
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {

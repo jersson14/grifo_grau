@@ -12,6 +12,11 @@ return [
     'modulos' => [
         'controller/ia/controlador_preguntar.php'            => 'chatbot_ia',
         'controller/ia/controlador_limpiar_conversacion.php' => 'chatbot_ia',
+        'controller/inventario/*' => 'inventario',
+        'view/inventario/*'       => 'inventario',
+        'controller/compras/*'    => 'inventario',
+        'controller/ventas/*'     => 'ventas',
+        'view/ventas/*'           => 'ventas',
     ],
 
     'publico' => [
@@ -106,5 +111,15 @@ return [
         // El rol con acceso real al chatbot se configura en la interfaz (ia_roles).
         'controller/ia/controlador_preguntar.php',
         'controller/ia/controlador_limpiar_conversacion.php',
+
+        'view/inventario/view_varillaje.php',
+        'controller/inventario/controlador_listar_tanques.php',
+        'controller/inventario/controlador_registrar_varillaje.php',
+        'controller/inventario/controlador_listar_varillajes.php',
+
+        'view/ventas/view_ventas.php',
+        'controller/ventas/controlador_datos_formulario.php',
+        'controller/ventas/controlador_registrar_venta.php',
+        'controller/ventas/controlador_listar_ventas.php',
     ],
 ];

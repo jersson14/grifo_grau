@@ -117,6 +117,47 @@ require_once __DIR__ . '/../controller/_bootstrap.php';
                 </ul>
               </li>
 
+              <?php if (modulo_activo('ventas')) { ?>
+              <li class="nav-item">
+                <a href="#" onclick="cargar_contenido('contenido_principal','ventas/view_ventas.php')" class="nav-link">
+                  <i class="nav-icon fas fa-cash-register"></i>
+                  <p style="color:white">Ventas</p>
+                </a>
+              </li>
+              <?php } ?>
+
+              <?php if (modulo_activo('inventario')) { ?>
+              <li class="nav-item has-treeview">
+                <a href="#" class="nav-link">
+                  <i class="nav-icon fas fa-oil-can"></i>
+                  <p style="color:white">
+                    Inventario
+                    <i class="right fas fa-angle-left"></i>
+                  </p>
+                </a>
+                <ul class="nav nav-treeview">
+                  <li class="nav-item">
+                    <a href="#" onclick="cargar_contenido('contenido_principal','inventario/view_tanques.php')" class="nav-link">
+                      <i class="nav-icon far fa-circle"></i>
+                      <p style="color:white">Tanques y kardex</p>
+                    </a>
+                  </li>
+                  <li class="nav-item">
+                    <a href="#" onclick="cargar_contenido('contenido_principal','inventario/view_varillaje.php')" class="nav-link">
+                      <i class="nav-icon far fa-circle"></i>
+                      <p style="color:white">Varillaje</p>
+                    </a>
+                  </li>
+                  <li class="nav-item">
+                    <a href="#" onclick="cargar_contenido('contenido_principal','inventario/view_compras.php')" class="nav-link">
+                      <i class="nav-icon far fa-circle"></i>
+                      <p style="color:white">Compras y proveedores</p>
+                    </a>
+                  </li>
+                </ul>
+              </li>
+              <?php } ?>
+
               <!-- CRÉDITOS/VALES -->
               <li class="nav-item has-treeview">
                 <a href="#" class="nav-link">
@@ -222,6 +263,24 @@ require_once __DIR__ . '/../controller/_bootstrap.php';
                   <p style="color:white">Registrar Turno</p>
                 </a>
               </li>
+
+              <?php if (modulo_activo('ventas')) { ?>
+              <li class="nav-item">
+                <a href="#" onclick="cargar_contenido('contenido_principal','ventas/view_ventas.php')" class="nav-link">
+                  <i class="nav-icon fas fa-cash-register"></i>
+                  <p style="color:white">Ventas</p>
+                </a>
+              </li>
+              <?php } ?>
+
+              <?php if (modulo_activo('inventario')) { ?>
+              <li class="nav-item">
+                <a href="#" onclick="cargar_contenido('contenido_principal','inventario/view_varillaje.php')" class="nav-link">
+                  <i class="nav-icon fas fa-ruler-vertical"></i>
+                  <p style="color:white">Varillaje</p>
+                </a>
+              </li>
+              <?php } ?>
 
               <!-- MIS CRÉDITOS -->
               <li class="nav-item">
@@ -605,6 +664,7 @@ require_once __DIR__ . '/../controller/_bootstrap.php';
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="../js/console_utilidades.js?rev=<?php echo time(); ?>"></script>
   <?php if ($chat_visible) { ?><script src="../js/console_chatbot.js?rev=<?php echo time(); ?>"></script><?php } ?>
 
   <script>

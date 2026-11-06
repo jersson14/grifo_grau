@@ -3,7 +3,8 @@
 return [
     "CREATE PROCEDURE SP_LISTAR_USUARIO()
      SELECT id_usuario, dni_usuario, usu_nombre, usu_apellido, usu_email, usu_telefono, usu_direccion,
-            usu_foto, usu_usuario, usu_usuario AS USUARIO, usu_rol, usu_estatus, created_at
+            usu_foto, usu_usuario, usu_usuario AS USUARIO, usu_rol, usu_estatus, created_at,
+            DATE_FORMAT(created_at, '%d/%m/%Y') AS fecha_formateada
      FROM usuario ORDER BY id_usuario DESC",
 
     "CREATE PROCEDURE SP_REGISTRAR_USUARIO(

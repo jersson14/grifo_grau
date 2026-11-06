@@ -63,7 +63,7 @@ foreach ($archivos as $archivo) {
 echo "Migraciones aplicadas: $nuevas\n";
 
 if ($vacia && in_array('--demo', $argv, true)) {
-    $usuario = $pdo->prepare("INSERT INTO usuario (usu_nombre, usu_apellido, usu_usuario, usu_contrasenia, usu_rol) VALUES (?, ?, ?, ?, ?)");
+    $usuario = $pdo->prepare("INSERT INTO usuario (usu_nombre, usu_apellido, usu_usuario, usu_contrasenia, usu_rol, usu_foto) VALUES (?, ?, ?, ?, ?, 'img/avatar.png')");
     $usuario->execute(['ADMIN', 'DEMO', 'admin', password_hash('admin123', PASSWORD_DEFAULT), 'ADMINISTRADOR']);
     $usuario->execute(['GRIFERO', 'UNO', 'grifero1', password_hash('grifero123', PASSWORD_DEFAULT), 'GRIFERO']);
     $usuario->execute(['GRIFERO', 'DOS', 'grifero2', password_hash('grifero123', PASSWORD_DEFAULT), 'GRIFERO']);

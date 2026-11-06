@@ -1,0 +1,208 @@
+// Recorre las pantallas en Edge real como lo haría una persona.
+// Uso: instala puppeteer-core en una carpeta fuera del repo y ejecuta: node tests/ui.cjs <esa carpeta>
+// Requiere la base de demostración sin tanques, ventas ni módulos activos. Deja datos y módulos encendidos.
+const path = require('path');
+const puppeteer = require(path.join(process.argv[2], 'node_modules', 'puppeteer-core'));
+const SALIDA = process.argv[3] || require('os').tmpdir();
+const BASE = 'http://localhost/grifo_grau';
+
+let fallos = 0, total = 0;
+const comprobar = (n, ok, d = '') => { total++; if (!ok) fallos++; console.log((ok ? '  ok    ' : '  FALLA ') + n + (ok || !d ? '' : ' -> ' + d)); };
+const espera = ms => new Promise(r => setTimeout(r, ms));
+
+(async () => {
+  const navegador = await puppeteer.launch({ executablePath: 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', headless: 'new', args: ['--window-size=1366,850'] });
+
+  async function sesion(usuario, clave) {
+    const ctx = await navegador.createBrowserContext();
+    const p = await ctx.newPage();
+    await p.setViewport({ width: 1366, height: 850 });
+    p.errores = [];
+    p.on('dialog', async d => { p.errores.push('DIALOGO: ' + d.message().slice(0, 170)); await d.dismiss(); });
+    p.on('pageerror', e => p.errores.push('JS: ' + e.message));
+    p.on('console', m => { if (m.type() === 'error' && !/favicon/.test(m.text())) p.errores.push('consola: ' + m.text()); });
+    p.on('response', r => { if (r.status() >= 400 && r.url().includes('grifo_grau')) p.errores.push(r.status() + ' ' + r.url().replace(BASE, '')); });
+    await p.goto(BASE + '/', { waitUntil: 'networkidle2' });
+    await p.type('#txt_usuario', usuario);
+    await p.type('#txt_contra', clave);
+    await p.evaluate(() => Iniciar_Sesion());
+    await p.waitForFunction(() => location.href.includes('view/index.php'), { timeout: 15000 });
+    await p.waitForNetworkIdle({ idleTime: 600, timeout: 20000 }).catch(() => {});
+    return p;
+  }
+  const abrir = async (p, vista) => {
+    await p.evaluate(v => cargar_contenido('contenido_principal', v), vista);
+    await p.waitForNetworkIdle({ idleTime: 500, timeout: 15000 }).catch(() => {});
+    await espera(300);
+  };
+  const cerrarAviso = async p => { await espera(200); await p.evaluate(() => window.Swal && Swal.close()); await espera(500); };
+  const clicTexto = (p, sel, texto) => p.evaluate((s, t) => { const b = [...document.querySelectorAll(s)].find(x => x.textContent.includes(t)); if (!b) throw new Error('no hay ' + t); b.click(); }, sel, texto);
+  const abrirModalListo = async (p, id) => { await p.waitForFunction(i => document.querySelector(i).classList.contains('show'), { timeout: 5000 }, id); await espera(300); };
+  const ocultoModal = async (p, id) => { await p.waitForFunction(i => !document.querySelector(i).classList.contains('show'), { timeout: 5000 }, id); await espera(400); };
+  const pantalla = (p, n) => p.screenshot({ path: path.join(SALIDA, n + '.png') });
+
+  console.log('\n1. Administrador: login y pantallas existentes');
+  const a = await sesion('admin', 'admin123');
+  comprobar('el login por la interfaz entra al panel', a.url().includes('view/index.php'));
+  comprobar('el nombre de la sesión aparece', (await a.content()).includes('ADMIN DEMO'));
+  for (const v of ['reportes/view_dashboard.php', 'turnos/view_registrar_turno.php', 'turnos/view_historial.php', 'creditos/view_creditos_pendientes.php',
+    'reportes/view_ventas_por_fecha.php', 'reportes/view_listado_reportes.php', 'reportes/view_validar_reportes.php',
+    'clientes/view_clientes.php', 'productos/view_productos.php', 'surtidores/view_surtidores.php', 'usuario/view_usuario.php', 'usuario/view_mi_perfil.php']) {
+    a.errores.length = 0;
+    await abrir(a, v);
+    comprobar('abre ' + v + ' sin errores', a.errores.length === 0, a.errores.slice(0, 3).join(' | '));
+  }
+
+  console.log('\n2. Configuración y módulos');
+  a.errores.length = 0;
+  await abrir(a, 'configuracion/view_configuracion.php');
+  await a.waitForSelector('#modulo_inventario');
+  comprobar('lista los módulos', (await a.$$('#lista_modulos input')).length === 4);
+  comprobar('carga los valores', await a.$eval('#igv_porcentaje', e => e.value) === '18');
+  await a.click('a[href="#tab_operacion"]'); await espera(400);
+  await a.evaluate(() => { document.getElementById('credito_dias').value = '45'; });
+  await a.evaluate(() => $('#tab_operacion .form_config').trigger('submit'));
+  await a.waitForNetworkIdle({ idleTime: 400 }); await cerrarAviso(a);
+  await pantalla(a, '01_configuracion');
+  const guardado = await a.evaluate(() => $.post('../controller/configuracion/controlador_obtener.php', null, null, 'json'));
+  comprobar('guarda desde el formulario', guardado.valores.credito_dias === '45');
+  await a.evaluate(() => $.post('../controller/configuracion/controlador_guardar.php', { credito_dias: '30' }));
+  for (const m of ['inventario', 'ventas', 'chatbot_ia']) {
+    const nav = a.waitForNavigation({ waitUntil: 'networkidle2', timeout: 15000 });
+    await a.evaluate(i => { const e = document.getElementById(i); e.click(); }, 'modulo_' + m);
+    await nav;
+    await a.waitForNetworkIdle({ idleTime: 400 }).catch(() => {});
+    if (m !== 'chatbot_ia') { await abrir(a, 'configuracion/view_configuracion.php'); await a.waitForSelector('#modulo_ventas'); }
+  }
+  const menu = await a.evaluate(() => document.querySelector('.main-sidebar').innerText);
+  comprobar('al activar, Ventas e Inventario aparecen en el menú', menu.includes('Ventas') && menu.includes('Inventario'), menu.slice(0, 200));
+  comprobar('al activar, aparece el chat', !!(await a.$('#chat_abrir')));
+  comprobar('sin errores en Configuración', a.errores.length === 0, a.errores.slice(0, 3).join(' | '));
+
+  console.log('\n3. Tanques');
+  a.errores.length = 0;
+  await abrir(a, 'inventario/view_tanques.php');
+  await a.click('#btn_nuevo_tanque'); await abrirModalListo(a, '#modal_tanque');
+  await a.type('#tanque_nombre', 'Tanque Diesel 1');
+  await a.waitForFunction(() => document.querySelectorAll('#tanque_producto option').length > 1);
+  await a.select('#tanque_producto', await a.$eval('#tanque_producto', s => [...s.options].find(o => o.text.includes('DIESEL')).value));
+  await a.type('#tanque_capacidad', '5000');
+  await a.$eval('#tanque_minimo', e => e.value = '');  await a.type('#tanque_minimo', '500');
+  await a.$eval('#tanque_inicial', e => e.value = ''); await a.type('#tanque_inicial', '2000');
+  await pantalla(a, '02_modal_tanque');
+  await a.click('#form_tanque button[type=submit]');
+  await ocultoModal(a, '#modal_tanque'); await cerrarAviso(a);
+  await a.waitForNetworkIdle({ idleTime: 400 });
+  const filaT = await a.$eval('#cuerpo_tanques', e => e.innerText);
+  comprobar('el tanque aparece en la tabla', filaT.includes('Tanque Diesel 1') && filaT.includes('2,000.000'), filaT);
+  comprobar('aparece su tarjeta', (await a.$eval('#tarjetas_tanques', e => e.innerText)).includes('Tanque Diesel 1'));
+  await pantalla(a, '03_tanques');
+  await a.click('a[href="#tab_asignacion"]'); await espera(500);
+  comprobar('lista los surtidores para asignar', (await a.$$('#cuerpo_asignacion tr')).length === 12);
+  comprobar('sin errores en Tanques', a.errores.length === 0, a.errores.slice(0, 3).join(' | '));
+
+  console.log('\n4. Proveedor y compra, con un nombre malicioso');
+  a.errores.length = 0;
+  await abrir(a, 'inventario/view_compras.php');
+  await a.click('a[href="#tab_proveedores"]'); await espera(500);
+  await a.click('#btn_nuevo_proveedor'); await abrirModalListo(a, '#modal_proveedor');
+  await a.type('#prov_ruc', '20100000001');
+  await a.type('#prov_razon', '<img src=x onerror="window.__xss=1">PROVEEDOR');
+  await a.click('#form_proveedor button[type=submit]');
+  await ocultoModal(a, '#modal_proveedor'); await cerrarAviso(a); await a.waitForNetworkIdle({ idleTime: 400 });
+  comprobar('un nombre con HTML se muestra como texto', (await a.$eval('#cuerpo_proveedores', e => e.innerText)).includes('<img') && !(await a.evaluate(() => window.__xss)));
+  await a.click('a[href="#tab_compras"]'); await espera(500);
+  await a.click('#btn_nueva_compra'); await abrirModalListo(a, '#modal_compra');
+  await a.select('#compra_proveedor', await a.$eval('#compra_proveedor', s => s.options[1].value));
+  await a.type('#compra_numero', 'F001-100');
+  await a.type('.linea_galones', '1000');
+  await a.type('.linea_costo', '12.5');
+  await a.$eval('#compra_percepcion', e => e.value = ''); await a.type('#compra_percepcion', '25');
+  comprobar('calcula el total en pantalla', (await a.$eval('#compra_total', e => e.innerText)).includes('12,525.00'), await a.$eval('#compra_total', e => e.innerText));
+  await pantalla(a, '04_modal_compra');
+  await a.click('#form_compra button[type=submit]');
+  await ocultoModal(a, '#modal_compra'); await cerrarAviso(a); await a.waitForNetworkIdle({ idleTime: 400 });
+  comprobar('la compra aparece', (await a.$eval('#cuerpo_compras', e => e.innerText)).includes('F001-100'));
+  await pantalla(a, '05_compras');
+  await clicTexto(a, '#cuerpo_compras button', 'Pagar'); await abrirModalListo(a, '#modal_pago');
+  await a.$eval('#pago_monto', e => e.value = ''); await a.type('#pago_monto', '5000');
+  await a.click('#form_pago button[type=submit]');
+  await ocultoModal(a, '#modal_pago'); await cerrarAviso(a); await a.waitForNetworkIdle({ idleTime: 400 });
+  comprobar('el pago actualiza el saldo', (await a.$eval('#cuerpo_compras', e => e.innerText)).includes('7,525.00'));
+  await abrir(a, 'inventario/view_tanques.php');
+  comprobar('el stock subió con la compra', (await a.$eval('#cuerpo_tanques', e => e.innerText)).includes('3,000.000'));
+  await a.click('a[href="#tab_kardex"]'); await espera(400);
+  await a.click('#form_kardex button'); await a.waitForNetworkIdle({ idleTime: 400 });
+  comprobar('el kardex muestra la compra', (await a.$eval('#cuerpo_kardex', e => e.innerText)).includes('COMPRA'));
+  comprobar('sin errores en Compras', a.errores.length === 0, a.errores.slice(0, 3).join(' | '));
+
+  console.log('\n5. Grifero: venta y varillaje');
+  const g = await sesion('grifero1', 'grifero123');
+  const menuG = await g.evaluate(() => document.querySelector('.main-sidebar').innerText);
+  comprobar('ve Ventas y Varillaje', menuG.includes('Ventas') && menuG.includes('Varillaje'));
+  comprobar('no ve Configuración ni Tanques', !menuG.includes('Configuración') && !menuG.includes('Tanques'));
+  g.errores.length = 0;
+  await abrir(g, 'ventas/view_ventas.php');
+  await g.waitForFunction(() => document.querySelectorAll('#venta_surtidor option').length > 1);
+  await g.select('#venta_surtidor', await g.$eval('#venta_surtidor', s => [...s.options].find(o => o.text.includes('DIESEL')).value));
+  await g.type('#venta_valor', '150');
+  comprobar('calcula galones al escribir', (await g.$eval('#venta_calculo', e => e.innerText)).includes('10.000'), await g.$eval('#venta_calculo', e => e.innerText));
+  await g.select('#venta_pago', await g.$eval('#venta_pago', s => [...s.options].find(o => o.text === 'YAPE').value));
+  comprobar('Yape pide código de operación', await g.$eval('#venta_codigo', e => e.required && e.offsetParent !== null));
+  await g.type('#venta_codigo', 'OP123');
+  await g.type('#venta_placa', 'abc-123');
+  await pantalla(g, '06_venta');
+  await g.click('#form_venta button[type=submit]');
+  await g.waitForNetworkIdle({ idleTime: 400 }); await cerrarAviso(g); await g.waitForNetworkIdle({ idleTime: 400 });
+  const ventas = await g.$eval('#cuerpo_ventas', e => e.innerText);
+  comprobar('la venta aparece en Mis ventas', ventas.includes('150.00') && ventas.includes('ABC-123'), ventas);
+  await pantalla(g, '07_ventas_lista');
+  await abrir(g, 'inventario/view_varillaje.php');
+  await g.waitForFunction(() => document.querySelectorAll('#var_tanque option').length > 1);
+  await g.select('#var_tanque', await g.$eval('#var_tanque', s => s.options[1].value));
+  await g.type('#var_galones', '2900');
+  await g.click('#form_varillaje button[type=submit]');
+  await g.waitForNetworkIdle({ idleTime: 400 }); await espera(300);
+  const aviso = await g.evaluate(() => Swal.getTitle() && Swal.getTitle().innerText);
+  comprobar('avisa de la diferencia fuera de tolerancia', aviso === 'Diferencia fuera de tolerancia', aviso);
+  await cerrarAviso(g); await g.waitForNetworkIdle({ idleTime: 300 });
+  const vars = await g.$eval('#cuerpo_varillajes', e => e.innerText);
+  comprobar('la medición aparece, sin botón de ajuste para el grifero', vars.includes('2,900.000') && !vars.includes('Ajustar'), vars);
+  comprobar('sin errores en pantallas del grifero', g.errores.length === 0, g.errores.slice(0, 3).join(' | '));
+  g.errores.length = 0;
+  for (const v of ['turnos/view_registrar_turno.php', 'creditos/view_creditos_pendientes.php', 'reportes/view_mis_reportes.php', 'clientes/view_clientes.php', 'usuario/view_mi_perfil.php', 'reportes/view_dashboard.php']) {
+    await abrir(g, v);
+    comprobar('grifero abre ' + v, g.errores.length === 0, g.errores.slice(0, 3).join(' | '));
+    g.errores.length = 0;
+  }
+
+  console.log('\n6. Administrador: ajuste de varillaje y chat');
+  a.errores.length = 0;
+  await abrir(a, 'inventario/view_varillaje.php');
+  await a.waitForFunction(() => document.querySelector('#cuerpo_varillajes').innerText.includes('Ajustar'));
+  await clicTexto(a, '#cuerpo_varillajes button', 'Ajustar');
+  await espera(400);
+  await a.evaluate(() => Swal.clickConfirm());
+  await a.waitForNetworkIdle({ idleTime: 400 }); await cerrarAviso(a); await a.waitForNetworkIdle({ idleTime: 300 });
+  comprobar('aplica el ajuste', (await a.$eval('#cuerpo_varillajes', e => e.innerText)).includes('Ajustado'));
+  await a.click('#chat_abrir'); await espera(300);
+  comprobar('el chat se abre', await a.$eval('#chat_panel', e => !e.classList.contains('d-none')));
+  await a.type('#chat_entrada', '¿Cuánto se vendió hoy?');
+  await a.keyboard.press('Enter');
+  await a.waitForFunction(() => { const b = document.querySelectorAll('#chat_mensajes .chat_bot'); return b[b.length - 1].innerText !== 'Consultando…'; }, { timeout: 30000 });
+  const respuesta = await a.evaluate(() => { const b = document.querySelectorAll('#chat_mensajes .chat_bot'); return b[b.length - 1].innerText; });
+  comprobar('sin clave configurada, explica qué falta', respuesta.includes('clave'), respuesta);
+  await pantalla(a, '08_chat');
+  comprobar('sin errores', a.errores.length === 0, a.errores.slice(0, 3).join(' | '));
+
+  console.log('\n7. Sesión vencida y cierre');
+  await a.evaluate(() => { window.__marca = 1; });
+  await g.goto(BASE + '/controller/usuario/controlador_cerrar_sesion.php', { waitUntil: 'networkidle2' });
+  comprobar('cerrar sesión vuelve al login', !!(await g.$('#txt_usuario')));
+  await g.goto(BASE + '/view/index.php', { waitUntil: 'networkidle2' });
+  comprobar('el panel sin sesión redirige al login', !!(await g.$('#txt_usuario')));
+
+  await navegador.close();
+  console.log(`\n${total} comprobaciones, ${fallos} fallidas`);
+  process.exit(fallos ? 1 : 0);
+})().catch(e => { console.error('ERROR', e.message); process.exit(2); });

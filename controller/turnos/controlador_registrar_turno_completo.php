@@ -261,7 +261,9 @@ try {
                            WHERE lt.id_reporte = ?";
     $query_update_surtidor = $c->prepare($sql_update_surtidor);
     $query_update_surtidor->execute(array($id_reporte));
-    
+
+    Eventos_Turno::Al_Cerrar($c, (int) $id_reporte);
+
     // COMMIT
     $c->commit();
     
