@@ -1,5 +1,6 @@
 <?php
 require_once 'model_conexion.php';
+require_once 'model_precios.php';
 
 class Modelo_Productos extends conexionBD {
     
@@ -45,22 +46,27 @@ class Modelo_Productos extends conexionBD {
     }
 
     // MODIFICAR PRODUCTO
-    public function Modificar_Producto($id, $nombre, $tipo, $precio) {
+    public function Modificar_Producto($id, $nombre, $tipo, $precio, $id_usuario = null) {
         $c = conexionBD::conexionPDO();
-        $sql = "UPDATE productos SET 
-                    nombre = ?,
-                    tipo = ?,
-                    precio_actual = ?,
-                    updated_at = NOW()
-                WHERE id_producto = ?";
-        $query = $c->prepare($sql);
-        $resultado = $query->execute(array($nombre, $tipo, $precio, $id));
-        if ($resultado) {
+        $c->beginTransaction();
+        try {
+            $actual = $c->prepare("SELECT precio_actual FROM productos WHERE id_producto = ? FOR UPDATE");
+            $actual->execute(array($id));
+            $anterior = $actual->fetchColumn();
+
+            $query = $c->prepare("UPDATE productos SET nombre = ?, tipo = ?, precio_actual = ?, updated_at = NOW() WHERE id_producto = ?");
+            $query->execute(array($nombre, $tipo, $precio, $id));
+
+            if ($anterior !== false && abs((float) $anterior - (float) $precio) > 0.0005) {
+                Modelo_Precios::Registrar_Cambio($c, (int) $id, (float) $anterior, (float) $precio, $id_usuario === null ? null : (int) $id_usuario);
+            }
+            $c->commit();
             return 1;
-        } else {
+        } catch (Exception $e) {
+            $c->rollBack();
+            error_log("Error al modificar producto: " . $e->getMessage());
             return 0;
         }
-        conexionBD::cerrar_conexion();
     }
 
     // CAMBIAR ESTADO
@@ -93,17 +99,18 @@ class Modelo_Productos extends conexionBD {
     // HISTORIAL DE CAMBIOS DE PRECIOS
     public function Historial_Precios() {
         $c = conexionBD::conexionPDO();
-        $sql = "SELECT 
+        $sql = "SELECT
                     p.nombre,
                     p.tipo,
-                    p.precio_actual,
-                    p.updated_at as fecha_cambio,
-                    CONCAT(u.usu_nombre, ' ', u.usu_apellido) as modificado_por
-                FROM productos p
-                LEFT JOIN usuario u ON p.id_usuario = u.id_usuario
-                WHERE p.updated_at IS NOT NULL
-                ORDER BY p.updated_at DESC
-                LIMIT 50";
+                    h.precio_anterior,
+                    h.precio_nuevo as precio_actual,
+                    h.creado_en as fecha_cambio,
+                    CONCAT(COALESCE(CONCAT(u.usu_nombre, ' ', u.usu_apellido), ''), IF(h.origen = 'PROGRAMADO', ' (programado)', '')) as modificado_por
+                FROM precios_historial h
+                INNER JOIN productos p ON h.id_producto = p.id_producto
+                LEFT JOIN usuario u ON h.id_usuario = u.id_usuario
+                ORDER BY h.id_historial DESC
+                LIMIT 100";
         $arreglo = array();
         $query = $c->prepare($sql);
         $query->execute();

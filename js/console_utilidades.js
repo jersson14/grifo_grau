@@ -1,3 +1,8 @@
+// Una fecha sin hora ('2026-11-06') se interpretaría en UTC y en Lima se mostraría el día anterior.
+function Fecha_Local(valor) {
+  return new Date(/^\d{4}-\d{2}-\d{2}$/.test(valor) ? valor + 'T00:00:00' : valor);
+}
+
 // Utilidades comunes de las pantallas nuevas. Los valores se insertan como texto, nunca como HTML.
 var G = {
   post: function (url, datos, alTerminar) {

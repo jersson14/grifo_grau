@@ -1,5 +1,17 @@
 // CARGAR DASHBOARD COMPLETO
+function Cargar_Alertas() {
+    $.post('../controller/dashboard/controlador_alertas.php', function (r) {
+        var panel = $('#panel_alertas').empty();
+        (r.data || []).forEach(function (a) {
+            var enlace = $('<a href="#" class="alert-link"></a>').text(a.cantidad + ' ' + a.texto);
+            enlace.on('click', function (e) { e.preventDefault(); cargar_contenido('contenido_principal', a.vista); });
+            panel.append($('<div class="alert py-2 mb-2" role="alert"></div>').addClass('alert-' + a.nivel).append(enlace));
+        });
+    }, 'json');
+}
+
 function Cargar_Dashboard() {
+    Cargar_Alertas();
     Cargar_Indicadores_Dia();
     Cargar_Grafico_Ventas_Semana();
     Cargar_Ventas_Mes();
@@ -39,7 +51,7 @@ function Cargar_Grafico_Ventas_Semana() {
         var totales = [];
         
         data.forEach(function(item) {
-            var fecha = new Date(item.fecha_reporte);
+            var fecha = Fecha_Local(item.fecha_reporte);
             fechas.push(fecha.toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit' }));
             diesel.push(parseFloat(item.total_diesel));
             regular.push(parseFloat(item.total_regular));

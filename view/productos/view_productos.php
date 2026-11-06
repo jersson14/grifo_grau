@@ -91,7 +91,33 @@
 </div>
 
 <!-- MODAL REGISTRAR -->
-<div class="modal fade" id="modal_registro_producto" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="content">
+    <div class="container-fluid">
+        <div class="card">
+            <div class="card-header" style="background: linear-gradient(135deg, #023D77, #0266C8)">
+                <h3 class="card-title" style="color:white"><i class="fas fa-calendar-alt"></i> Programar cambio de precio</h3>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Un cambio de precio se aplica a todo el turno que se registre después. Prográmalo para el inicio de un turno.</p>
+                <form id="form_programar" class="row">
+                    <div class="col-md-4 form-group"><label for="prog_producto">Combustible</label><select class="form-control" id="prog_producto" required></select></div>
+                    <div class="col-md-3 form-group"><label for="prog_precio">Nuevo precio (S/)</label><input type="number" step="0.001" min="0.001" class="form-control" id="prog_precio" required></div>
+                    <div class="col-md-3 form-group"><label for="prog_fecha">Vigente desde</label><input type="datetime-local" class="form-control" id="prog_fecha" required></div>
+                    <div class="col-md-2 form-group d-flex align-items-end"><button class="btn btn-primary btn-block" type="submit">Programar</button></div>
+                </form>
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped">
+                        <thead><tr><th>Combustible</th><th>Precio actual</th><th>Nuevo precio</th><th>Vigente desde</th><th>Estado</th><th>Usuario</th><th></th></tr></thead>
+                        <tbody id="cuerpo_programados"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>iniciar_programacion_precios();</script>
+
+<div class="modal fade" id="modal_registro_producto"tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header" style="background: linear-gradient(135deg, #023D77, #0266C8); color:white">

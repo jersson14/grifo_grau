@@ -49,7 +49,7 @@ function Listar_Productos() {
                 "data": "created_at",
                 "render": function(data) {
                     if (data) {
-                        var fecha = new Date(data);
+                        var fecha = Fecha_Local(data);
                         return fecha.toLocaleDateString('es-PE') + ' ' + fecha.toLocaleTimeString('es-PE');
                     }
                     return '-';
@@ -59,7 +59,7 @@ function Listar_Productos() {
                 "data": "updated_at",
                 "render": function(data) {
                     if (data) {
-                        var fecha = new Date(data);
+                        var fecha = Fecha_Local(data);
                         return fecha.toLocaleDateString('es-PE') + ' ' + fecha.toLocaleTimeString('es-PE');
                     }
                     return '-';
@@ -104,15 +104,16 @@ function Listar_Historial() {
             { "data": "tipo" },
             { 
                 "data": "precio_actual",
-                "render": function(data) {
-                    return 'S/. ' + parseFloat(data).toFixed(2);
+                "render": function(data, type, fila) {
+                    var nuevo = 'S/. ' + parseFloat(data).toFixed(2);
+                    return fila.precio_anterior === null ? nuevo : 'S/. ' + parseFloat(fila.precio_anterior).toFixed(2) + ' → ' + nuevo;
                 }
             },
-            { 
+            {
                 "data": "fecha_cambio",
                 "render": function(data) {
                     if (data) {
-                        var fecha = new Date(data);
+                        var fecha = Fecha_Local(data);
                         return fecha.toLocaleDateString('es-PE') + ' ' + fecha.toLocaleTimeString('es-PE');
                     }
                     return '-';
@@ -312,3 +313,41 @@ $(document).ready(function() {
     Listar_Productos();
     Listar_Historial();
 });
+
+function iniciar_programacion_precios() {
+    var ruta = '../controller/productos/controlador_';
+
+    function listar() {
+        G.post(ruta + 'listar_programados.php', {}, function (r) {
+            G.tabla('#cuerpo_programados', r.data, [
+                function (p) { return p.producto; },
+                function (p) { return G.soles(p.precio_actual); },
+                function (p) { return G.soles(p.precio); },
+                function (p) { return p.vigente_desde; },
+                function (p) { return G.etiqueta(p.estado, p.estado === 'PENDIENTE' ? 'badge-warning' : (p.estado === 'APLICADO' ? 'badge-success' : 'badge-secondary')); },
+                function (p) { return p.usuario; },
+                function (p) {
+                    return p.estado !== 'PENDIENTE' ? '' : G.boton('Cancelar', 'btn-outline-danger', function () {
+                        G.post(ruta + 'cancelar_programado.php', { id_programado: p.id_programado }, function () { G.ok('Cambio cancelado'); listar(); });
+                    });
+                }
+            ], 'No hay cambios programados.');
+        });
+    }
+
+    $.post(ruta + 'productos_activos.php', function (r) {
+        var productos = Array.isArray(r) ? r : (r.data || []);
+        G.opciones('#prog_producto', productos, 'id_producto', function (p) { return p.nombre; }, 'Seleccione');
+    }, 'json');
+
+    $('#form_programar').on('submit', function (e) {
+        e.preventDefault();
+        G.post(ruta + 'programar_precio.php', { id_producto: $('#prog_producto').val(), precio: $('#prog_precio').val(), vigente_desde: $('#prog_fecha').val() }, function () {
+            $('#prog_precio, #prog_fecha').val('');
+            G.ok('Cambio programado');
+            listar();
+        });
+    });
+
+    listar();
+}

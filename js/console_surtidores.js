@@ -69,7 +69,7 @@ function Listar_Surtidores() {
                 "data": "updated_at",
                 "render": function(data) {
                     if (data) {
-                        var fecha = new Date(data);
+                        var fecha = Fecha_Local(data);
                         return fecha.toLocaleDateString('es-PE') + '<br>' + fecha.toLocaleTimeString('es-PE');
                     }
                     return '-';

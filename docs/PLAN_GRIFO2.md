@@ -17,12 +17,12 @@ Actualizado el 2026-11-06. Todo está en commits locales, sin publicar.
 | Área | Estado |
 |---|---|
 | Fases 0 y 1 | Base y seguridad hechas y probadas sobre el **esquema provisional**. Falta contrastar con producción |
-| Fase 3 | Hecho: panel de Configuración, módulos activables (3.1 y 3.2 parciales). Falta: menú dinámico, roles editables, página principal, catálogos |
+| Fase 3 | Hecho: panel de Configuración, módulos activables y avisos configurables en el Dashboard (3.1, 3.2 y 3.5 parciales). Falta: menú dinámico, roles editables, catálogos, widgets por rol y pantalla de auditoría |
 | Fase 6 | Chatbot funcional probado contra una **API simulada**. Falta: probarlo con una clave real (6.7) y añadir streaming |
-| Fase 4 | Hecho y probado: tanques, kardex, varillaje, compras con cuentas por pagar y ventas individuales conciliadas con lecturas (4.1, 4.2, 4.3 y 4.6). Falta: precios, caja, tienda, flotas, gastos, personal, reportes y cumplimiento sectorial |
+| Fase 4 | Hecho y probado: tanques, kardex, varillaje, compras con cuentas por pagar, ventas individuales, precios (historial y programación) y caja con arqueo y depósitos (4.1 a 4.6). Falta: tienda, flotas, gastos, personal, reportes y cumplimiento sectorial |
 | Fases 2, 5 y 7 | Sin empezar. El módulo de facturación aparece en Configuración, pero su interruptor solo muestra el selector de comprobante en Ventas: no emite nada |
 
-**Pruebas:** `php tests/smoke.php` (50), `php tests/inventario.php` (75), `tests/chatbot.php` (39, ver su cabecera) y `tests/ui.cjs` en Edge real (51, ver su cabecera).
+**Pruebas:** `php tests/smoke.php`, `php tests/inventario.php`, `php tests/caja.php`, `tests/chatbot.php` y `tests/ui.cjs` en Edge real (estos dos, ver su cabecera). `php tests/permisos_grifero.php` lista lo que las pantallas del grifero piden y no se le permite: hay que revisarlo al cambiar permisos.
 
 **Pendiente del dueño:**
 
@@ -30,13 +30,16 @@ Actualizado el 2026-11-06. Todo está en commits locales, sin publicar.
 2. Exportar el esquema de producción (tarea 0.1).
 3. Conseguir una clave de API para probar el chatbot.
 
+**Error en producción a corregir también en `main`:** las fechas sin hora (vencimiento de créditos, fecha de turno) se muestran un día antes en pantalla. Está corregido en `grifo2`, no en `hotfix/seguridad`. Los datos guardados son correctos.
+
 **Pendiente parcial en estas fases:**
 
 - **0.5:** las vistas `turno manual` usan tablas que los modelos no usan, y los controladores `dashboard/*` de `turnos` solo los llama código sin uso. Se conservan hasta confirmar con el esquema real.
 - **1.4:** un grifero aún puede consultar por ID el detalle o PDF del turno de otro.
 - **1.8:** las contraseñas ya no pasan por `htmlspecialchars`; el resto de datos, sí.
 - **1.10:** sigue habiendo controladores que muestran `getMessage()`.
-- **Ventas y caja:** las ventas individuales aún no alimentan el cuadre de caja del turno; solo se concilian en galones con las lecturas.
+- **Ventas y caja:** las ventas individuales no alteran el cuadre del turno. Se concilian en galones y, en Caja → Medios, en soles contra lo declarado. Falta decidir si deben prellenar los pagos al cerrar.
+- **Precios:** un cambio de precio se aplica a todo el turno que se registre después. No se puede dividir un turno con dos precios; por eso conviene programar los cambios al inicio de un turno.
 - **Permisos:** griferos ya no pueden anular, editar ni eliminar créditos, ni eliminar clientes. Hay que confirmar que es lo deseado.
 
 ### Parche de seguridad para producción
@@ -208,9 +211,9 @@ Es la base de lo que pediste: que todo se maneje desde el menú.
 - [ ] **3.2** Tabla `modulos` con interruptores desde la interfaz. Un módulo apagado desaparece del menú **y** su controlador responde 403.
 - [ ] **3.3** Menú dinámico guardado en base de datos: orden, íconos y visibilidad por rol, reemplazando el HTML fijo de `view/index.php`.
 - [ ] **3.4** Roles y permisos editables. Además de `ADMINISTRADOR` y `GRIFERO`, añadir `SUPERVISOR` y `CONTADOR`.
-- [ ] **3.5** Página principal configurable: widgets por rol, ventas del día, stock, créditos vencidos, turnos abiertos y alertas. Se elimina el dashboard oculto y se corrigen los indicadores.
+- [ ] **3.5** *(parcial)* Página principal configurable: widgets por rol, ventas del día, stock, créditos vencidos, turnos abiertos y alertas. Se elimina el dashboard oculto y se corrigen los indicadores.
 - [ ] **3.6** Editor de catálogos: productos, surtidores, mangueras, máquinas y tipos de pago. Hoy el sistema asume 12 surtidores en 2 máquinas; debe admitir cualquier cantidad.
-- [ ] **3.7** Bitácora de auditoría consultable: quién, qué, cuándo, antes y después.
+- [ ] **3.7** *(parcial)* Bitácora de auditoría consultable: quién, qué, cuándo, antes y después.
 - [ ] **3.8** Notificaciones internas: créditos vencidos, stock bajo y turnos sin validar.
 - [ ] **3.9** Asistente de instalación inicial para un grifo nuevo.
 
@@ -221,8 +224,8 @@ Reglas legales y tributarias: validar con el contador antes de implementar.
 - [x] **4.1 Tanques e inventario:** capacidad, stock teórico, alertas de mínimo y kardex de combustible.
 - [x] **4.2 Varillaje y mermas:** medición diaria, stock físico contra teórico y tolerancias.
 - [x] **4.3 Compras y proveedores:** pedidos, recepción de cisterna, descarga a tanque, documentos y cuentas por pagar.
-- [ ] **4.4 Precios:** historial por producto, vigencia programada, y turnos que conservan el precio aplicado. Revisar el caso de un cambio de precio durante un turno.
-- [ ] **4.5 Caja:** apertura, arqueo por turno, faltantes y sobrantes por grifero, depósitos bancarios y conciliación Yape/POS.
+- [x] **4.4 Precios:** historial por producto, vigencia programada, y turnos que conservan el precio aplicado. Revisar el caso de un cambio de precio durante un turno.
+- [x] **4.5 Caja:** apertura, arqueo por turno, faltantes y sobrantes por grifero, depósitos bancarios y conciliación Yape/POS.
 - [x] **4.6 Ventas individuales:** registro de cada venta con surtidor, cliente y placa, conciliado con las lecturas del turno. **Es requisito de la facturación.**
 - [ ] **4.7 Tienda y lubricantes:** productos no combustibles con stock.
 - [ ] **4.8 Flotas y créditos avanzados:** línea de crédito con bloqueo, placas y conductores autorizados, estado de cuenta en PDF y envío por correo.
@@ -314,3 +317,6 @@ Permite preguntar en lenguaje natural, por ejemplo: «¿Cuántos galones de Prem
 | 2026-11-06 | Stock y ventas se aplican al cierre en un punto de guardado propio | Un fallo del módulo no debe impedir cerrar un turno |
 | 2026-11-06 | Una compra que excede la capacidad del tanque avisa, pero no bloquea | El stock teórico puede estar desfasado respecto al real |
 | 2026-11-06 | Nuevas tablas sin claves foráneas hacia tablas heredadas | Sus tipos no están contrastados con producción |
+| 2026-11-06 | Al registrar un turno, el precio y la lectura inicial los decide el servidor | El navegador podía alterarlos y cambiar las ventas |
+| 2026-11-06 | Los precios programados se aplican al usarlos, no con una tarea programada | El hosting compartido puede no tener cron |
+| 2026-11-06 | Se ocultan al grifero los botones de crédito y cliente que no puede usar | Pendiente de que el dueño confirme esos permisos |

@@ -31,6 +31,9 @@ class Eventos_Turno
         self::Aislado($c, 'desvinculación de ventas', function () use ($c, $idReporte) {
             $c->prepare('UPDATE ventas SET id_reporte = NULL WHERE id_reporte = ?')->execute([$idReporte]);
         });
+        self::Aislado($c, 'eliminación del arqueo', function () use ($c, $idReporte) {
+            $c->prepare('DELETE FROM arqueos WHERE id_reporte = ?')->execute([$idReporte]);
+        });
     }
 
     private static function Activo(PDO $c, string $codigo): bool

@@ -61,7 +61,7 @@ function Listar_Clientes() {
                 "data": "created_at",
                 "render": function(data) {
                     if (data) {
-                        var fecha = new Date(data);
+                        var fecha = Fecha_Local(data);
                         return fecha.toLocaleDateString('es-PE');
                     }
                     return '-';
@@ -69,7 +69,7 @@ function Listar_Clientes() {
             },
             { "data": "usuario_registro" },
             {
-                "defaultContent": "<button class='ver btn btn-info btn-sm' title='Ver Detalle'><i class='fas fa-eye'></i></button>&nbsp;<button class='editar btn btn-warning btn-sm' title='Editar'><i class='fas fa-edit'></i></button>&nbsp;<button class='cambiar_estado btn btn-secondary btn-sm' title='Cambiar Estado'><i class='fas fa-toggle-on'></i></button>"
+                "defaultContent": "<button class='ver btn btn-info btn-sm' title='Ver Detalle'><i class='fas fa-eye'></i></button>&nbsp;<button class='editar btn btn-warning btn-sm' title='Editar'><i class='fas fa-edit'></i></button>" + ($('#txtprincipalrol').val() === 'ADMINISTRADOR' ? "&nbsp;<button class='cambiar_estado btn btn-secondary btn-sm' title='Cambiar Estado'><i class='fas fa-toggle-on'></i></button>" : '')
             }
         ],
         "language": idioma_espanol,
@@ -295,7 +295,7 @@ function Listar_Creditos_Cliente(id_cliente) {
             { 
                 "data": "created_at",
                 "render": function(data) {
-                    var fecha = new Date(data);
+                    var fecha = Fecha_Local(data);
                     return fecha.toLocaleDateString('es-PE');
                 }
             },
@@ -339,7 +339,7 @@ function Listar_Creditos_Cliente(id_cliente) {
                 "data": "fecha_vencimiento",
                 "render": function(data) {
                     if (data) {
-                        var fecha = new Date(data);
+                        var fecha = Fecha_Local(data);
                         return fecha.toLocaleDateString('es-PE');
                     }
                     return '-';

@@ -319,6 +319,7 @@
                     </div>
                 </div>
 
+                <?php if ($_SESSION['S_ROL'] === 'ADMINISTRADOR') { ?>
                 <!-- BOTÓN REVERTIR MONTO -->
                 <div class="row mb-2">
                     <div class="col-md-12">
@@ -327,6 +328,7 @@
                         </button>
                     </div>
                 </div>
+                <?php } ?>
 
                 <!-- BOTONES DE EXPORTACIÓN -->
                 <div class="row mb-3">

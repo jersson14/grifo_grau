@@ -302,7 +302,7 @@ function Listar_Reportes_Pendientes() {
             { 
                 "data": "fecha_apertura",
                 "render": function(data) {
-                    var fecha = new Date(data);
+                    var fecha = Fecha_Local(data);
                     return fecha.toLocaleDateString('es-PE');
                 }
             },

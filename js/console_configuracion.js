@@ -14,6 +14,15 @@ function cargar_configuracion() {
 
     var roles = (datos.valores.ia_roles || '').split(',');
     $('.ia_rol').each(function () { this.checked = roles.indexOf(this.value) !== -1; });
+
+    var elegidas = (datos.valores.inicio_alertas || '').split(',');
+    var lista = $('#lista_alertas').empty();
+    datos.alertas.forEach(function (a) {
+      var id = 'alerta_' + a.clave;
+      lista.append($('<div class="form-check"></div>')
+        .append($('<input type="checkbox" class="form-check-input alerta_opcion">').attr('id', id).val(a.clave).prop('checked', elegidas.indexOf(a.clave) !== -1))
+        .append($('<label class="form-check-label"></label>').attr('for', id).text(a.nombre)));
+    });
   }, 'json');
 
   cargar_empresa();
@@ -54,6 +63,7 @@ $(document).off('submit.config').on('submit.config', '.form_config', function (e
   e.preventDefault();
   var marcados = $('.ia_rol:checked').map(function () { return this.value; }).get().join(',');
   $('#ia_roles').val(marcados);
+  $('#inicio_alertas').val($('.alerta_opcion:checked').map(function () { return this.value; }).get().join(','));
 
   $.post('../controller/configuracion/controlador_guardar.php', $(this).serialize(), function (r) {
     if (r.success) {

@@ -955,7 +955,7 @@ function Cerrar_Turno_Final() {
                         // Imprimir el reporte automáticamente
                         Imprimir_Reporte(id_reporte);
                         // Redirigir al historial
-                        cargar_contenido('contenido_principal', 'turnos/view_historial.php');
+                        cargar_contenido('contenido_principal', $('#txtprincipalrol').val() === 'ADMINISTRADOR' ? 'turnos/view_historial.php' : 'reportes/view_mis_reportes.php');
                     });
                 } else {
                     Swal.fire({
@@ -1130,7 +1130,7 @@ function Listar_Historial_Turnos() {
             { 
                 "data": "fecha_reporte",
                 "render": function(data) {
-                    var fecha = new Date(data);
+                    var fecha = Fecha_Local(data);
                     return fecha.toLocaleDateString('es-PE');
                 }
             },
@@ -1640,7 +1640,7 @@ function Registrar_Turno_Completo() {
                             Imprimir_Reporte(resp.id_reporte);
                         }
                         // Redirigir al historial
-                        cargar_contenido('contenido_principal', 'turnos/view_historial.php');
+                        cargar_contenido('contenido_principal', $('#txtprincipalrol').val() === 'ADMINISTRADOR' ? 'turnos/view_historial.php' : 'reportes/view_mis_reportes.php');
                     });
                 } else {
                     Swal.fire({

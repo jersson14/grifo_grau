@@ -77,7 +77,7 @@ function Listar_Creditos_Por_Cliente() {
                 "data": "fecha_vencimiento_mas_antigua",
                 "render": function(data, type, row) {
                     if (data) {
-                        var fecha = new Date(data);
+                        var fecha = Fecha_Local(data);
                         var dias = row.dias_vencido_max;
                         var html = fecha.toLocaleDateString('es-PE');
                         if (dias > 0) {
@@ -164,7 +164,7 @@ function Ver_Vales_Cliente(id_cliente, nombre_cliente, dni, total_vales, saldo_t
             { 
                 "data": "created_at",
                 "render": function(data) {
-                    var fecha = new Date(data);
+                    var fecha = Fecha_Local(data);
                     return fecha.toLocaleDateString('es-PE');
                 }
             },
@@ -199,7 +199,7 @@ function Ver_Vales_Cliente(id_cliente, nombre_cliente, dni, total_vales, saldo_t
                 "data": "fecha_vencimiento",
                 "render": function(data, type, row) {
                     if (data) {
-                        var fecha = new Date(data);
+                        var fecha = Fecha_Local(data);
                         var dias = row.dias_vencido;
                         var html = fecha.toLocaleDateString('es-PE');
                         if (dias > 0) {
@@ -214,7 +214,7 @@ function Ver_Vales_Cliente(id_cliente, nombre_cliente, dni, total_vales, saldo_t
                 "data": "fecha_ultimo_pago",
                 "render": function(data, type, row) {
                     if (data) {
-                        var fecha = new Date(data);
+                        var fecha = Fecha_Local(data);
                         var html = fecha.toLocaleDateString('es-PE');
                         if (row.estado === 'PAGADO') {
                             return '<span class="text-success font-weight-bold">' + html + '</span>';
@@ -263,11 +263,11 @@ function Ver_Vales_Cliente(id_cliente, nombre_cliente, dni, total_vales, saldo_t
                         // Botón de pagar
                         botones = "<button class='pagar_vale btn btn-success btn-sm' title='Registrar Pago'><i class='fas fa-money-bill-wave'></i></button>&nbsp;";
                         // Botón de editar
-                        botones += "<button class='editar_vale btn btn-warning btn-sm' title='Editar'><i class='fas fa-edit'></i></button>&nbsp;";
+                        if ($("#txtprincipalrol").val() === 'ADMINISTRADOR') botones += "<button class='editar_vale btn btn-warning btn-sm' title='Editar'><i class='fas fa-edit'></i></button>&nbsp;";
                         // Botón de eliminar
-                        botones += "<button class='eliminar_vale btn btn-danger btn-sm' title='Eliminar'><i class='fas fa-trash'></i></button>&nbsp;";
+                        if ($("#txtprincipalrol").val() === 'ADMINISTRADOR') botones += "<button class='eliminar_vale btn btn-danger btn-sm' title='Eliminar'><i class='fas fa-trash'></i></button>&nbsp;";
                     }
-                    if (row.estado == 'PAGADO') {
+                    if (row.estado == 'PAGADO' && $("#txtprincipalrol").val() === 'ADMINISTRADOR') {
                         // Botón de anular pago (revertir a pendiente)
                         botones += "<button class='anular_pago_vale btn btn-danger btn-sm' title='Anular Pago'><i class='fas fa-undo'></i></button>&nbsp;";
                     }
@@ -400,7 +400,7 @@ function Listar_Creditos_Pendientes() {
             { 
                 "data": "created_at",
                 "render": function(data) {
-                    var fecha = new Date(data);
+                    var fecha = Fecha_Local(data);
                     return fecha.toLocaleDateString('es-PE');
                 }
             },
@@ -432,7 +432,7 @@ function Listar_Creditos_Pendientes() {
                 "data": "fecha_vencimiento",
                 "render": function(data, type, row) {
                     if (data) {
-                        var fecha = new Date(data);
+                        var fecha = Fecha_Local(data);
                         var dias = row.dias_vencido;
                         var html = fecha.toLocaleDateString('es-PE');
                         if (dias > 0) {
@@ -776,7 +776,7 @@ function Ver_Historial_Pagos(id_credito) {
             { 
                 "data": "fecha_pago",
                 "render": function(data) {
-                    var fecha = new Date(data);
+                    var fecha = Fecha_Local(data);
                     return fecha.toLocaleDateString('es-PE') + '<br>' + fecha.toLocaleTimeString('es-PE');
                 }
             },

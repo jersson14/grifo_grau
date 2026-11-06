@@ -21,6 +21,8 @@
 <div class="content">
     <div class="container-fluid">
         
+        <div id="panel_alertas"></div>
+
         <!-- INDICADORES DEL DÍA -->
         <div class="row">
             <div class="col-md-3">

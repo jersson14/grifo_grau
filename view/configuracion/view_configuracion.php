@@ -15,6 +15,7 @@
           <li class="nav-item"><a class="nav-link active" data-toggle="pill" href="#tab_modulos" role="tab">Módulos</a></li>
           <li class="nav-item"><a class="nav-link" data-toggle="pill" href="#tab_empresa" role="tab">Empresa</a></li>
           <li class="nav-item"><a class="nav-link" data-toggle="pill" href="#tab_operacion" role="tab">Operación e impuestos</a></li>
+          <li class="nav-item"><a class="nav-link" data-toggle="pill" href="#tab_inicio" role="tab">Página principal</a></li>
           <li class="nav-item"><a class="nav-link" data-toggle="pill" href="#tab_ia" role="tab">Chatbot de IA</a></li>
           <li class="nav-item"><a class="nav-link" data-toggle="pill" href="#tab_integraciones" role="tab">Integraciones</a></li>
         </ul>
@@ -56,6 +57,15 @@
               <div class="col-md-3 form-group"><label for="moneda_simbolo">Símbolo de moneda</label><input class="form-control" id="moneda_simbolo" name="moneda_simbolo" maxlength="5"></div>
               <div class="col-md-3 form-group"><label for="varillaje_tolerancia_pct">Tolerancia de varillaje (%)</label><input type="number" step="0.01" min="0" max="100" class="form-control" id="varillaje_tolerancia_pct" name="varillaje_tolerancia_pct"></div>
               <div class="col-12"><button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Guardar</button></div>
+            </form>
+          </div>
+
+          <div class="tab-pane fade" id="tab_inicio" role="tabpanel">
+            <p class="text-muted">Elige qué avisos ve el administrador en el Dashboard. Los de un módulo apagado no se muestran aunque estén marcados.</p>
+            <form class="form_config">
+              <div id="lista_alertas" class="mb-3"></div>
+              <input type="hidden" id="inicio_alertas" name="inicio_alertas">
+              <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Guardar</button>
             </form>
           </div>
 

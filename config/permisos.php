@@ -17,6 +17,8 @@ return [
         'controller/compras/*'    => 'inventario',
         'controller/ventas/*'     => 'ventas',
         'view/ventas/*'           => 'ventas',
+        'controller/caja/*'       => 'caja',
+        'view/caja/*'             => 'caja',
     ],
 
     'publico' => [
@@ -36,6 +38,8 @@ return [
     'griferos' => [
         'view/index.php',
         'view/turnos/view_registrar_turno.php',
+        'view/turnos/view_abrir_turno.php',
+        'view/turnos/view_cerrar_turno.php',
         'view/creditos/view_creditos_pendientes.php',
         'view/reportes/view_mis_reportes.php',
         'view/reportes/view_dashboard.php',

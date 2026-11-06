@@ -1,5 +1,6 @@
 <?php
 require_once 'model_conexion.php';
+require_once 'model_precios.php';
 
 class Modelo_Surtidores extends conexionBD {
     
@@ -100,6 +101,7 @@ class Modelo_Surtidores extends conexionBD {
     // OBTENER SURTIDORES ACTIVOS (para turnos)
     public function Obtener_Surtidores_Activos() {
         $c = conexionBD::conexionPDO();
+        Modelo_Precios::Aplicar_Vencidos($c);
         $sql = "SELECT 
                     s.id_surtidor,
                     s.numero_maquina,

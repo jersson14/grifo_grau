@@ -82,12 +82,37 @@ try {
         'PREMIUM' => 0
     ];
     
+    $datos_surtidor = $c->prepare("SELECT s.lectura_actual, p.precio_actual FROM surtidores s
+                                   INNER JOIN productos p ON s.id_producto = p.id_producto
+                                   WHERE s.id_surtidor = ? AND s.estado = 'ACTIVO' FOR UPDATE");
+    $surtidores_vistos = [];
+
     foreach ($lecturas as $lectura) {
-        $id_surtidor = $lectura['id_surtidor'];
-        $lectura_inicial = floatval($lectura['lectura_inicial']);
+        $id_surtidor = (int) $lectura['id_surtidor'];
         $lectura_final = floatval($lectura['lectura_final']);
-        $precio = floatval($lectura['precio']);
-        
+
+        if (isset($surtidores_vistos[$id_surtidor])) {
+            throw new Exception("un surtidor aparece dos veces en las lecturas.");
+        }
+        $surtidores_vistos[$id_surtidor] = true;
+
+        $datos_surtidor->execute(array($id_surtidor));
+        $surtidor = $datos_surtidor->fetch(PDO::FETCH_ASSOC);
+        if (!$surtidor) {
+            throw new Exception("uno de los surtidores no existe o está inactivo.");
+        }
+
+        // La lectura inicial y el precio los decide el servidor. Si no coinciden con lo que vio
+        // el usuario, otro turno o un cambio de precio ocurrió mientras tanto.
+        $lectura_inicial = floatval($surtidor['lectura_actual']);
+        $precio = floatval($surtidor['precio_actual']);
+        if (abs($lectura_inicial - floatval($lectura['lectura_inicial'])) > 0.0005 || abs($precio - floatval($lectura['precio'])) > 0.0005) {
+            throw new Exception("las lecturas o los precios cambiaron. Recargue la pantalla y vuelva a intentarlo.");
+        }
+        if ($lectura_final < $lectura_inicial) {
+            throw new Exception("una lectura final es menor que la inicial.");
+        }
+
         $galones = $lectura_final - $lectura_inicial;
         $total = $galones * $precio;
         

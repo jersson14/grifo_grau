@@ -14,6 +14,7 @@ class Modelo_Configuracion extends conexionBD
         'ia_esfuerzo'            => ['tipo' => 'opcion', 'opciones' => ['low', 'medium', 'high']],
         'ia_limite_mensual_usd'  => ['tipo' => 'numero', 'min' => 0, 'max' => 100000],
         'ia_roles'               => ['tipo' => 'roles'],
+        'inicio_alertas'         => ['tipo' => 'lista'],
         'ia_api_key'             => ['tipo' => 'secreto'],
         'decolecta_token'        => ['tipo' => 'secreto'],
     ];
@@ -77,6 +78,10 @@ class Modelo_Configuracion extends conexionBD
                 case 'roles':
                     $roles = array_intersect(array_map('trim', explode(',', $valor)), ['ADMINISTRADOR', 'GRIFERO']);
                     $valor = implode(',', $roles);
+                    break;
+                case 'lista':
+                    require_once __DIR__ . '/model_alertas.php';
+                    $valor = implode(',', array_intersect(explode(',', $valor), array_keys(Modelo_Alertas::ALERTAS)));
                     break;
                 case 'secreto':
                     if ($valor === '') {

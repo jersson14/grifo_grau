@@ -307,7 +307,7 @@ function Listar_Mis_Reportes() {
             { 
                 "data": "fecha_reporte",
                 "render": function(data) {
-                    var fecha = new Date(data);
+                    var fecha = Fecha_Local(data);
                     return fecha.toLocaleDateString('es-PE');
                 }
             },
