@@ -10,6 +10,45 @@ Marca cada tarea al terminarla: `[ ]` pendiente, `[x]` hecha. Registra las decis
 
 ---
 
+## 0. Estado actual
+
+Actualizado el 2026-11-06. Todo está en commits locales, sin publicar.
+
+| Área | Estado |
+|---|---|
+| Fases 0 y 1 | Base y seguridad hechas y probadas sobre el **esquema provisional**. Falta contrastar con producción |
+| Fase 3 | Hecho: panel de Configuración, módulos activables (3.1 y 3.2 parciales). Falta: menú dinámico, roles editables, página principal, catálogos |
+| Fase 6 | Chatbot funcional probado contra una **API simulada**. Falta: probarlo con una clave real (6.7) y añadir streaming |
+| Fases 2, 4, 5 y 7 | Sin empezar. El módulo de facturación aparece en Configuración, pero su interruptor todavía no hace nada |
+
+**Pruebas:** `php tests/smoke.php` (50 comprobaciones). Para el chatbot, ver la cabecera de `tests/chatbot.php` (39).
+
+**Pendiente del dueño:**
+
+1. Revocar el token DNI/RUC: sigue en el historial de git. Después, guardar el nuevo en Configuración → Integraciones.
+2. Exportar el esquema de producción (tarea 0.1).
+3. Conseguir una clave de API para probar el chatbot.
+
+**Pendiente parcial en estas fases:**
+
+- **0.5:** las vistas `turno manual` usan tablas que los modelos no usan, y los controladores `dashboard/*` de `turnos` solo los llama código sin uso. Se conservan hasta confirmar con el esquema real.
+- **1.4:** un grifero aún puede consultar por ID el detalle o PDF del turno de otro.
+- **1.8:** las contraseñas ya no pasan por `htmlspecialchars`; el resto de datos, sí.
+- **1.10:** sigue habiendo controladores que muestran `getMessage()`.
+- **Permisos:** griferos ya no pueden anular, editar ni eliminar créditos, ni eliminar clientes. Hay que confirmar que es lo deseado.
+
+### Parche de seguridad para producción
+
+La rama local `hotfix/seguridad` parte de `main` y aplica las Fases 0 y 1. **No está desplegada ni probada con la base real.** Para aplicarla:
+
+1. Hacer copia de seguridad de la base y de los archivos.
+2. Probarla primero en una copia del sitio con una copia de la base.
+3. Crear `.env` desde `.env.example`, con los datos reales de conexión y un token nuevo.
+4. Ejecutar `database/migrations/001_seguridad.sql`. Solo crea tablas nuevas.
+5. Comprobar el login, un turno completo y un crédito. Después, desplegar en horario de baja actividad.
+
+---
+
 ## 1. Decisiones pendientes del dueño
 
 Estas respuestas condicionan el trabajo. La primera bloquea el arranque.
@@ -18,7 +57,7 @@ Estas respuestas condicionan el trabajo. La primera bloquea el arranque.
 |---|---|---|---|
 | D1 | Exportar el esquema de producción | Ejecutar el comando de la tarea 0.1 | Todo |
 | D2 | ¿`grifo2` lleva datos reales o solo de prueba? | Copia de producción con clientes y teléfonos anonimizados | 0.2 |
-| D3 | ¿Qué versión de PHP y de base de datos hay en producción y dónde corre? | Confirmar con `php -v` y `SELECT VERSION()` | Fase 2 |
+| D3 | ¿Qué versión de PHP y de base de datos hay en producción? El código sugiere un hosting compartido (`/home/estaciongoyo/public_html`) | Confirmar con `php -v` y `SELECT VERSION()` | Fase 2 |
 | D4 | ¿Un grifo o varios? | Si puede haber más sedes o más clientes, definirlo antes de la Fase 3 | Fase 3 |
 | D5 | Proveedor de facturación: PSE/OSE o emisión directa | PSE/OSE, por menor carga técnica | Fase 5 |
 | D6 | ¿Enviar datos del grifo a un proveedor de IA externo? | Sí, con los límites de la Fase 6 y solo si el dueño lo acepta | Fase 6 |
@@ -116,11 +155,11 @@ Objetivo: que `grifo2` funcione igual que producción y sea reproducible.
   ```
   `--skip-definer` solo existe en algunas versiones. Si da error, quitarlo y eliminar los `DEFINER=` del archivo.
 - [ ] **0.2** Importar el esquema y datos según D2. Comprobar que el login, un turno completo y un crédito funcionan.
-- [ ] **0.3** Crear el ejecutor de migraciones y la tabla `schema_migrations`.
-- [ ] **0.4** Configuración por entorno: `.env` y `.env.example`. Unificar la conexión en un único punto y eliminar las credenciales de los controladores de turno manual.
+- [x] **0.3** Crear el ejecutor de migraciones y la tabla `schema_migrations`.
+- [x] **0.4** Configuración por entorno: `.env` y `.env.example`. Unificar la conexión en un único punto y eliminar las credenciales de los controladores de turno manual.
 - [ ] **0.5** Comparar el código con el esquema real. Resolver D-2, D-3 y D-4: lo que no se use se elimina.
-- [ ] **0.6** Limpieza: scripts `test*`, duplicados `consulta-*`, `PHPMailer-master`, documentación antigua movida a `docs/archivo/`.
-- [ ] **0.7** Pruebas de humo del flujo crítico: login, abrir y cerrar turno, crédito, pago.
+- [x] **0.6** Limpieza: scripts `test*`, duplicados `consulta-*`, `PHPMailer-master`, documentación antigua movida a `docs/archivo/`.
+- [x] **0.7** Pruebas de humo del flujo crítico: login, abrir y cerrar turno, crédito, pago.
 
 **Listo cuando:** se puede instalar desde cero con un solo comando y el flujo crítico pasa.
 
@@ -129,12 +168,12 @@ Objetivo: que `grifo2` funcione igual que producción y sea reproducible.
 Objetivo: cerrar S1 a S8.
 
 - [ ] **1.1** Revocar el token DNI/RUC y crear uno nuevo fuera del código.
-- [ ] **1.2** Rehacer el login: la sesión se crea en el servidor, tras verificar la contraseña, con `session_regenerate_id` y cookies `HttpOnly`, `SameSite` y `Secure`. Respuesta sin hash. Eliminar `controlador_crear_sesion.php`.
-- [ ] **1.3** Crear `controller/_bootstrap.php` con `require_auth()` y `require_permiso()`, y aplicarlo a todos los controladores. Una prueba automática falla si alguno queda sin protección.
+- [x] **1.2** Rehacer el login: la sesión se crea en el servidor, tras verificar la contraseña, con `session_regenerate_id` y cookies `HttpOnly`, `SameSite` y `Secure`. Respuesta sin hash. Eliminar `controlador_crear_sesion.php`.
+- [x] **1.3** Crear `controller/_bootstrap.php` con `require_auth()` y `require_permiso()`, y aplicarlo a todos los controladores. Una prueba automática falla si alguno queda sin protección.
 - [ ] **1.4** Validar permisos y propiedad de los datos en el servidor: que un grifero solo acceda a lo suyo.
-- [ ] **1.5** CSRF en toda petición que modifique datos, mediante `$.ajaxSetup` para no tocar cada llamada.
-- [ ] **1.6** Límite de intentos de login y cierre de sesión por inactividad.
-- [ ] **1.7** Subidas seguras: extensión y MIME reales, nombre generado por el servidor, carpeta sin ejecución de PHP.
+- [x] **1.5** CSRF en toda petición que modifique datos, mediante `$.ajaxSetup` para no tocar cada llamada.
+- [x] **1.6** Límite de intentos de login y cierre de sesión por inactividad.
+- [x] **1.7** Subidas seguras: extensión y MIME reales, nombre generado por el servidor, carpeta sin ejecución de PHP.
 - [ ] **1.8** Dejar de aplicar `htmlspecialchars` al guardar (contraseñas primero). Escapar al mostrar, incluido el HTML generado desde JS. Planificar la corrección de datos ya guardados.
 - [ ] **1.9** Usuario de base de datos con permisos mínimos en lugar de `root`.
 - [ ] **1.10** Registro de errores en archivo y mensajes genéricos al usuario.
@@ -211,14 +250,14 @@ Reglas legales y tributarias: validar con el contador antes de implementar.
 
 Permite preguntar en lenguaje natural, por ejemplo: «¿Cuántos galones de Premium se vendieron esta semana?» o «¿Qué clientes tienen créditos vencidos?».
 
-- [ ] **6.1** Interruptor en Configuración → Integraciones, con clave de API cifrada, modelo seleccionable, roles con acceso y límite mensual de gasto.
-- [ ] **6.2** Interfaz `ProveedorIA` con Claude como primer adaptador, usando el SDK oficial `anthropic-ai/sdk`. Comprobar la versión de PHP que exige antes de instalarlo.
-- [ ] **6.3** Herramientas predefinidas de solo lectura: `ventas_por_periodo`, `stock_tanques`, `creditos_vencidos`, `resumen_turno`, `ranking_griferos`, y otras según el uso real.
+- [x] **6.1** Interruptor en Configuración → Integraciones, con clave de API cifrada, modelo seleccionable, roles con acceso y límite mensual de gasto.
+- [x] **6.2** Interfaz `ProveedorIA` con Claude como primer adaptador, usando el SDK oficial `anthropic-ai/sdk`. Comprobar la versión de PHP que exige antes de instalarlo.
+- [x] **6.3** Herramientas predefinidas de solo lectura: `ventas_por_periodo`, `stock_tanques`, `creditos_vencidos`, `resumen_turno`, `ranking_griferos`, y otras según el uso real.
 - [ ] **6.4** Después, si hace falta, `consulta_sql` para preguntas no previstas, con estas defensas:
   - Usuario de base de datos con `SELECT` solo sobre **vistas** `ia_*`.
   - Una sola sentencia `SELECT`, con límite de filas y tiempo.
 - [ ] **6.5** Burbuja de chat en toda la interfaz con respuesta en streaming, tablas y gráficos simples, historial por usuario y aviso de que el resultado es orientativo.
-- [ ] **6.6** Bitácora de preguntas, consultas ejecutadas, tokens y costo. Panel de consumo en la interfaz.
+- [x] **6.6** Bitácora de preguntas, consultas ejecutadas, tokens y costo. Panel de consumo en la interfaz.
 - [ ] **6.7** Pruebas con un conjunto de preguntas reales y respuestas conocidas antes de habilitarlo a los usuarios.
 
 **Reglas de seguridad, innegociables:**
@@ -268,3 +307,5 @@ Permite preguntar en lenguaje natural, por ejemplo: «¿Cuántos galones de Prem
 | 2026-11-06 | Rama `grifo2`, base `grifo2` | Nombre pedido por el dueño, sin tocar `main` |
 | 2026-11-06 | Mantener MVC propio sin framework | Entregar funciones al grifo antes que reescribir |
 | 2026-11-06 | Facturación e IA detrás de interfaces de proveedor | Son opcionales y deben poder cambiar de proveedor |
+| 2026-11-06 | Esquema provisional reconstruido desde el código | No hay volcado de producción disponible; se contrasta en 0.5 |
+| 2026-11-06 | El chatbot usa solo consultas predefinidas, sin SQL libre | Menos riesgo; 6.4 queda para cuando haga falta |

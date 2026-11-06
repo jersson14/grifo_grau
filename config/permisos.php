@@ -6,8 +6,14 @@
  *  griferos   También para GRIFERO. Admite comodín final: "controller/reportes/*".
  *  propios    Disponibles para todo usuario, siempre sobre su propia cuenta:
  *             el id_usuario enviado se reemplaza por el de la sesión.
+ *  modulos    Rutas que dejan de responder cuando su módulo está desactivado.
  */
 return [
+    'modulos' => [
+        'controller/ia/controlador_preguntar.php'            => 'chatbot_ia',
+        'controller/ia/controlador_limpiar_conversacion.php' => 'chatbot_ia',
+    ],
+
     'publico' => [
         'index.php',
         'controller/usuario/controlador_iniciar_sesion.php',
@@ -96,5 +102,9 @@ return [
         'controller/turnos/controlador_verificar_turno_sistema.php',
 
         'controller/usuario/controlador_listar_griferos.php',
+
+        // El rol con acceso real al chatbot se configura en la interfaz (ia_roles).
+        'controller/ia/controlador_preguntar.php',
+        'controller/ia/controlador_limpiar_conversacion.php',
     ],
 ];

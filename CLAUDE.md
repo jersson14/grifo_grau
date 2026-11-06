@@ -14,9 +14,11 @@ Sistema de Gestión de Grifo — a gas station management web application built 
 
 Rules for this work:
 - Don't change `main` unless the owner approves a specific production fix.
-- Don't copy the DNI/RUC API token into docs, commits or chat. It is still hardcoded in the repo until task 1.1.
-- Every database change is a numbered migration in `database/migrations/`.
-- Every new controller must require authentication and an explicit permission. Don't copy existing controllers as a template until Phase 1 is done: most have no access control.
+- Don't copy the DNI/RUC API token into docs, commits or chat. It is gone from the code but remains in git history until revoked (task 1.1).
+- Every database change is a numbered migration in `database/migrations/`, applied with `php database/migrate.php`.
+- Every controller and view starts with `require_once __DIR__ . '/../_bootstrap.php';` (adjust the path). Access is deny-by-default: anything not listed in `config/permisos.php` is `ADMINISTRADOR` only. It also enforces CSRF on POST, and `$.ajaxSetup` in `view/index.php` sends the token.
+- Run `php tests/smoke.php` after changing auth, shifts or credits. It needs the demo data on a local database.
+- Never leave `ANTHROPIC_BASE_URL` in `.env` outside chatbot tests: requests would go to the mock.
 - Configurable behavior belongs in the database and the admin UI, not in code.
 - Optional modules (electronic invoicing, AI chatbot) stay behind an on/off switch and must never block core shift operations.
 
@@ -30,9 +32,10 @@ stop.bat        # stops containers
 
 **Manual (XAMPP):**
 - Place project under `htdocs/grifo_grau`
-- MySQL on port 3307, user `root`, no password. Database `grifo2` on branch `grifo2`, `grifo_grau` on `main`
-- `model/model_conexion.php` is gitignored, so the database name is a local setting. Switching branches doesn't change it
-- `database/init.sql` is an empty placeholder: **the repo has no base schema**. A fresh install needs a production dump (plan task 0.1) before `database/tipos_pago.sql` and `database/fix_ventas_credito.sql`
+- MySQL on port 3307, user `root`, no password. Database `grifo2` on branch `grifo2`
+- Copy `.env.example` to `.env` and `model/model_conexion.example.php` to `model/model_conexion.php` (both gitignored), then run `composer install`
+- Create the empty database and run `php database/migrate.php --demo`. An empty database gets `database/schema/000_base_provisional.sql`, **reconstructed from code, not a copy of production**. `database/init.sql`, `tipos_pago.sql` and `fix_ventas_credito.sql` are legacy
+- Legacy modules not in the menu (gastos, ingresos, indicadores, pagos) call stored procedures the provisional schema doesn't include
 - Access at `http://localhost/grifo_grau`
 
 **Default credentials:**
@@ -62,8 +65,8 @@ All models extend `conexionBD` from `model/model_conexion.php`:
 ```php
 $pdo = conexionBD::conexionPDO();  // returns PDO instance
 ```
-- Host: `localhost:3307`, charset: `utf8`
-- `controlador_guardar_turno_manual.php` and `controlador_cerrar_turno_manual.php` bypass this with their own hardcoded mysqli connection to `grifo_grau` (plan task 0.4)
+- Connection values come from `.env`, charset `utf8mb4`
+- `controlador_guardar_turno_manual.php` and `controlador_cerrar_turno_manual.php` open their own mysqli connection and use tables the models don't (plan task 0.5)
 - Timezone forced to `America/Lima` (UTC-5) on every connection
 
 ## Key Domain Concepts
@@ -87,6 +90,12 @@ Follow the existing pattern exactly:
 - PDF: `view/MPDF/` — instantiate `\Mpdf\Mpdf`, write HTML, call `Output()`
 - Excel: native PHP with `header('Content-Type: application/vnd.ms-excel')` pattern used in existing report controllers
 
+## Configuration and Optional Modules
+
+- Settings live in the `configuracion` table and are edited in Configuración (`view/configuracion/`). `Modelo_Configuracion::CLAVES` is the whitelist of editable keys. Secrets are AES-256-GCM encrypted with `APP_KEY` from `.env` and are never returned to the browser.
+- Modules are switched in the `modulos` table. To gate a route, add it under `modulos` in `config/permisos.php`.
+- The chatbot (`model/model_chatbot.php`) calls Claude through the official SDK. It can only run the read-only queries in `model/model_ia_herramientas.php`; the user and role come from the session.
+
 ## Composer
 
-Only one dependency: `phpmailer/phpmailer ^6.9`. Run `composer install` after cloning if `vendor/` is absent.
+Dependencies: `phpmailer/phpmailer` (unused), `anthropic-ai/sdk` and `guzzlehttp/guzzle` (the HTTP client the SDK needs). `vendor/` is committed. Run `composer install` if it is absent.

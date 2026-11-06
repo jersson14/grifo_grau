@@ -1,10 +1,15 @@
 <?php
 require_once __DIR__ . '/env.php';
+require_once dirname(__DIR__) . '/model/model_configuracion.php';
 
-/** Consulta la API de DNI/RUC. El token se lee de .env y no llega al navegador. */
+/**
+ * Consulta la API de DNI/RUC. El token configurado en la interfaz tiene prioridad sobre .env,
+ * y ninguno llega al navegador.
+ */
 function consultar_decolecta(string $ruta): string
 {
-    $token = env('DECOLECTA_TOKEN', '');
+    $config = new Modelo_Configuracion();
+    $token  = $config->Obtener('decolecta_token') ?: env('DECOLECTA_TOKEN', '');
     if ($token === '') {
         return json_encode(['error' => 'La consulta DNI/RUC no está configurada.']);
     }
@@ -20,9 +25,7 @@ function consultar_decolecta(string $ruta): string
 
     if ($respuesta === false) {
         error_log('Error consultando decolecta: ' . curl_error($curl));
-        curl_close($curl);
         return json_encode(['error' => 'No se pudo consultar el servicio.']);
     }
-    curl_close($curl);
     return $respuesta;
 }

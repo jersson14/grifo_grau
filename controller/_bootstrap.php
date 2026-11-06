@@ -68,6 +68,12 @@ function ruta_coincide(string $ruta, array $patrones): bool
     return false;
 }
 
+function modulo_activo(string $codigo): bool
+{
+    require_once dirname(__DIR__) . '/model/model_configuracion.php';
+    return Modelo_Configuracion::Modulo_Activo($codigo);
+}
+
 function token_csrf(): string
 {
     if (empty($_SESSION['CSRF'])) {
@@ -104,6 +110,10 @@ function verificar_acceso(): void
 
     if (!$esAdmin && !$propio && !ruta_coincide($ruta, $permisos['griferos'])) {
         denegar_acceso(403, 'No tiene permisos para realizar esta acción.');
+    }
+
+    if (isset($permisos['modulos'][$ruta]) && !modulo_activo($permisos['modulos'][$ruta])) {
+        denegar_acceso(403, 'Este módulo está desactivado.');
     }
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
