@@ -18,6 +18,8 @@ return [
         'view/ventas/*'           => 'ventas',
         'controller/caja/*'       => 'caja',
         'view/caja/*'             => 'caja',
+        'controller/facturacion/*' => 'facturacion',
+        'view/facturacion/*'      => 'facturacion',
     ],
 
     'publico' => [

@@ -121,6 +121,8 @@ return [
 
     'caja_gestionar' => ['Caja', 'Arqueos, diferencias y depósitos', ['view/caja/*', 'controller/caja/*']],
 
+    'comprobantes_gestionar' => ['Ventas', 'Gestionar comprobantes electrónicos', ['view/facturacion/*', 'controller/facturacion/*']],
+
     'productos_gestionar'  => ['Catálogos', 'Gestionar combustibles y precios', ['view/productos/view_productos.php', 'controller/productos/*']],
     'surtidores_gestionar' => ['Catálogos', 'Gestionar surtidores', ['view/surtidores/view_surtidores.php', 'controller/surtidores/*', 'controller/productos/controlador_productos_activos.php']],
 

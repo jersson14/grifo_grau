@@ -11,6 +11,7 @@ function cargar_configuracion() {
 
     estado_secreto('ia_api_key', datos.valores.ia_api_key_configurado);
     estado_secreto('decolecta_token', datos.valores.decolecta_token_configurado);
+    estado_secreto('factura_token', datos.valores.factura_token_configurado);
 
     var roles = (datos.valores.ia_roles || '').split(',');
     var cajaRoles = $('#lista_ia_roles').empty();
@@ -79,6 +80,12 @@ $(document).off('submit.config').on('submit.config', '.form_config', function (e
     } else {
       Swal.fire('Revise los datos', 'Valores no válidos en: ' + r.errores.join(', '), 'warning');
     }
+  }, 'json');
+});
+
+$(document).off('click.nubefact').on('click.nubefact', '#btn_probar_nubefact', function () {
+  $.post('../controller/facturacion/controlador_probar_conexion.php', function (r) {
+    Swal.fire(r.success ? 'Respuesta de Nubefact' : 'No se pudo conectar', r.success ? r.respuesta : r.message, r.success ? 'info' : 'warning');
   }, 'json');
 });
 

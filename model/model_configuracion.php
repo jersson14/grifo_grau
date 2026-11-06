@@ -15,6 +15,12 @@ class Modelo_Configuracion extends conexionBD
         'ia_limite_mensual_usd'  => ['tipo' => 'numero', 'min' => 0, 'max' => 100000],
         'ia_roles'               => ['tipo' => 'roles'],
         'inicio_alertas'         => ['tipo' => 'lista'],
+        'factura_ruta'           => ['tipo' => 'patron', 'opcional' => true, 'patron' => '#^https://([a-z0-9-]+\.)*nubefact\.com/api/v1/[A-Za-z0-9-]+$#'],
+        'factura_token'          => ['tipo' => 'secreto'],
+        'factura_serie_factura'  => ['tipo' => 'patron', 'patron' => '/^F[A-Z0-9]{3}$/'],
+        'factura_serie_boleta'   => ['tipo' => 'patron', 'patron' => '/^B[A-Z0-9]{3}$/'],
+        'factura_unidad_medida'  => ['tipo' => 'patron', 'patron' => '/^[A-Z0-9]{2,3}$/'],
+        'factura_boleta_tope_sin_documento' => ['tipo' => 'numero', 'min' => 0, 'max' => 100000],
         'ia_api_key'             => ['tipo' => 'secreto'],
         'decolecta_token'        => ['tipo' => 'secreto'],
     ];
@@ -71,6 +77,15 @@ class Modelo_Configuracion extends conexionBD
                     break;
                 case 'opcion':
                     if (!in_array($valor, $regla['opciones'], true)) {
+                        $errores[] = $clave;
+                        continue 2;
+                    }
+                    break;
+                case 'patron':
+                    if ($valor === '' && !empty($regla['opcional'])) {
+                        break;
+                    }
+                    if (!preg_match($regla['patron'], $valor)) {
                         $errores[] = $clave;
                         continue 2;
                     }

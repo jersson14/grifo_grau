@@ -47,7 +47,13 @@ function iniciar_ventas(esAdmin) {
       function (v) { return v.medio_pago; },
       function (v) { return v.cliente; },
       function (v) { return v.placa; },
-      function (v) { return v.tipo_comprobante === 'NINGUNO' ? '' : v.tipo_comprobante; },
+      function (v) {
+        if (v.tipo_comprobante === 'NINGUNO') { return ''; }
+        var texto = v.tipo_comprobante + (v.comprobante_numero ? ' ' + v.comprobante_numero : '');
+        var seguro = v.comprobante_enlace && /^https?:\/\//i.test(v.comprobante_enlace);
+        var caja = seguro ? $('<a target="_blank" rel="noopener noreferrer"></a>').attr('href', v.comprobante_enlace).text(texto) : $('<span></span>').text(texto);
+        return v.comprobante_estado && v.comprobante_estado !== 'ACEPTADO' ? $('<span></span>').append(caja).append(' ').append(G.etiqueta(v.comprobante_estado.replace('_', ' '), 'badge-warning')) : caja;
+      },
       function (v) { return v.turno || 'Pendiente'; },
       function (v) { return v.usuario; },
       function (v) { return G.etiqueta(v.estado, v.estado === 'ANULADA' ? 'badge-secondary' : 'badge-success'); }
@@ -88,7 +94,13 @@ function iniciar_ventas(esAdmin) {
       id_surtidor: $('#venta_surtidor').val(), modo: $('#venta_modo').val(), valor: $('#venta_valor').val(), id_tipo_pago: $('#venta_pago').val(),
       codigo_operacion: $('#venta_codigo').val(), id_cliente: $('#venta_cliente').val(), placa: $('#venta_placa').val(), tipo_comprobante: $('#venta_comprobante').val()
     }, function (r) {
-      G.ok('Venta registrada: ' + G.soles(r.total));
+      if (r.comprobante && r.comprobante.estado === 'ACEPTADO') {
+        G.ok(r.comprobante.tipo + ' ' + r.comprobante.serie + '-' + r.comprobante.numero + ' emitida');
+      } else if (r.comprobante) {
+        Swal.fire('Venta registrada', 'El comprobante aún no está confirmado. Se puede reenviar desde Comprobantes; la venta ya quedó guardada.', 'info');
+      } else {
+        G.ok('Venta registrada: ' + G.soles(r.total));
+      }
       $('#venta_valor, #venta_codigo, #venta_placa').val('');
       $('#venta_cliente').val('');
       $('#venta_comprobante').val('NINGUNO');

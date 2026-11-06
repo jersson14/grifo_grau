@@ -18,7 +18,8 @@ Rules for this work:
 - Every database change is a numbered migration in `database/migrations/`, applied with `php database/migrate.php`.
 - Every controller and view starts with `require_once __DIR__ . '/../_bootstrap.php';` (adjust the path). Access is deny-by-default: a route not listed in `config/capacidades.php` or `config/permisos.php` is `ADMINISTRADOR` only. Add new routes to a capability and check `puede()` instead of comparing role names. It also enforces CSRF on POST, and `$.ajaxSetup` in `view/index.php` sends the token.
 - Run `php tests/smoke.php` after changing auth, shifts or credits, and `php tests/roles.php` after changing permissions. It needs the demo data on a local database.
-- Never leave `ANTHROPIC_BASE_URL` in `.env` outside chatbot tests: requests would go to the mock.
+- Never leave `ANTHROPIC_BASE_URL` or `NUBEFACT_RUTA` in `.env` outside tests: requests would go to the mock.
+- Invoicing depends on Nubefact only through `model/facturacion/proveedor_nubefact.php`. A sale is saved before its document is sent, and a retry keeps the same number.
 - Configurable behavior belongs in the database and the admin UI, not in code.
 - Optional modules (electronic invoicing, AI chatbot) stay behind an on/off switch and must never block core shift operations.
 

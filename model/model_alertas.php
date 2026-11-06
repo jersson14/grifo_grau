@@ -22,6 +22,8 @@ class Modelo_Alertas extends conexionBD
                                    "SELECT COUNT(*) FROM reportes_turno rt LEFT JOIN arqueos a ON a.id_reporte = rt.id_reporte WHERE rt.estado = 'CERRADO' AND a.id_arqueo IS NULL AND rt.fecha_reporte >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)"],
         'diferencias_caja'     => ['caja', 'Diferencias de caja', 'diferencia(s) de caja por resolver', 'danger', 'caja/view_caja.php',
                                    "SELECT COUNT(*) FROM arqueos WHERE diferencia <> 0 AND resolucion = 'PENDIENTE'"],
+        'comprobantes_problema' => ['facturacion', 'Comprobantes con problemas', 'comprobante(s) electrónico(s) pendiente(s) o rechazado(s)', 'danger', 'facturacion/view_comprobantes.php',
+                                   "SELECT COUNT(*) FROM comprobantes WHERE estado IN ('PENDIENTE', 'RECHAZADO')"],
         'precios_programados'  => [null, 'Precios programados', 'cambio(s) de precio programado(s)', 'info', 'productos/view_productos.php',
                                    "SELECT COUNT(*) FROM precios_programados WHERE estado = 'PENDIENTE'"],
     ];

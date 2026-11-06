@@ -20,7 +20,8 @@ Actualizado el 2026-11-06. Todo está en commits locales, sin publicar.
 | Fase 3 | Hecho: Configuración, módulos activables, avisos en el Dashboard, menú editable, roles con permisos editables y auditoría. Falta: admitir cualquier cantidad de surtidores en el formulario de turno (3.6), notificaciones (3.8), asistente de instalación (3.9) y widgets por rol |
 | Fase 6 | Chatbot funcional probado contra una **API simulada**. Falta: probarlo con una clave real (6.7) y añadir streaming |
 | Fase 4 | Hecho y probado: tanques, kardex, varillaje, compras con cuentas por pagar, ventas individuales, precios (historial y programación) y caja con arqueo y depósitos (4.1 a 4.6). Falta: tienda, flotas, gastos, personal, reportes y cumplimiento sectorial |
-| Fases 2, 5 y 7 | Sin empezar. El módulo de facturación aparece en Configuración, pero su interruptor solo muestra el selector de comprobante en Ventas: no emite nada |
+| Fase 5 | Facturación con Nubefact: boletas, facturas, anulaciones, reintentos y bandeja, probados contra un **simulador**. Falta probar en su modo demo y notas de crédito, facturar vales y validar con el contador |
+| Fases 2 y 7 | Sin empezar |
 
 **Pruebas:** `php tests/smoke.php`, `php tests/inventario.php`, `php tests/caja.php`, `tests/chatbot.php` y `tests/ui.cjs` en Edge real (estos dos, ver su cabecera). `php tests/roles.php` cubre roles, menú y auditoría. `php tests/permisos_grifero.php` lista lo que las pantallas del grifero piden y no se le permite: hay que revisarlo al cambiar permisos.
 
@@ -30,7 +31,14 @@ Actualizado el 2026-11-06. Todo está en commits locales, sin publicar.
 2. Exportar el esquema de producción (tarea 0.1).
 3. Conseguir una clave de API para probar el chatbot.
 
-**Error en producción a corregir también en `main`:** las fechas sin hora (vencimiento de créditos, fecha de turno) se muestran un día antes en pantalla. Está corregido en `grifo2`, no en `hotfix/seguridad`. Los datos guardados son correctos.
+**Validar en el modo demo de Nubefact, porque sus ejemplos no lo cubren:**
+
+- Boleta sin cliente: se envía tipo `-`, documento `-` y denominación `VARIOS`.
+- Unidad de medida `GLL` para galones. Es configurable.
+- Precio unitario con 10 decimales, derivado de los importes.
+- La respuesta de una anulación y los campos `enlace_del_pdf`, `enlace_del_xml` y `enlace_del_cdr`, que no están en su ejemplo PHP; sin ellos se usa `enlace`.
+
+**Validar con el contador:** tope de boleta sin DNI (configurado en S/ 700), tratamiento de combustibles (ISC) y plazos de anulación. Hoy se emite como venta gravada con IGV.
 
 **Pendiente parcial en estas fases:**
 
@@ -45,7 +53,7 @@ Actualizado el 2026-11-06. Todo está en commits locales, sin publicar.
 
 ### Parche de seguridad para producción
 
-La rama local `hotfix/seguridad` parte de `main` y aplica las Fases 0 y 1. **No está desplegada ni probada con la base real.** Para aplicarla:
+La rama local `hotfix/seguridad` parte de `main` y aplica las Fases 0 y 1, además de corregir precios alterables, fechas un día antes y foto rota. **No está desplegada ni probada con la base real.** Para aplicarla:
 
 1. Hacer copia de seguridad de la base y de los archivos.
 2. Probarla primero en una copia del sitio con una copia de la base.
@@ -65,7 +73,7 @@ Estas respuestas condicionan el trabajo. La primera bloquea el arranque.
 | D2 | ¿`grifo2` lleva datos reales o solo de prueba? | Copia de producción con clientes y teléfonos anonimizados | 0.2 |
 | D3 | ¿Qué versión de PHP y de base de datos hay en producción? El código sugiere un hosting compartido (`/home/estaciongoyo/public_html`) | Confirmar con `php -v` y `SELECT VERSION()` | Fase 2 |
 | D4 | ¿Un grifo o varios? | Si puede haber más sedes o más clientes, definirlo antes de la Fase 3 | Fase 3 |
-| D5 | Proveedor de facturación: PSE/OSE o emisión directa | PSE/OSE, por menor carga técnica | Fase 5 |
+| D5 | ~~Proveedor de facturación~~ | **Decidido: Nubefact** (2026-11-06) | Hecho |
 | D6 | ¿Enviar datos del grifo a un proveedor de IA externo? | Sí, con los límites de la Fase 6 y solo si el dueño lo acepta | Fase 6 |
 
 ---
@@ -239,14 +247,14 @@ Reglas legales y tributarias: validar con el contador antes de implementar.
 
 **El requisito clave:** el sistema actual suma ventas por lecturas de surtidor, pero un comprobante necesita una venta individual con cliente e importe. Por eso depende de la tarea 4.6.
 
-- [ ] **5.1** Interruptor en Configuración → Integraciones, con selector de ambiente **Pruebas / Producción** y botón de prueba de conexión.
-- [ ] **5.2** Interfaz `ProveedorFacturacion` con `emitir()`, `anular()` y `consultar()`, para cambiar de proveedor sin tocar los módulos.
+- [x] **5.1** Interruptor en Configuración → Integraciones, con selector de ambiente **Pruebas / Producción** y botón de prueba de conexión.
+- [x] **5.2** Interfaz `ProveedorFacturacion` con `emitir()`, `anular()` y `consultar()`, para cambiar de proveedor sin tocar los módulos.
 - [ ] **5.3** Primer adaptador según D5:
   - **PSE/OSE por API (recomendado):** el proveedor se encarga de firma y envío. Comparar precios y soporte vigentes antes de contratar.
   - **Emisión directa a SUNAT (por ejemplo, con la librería Greenter):** sin costo por proveedor, pero con certificado digital, firma, resúmenes y bajas a nuestro cargo.
 - [ ] **5.4** Comprobantes: boleta, factura, notas de crédito y débito, series configurables, XML, CDR, PDF con QR, y envío por correo o WhatsApp.
-- [ ] **5.5** Cola con reintentos: si SUNAT o el proveedor no responden, la venta se guarda como pendiente y el turno sigue.
-- [ ] **5.6** Bandeja de comprobantes con estados: pendiente, aceptado, observado, rechazado y anulado.
+- [x] **5.5** Cola con reintentos: si SUNAT o el proveedor no responden, la venta se guarda como pendiente y el turno sigue.
+- [x] **5.6** Bandeja de comprobantes con estados: pendiente, aceptado, observado, rechazado y anulado.
 - [ ] **5.7** Facturar vales de crédito acumulados de un cliente en un solo comprobante.
 - [ ] **5.8** Validar con el contador los casos tributarios de combustibles antes de pasar a producción.
 
@@ -322,4 +330,6 @@ Permite preguntar en lenguaje natural, por ejemplo: «¿Cuántos galones de Prem
 | 2026-11-06 | Los precios programados se aplican al usarlos, no con una tarea programada | El hosting compartido puede no tener cron |
 | 2026-11-06 | Se ocultan al grifero los botones de crédito y cliente que no puede usar | Pendiente de que el dueño confirme esos permisos |
 | 2026-11-06 | Los permisos son capacidades definidas en código y asignadas a roles desde la interfaz | Una ruta nueva exige una decisión en el catálogo; los roles se administran sin programar |
+| 2026-11-06 | Facturación con Nubefact, elegida por el dueño | Menor carga técnica que la emisión directa |
+| 2026-11-06 | La venta se guarda antes de emitir y conserva su número al reintentar | Una caída del proveedor no debe perder ventas ni duplicar comprobantes |
 | 2026-11-06 | El rol y el estado del usuario se leen en cada petición | Un cambio o una baja surte efecto de inmediato, a cambio de una consulta más |

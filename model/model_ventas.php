@@ -1,5 +1,6 @@
 <?php
 require_once 'model_conexion.php';
+require_once 'model_comprobantes.php';
 
 class Modelo_Ventas extends conexionBD
 {
@@ -53,6 +54,10 @@ class Modelo_Ventas extends conexionBD
         } else {
             $documento = '';
         }
+        $facturacionActiva = Modelo_Configuracion::Modulo_Activo('facturacion');
+        if (!$facturacionActiva) {
+            $comprobante = 'NINGUNO';
+        }
         if ($comprobante === 'FACTURA' && !preg_match('/^\d{11}$/', (string) $documento)) {
             throw new DomainException('Para emitir factura, seleccione un cliente con RUC de 11 dígitos.');
         }
@@ -65,12 +70,29 @@ class Modelo_Ventas extends conexionBD
             $total = round($galones * $precio, 2);
         }
 
+        if ($comprobante === 'BOLETA' && $documento === '' && $total > Modelo_Comprobantes::Tope_Sin_Documento()) {
+            throw new DomainException('Para esta boleta seleccione un cliente con DNI: el monto supera el tope sin documento.');
+        }
+
         $c->prepare('INSERT INTO ventas (id_usuario, id_surtidor, id_producto, galones, precio_galon, total, id_cliente, placa, id_tipo_pago, codigo_operacion, tipo_comprobante)
                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
           ->execute([$idUsuario, (int) $d['id_surtidor'], $surtidor['id_producto'], $galones, $precio, $total, $idCliente ?: null,
                      strtoupper(mb_substr(trim((string) ($d['placa'] ?? '')), 0, 20)), (int) $d['id_tipo_pago'], mb_substr($codigo, 0, 60), $comprobante]);
 
-        return ['id_venta' => (int) $c->lastInsertId(), 'galones' => $galones, 'total' => $total];
+        $idVenta = (int) $c->lastInsertId();
+        $resultado = ['id_venta' => $idVenta, 'galones' => $galones, 'total' => $total];
+
+        if ($comprobante !== 'NINGUNO') {
+            try {
+                $comprobantes = new Modelo_Comprobantes();
+                $emitido = $comprobantes->Procesar($comprobantes->Crear_Para_Venta($idVenta, $comprobante, $idUsuario));
+                $resultado['comprobante'] = ['estado' => $emitido['estado'], 'serie' => $emitido['serie'], 'numero' => (int) $emitido['numero'], 'tipo' => $emitido['tipo'], 'enlace' => $emitido['enlace_pdf'] ?: $emitido['enlace']];
+            } catch (Throwable $e) {
+                error_log("Venta $idVenta: no se pudo preparar el comprobante: " . $e->getMessage());
+                $resultado['comprobante'] = ['estado' => 'ERROR'];
+            }
+        }
+        return $resultado;
     }
 
     /** $idUsuario limita el listado a un usuario. El controlador lo fija para quien no es administrador. */
@@ -79,7 +101,8 @@ class Modelo_Ventas extends conexionBD
         $c = conexionBD::conexionPDO();
         $sql = "SELECT v.id_venta, v.creado_en, v.galones, v.precio_galon, v.total, v.placa, v.tipo_comprobante, v.estado, v.motivo_anulacion, v.codigo_operacion,
                        p.nombre AS producto, s.numero_maquina, s.codigo AS surtidor, c.nombre_completo AS cliente, tp.nombre AS medio_pago,
-                       u.usu_usuario AS usuario, rt.numero_documento AS turno
+                       u.usu_usuario AS usuario, rt.numero_documento AS turno,
+                       cp.estado AS comprobante_estado, CONCAT(cp.serie, '-', cp.numero) AS comprobante_numero, COALESCE(cp.enlace_pdf, cp.enlace) AS comprobante_enlace
                 FROM ventas v
                 LEFT JOIN productos p ON v.id_producto = p.id_producto
                 LEFT JOIN surtidores s ON v.id_surtidor = s.id_surtidor
@@ -87,6 +110,7 @@ class Modelo_Ventas extends conexionBD
                 LEFT JOIN tipos_pago tp ON v.id_tipo_pago = tp.id_tipo_pago
                 LEFT JOIN usuario u ON v.id_usuario = u.id_usuario
                 LEFT JOIN reportes_turno rt ON v.id_reporte = rt.id_reporte
+                LEFT JOIN comprobantes cp ON cp.id_venta = v.id_venta
                 WHERE v.creado_en >= ? AND v.creado_en < DATE_ADD(?, INTERVAL 1 DAY)";
         $params = [$desde, $hasta];
         if ($idUsuario !== null) {
@@ -104,6 +128,9 @@ class Modelo_Ventas extends conexionBD
             throw new DomainException('Indique el motivo de la anulación.');
         }
         $c = conexionBD::conexionPDO();
+        $comprobantes = new Modelo_Comprobantes();
+        $comprobantes->Preparar_Anulacion_Venta($id);
+
         $query = $c->prepare("UPDATE ventas SET estado = 'ANULADA', motivo_anulacion = ? WHERE id_venta = ? AND estado = 'REGISTRADA'");
         $query->execute([mb_substr($motivo, 0, 255), $id]);
         if ($query->rowCount() === 0) {
