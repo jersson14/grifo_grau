@@ -191,6 +191,7 @@ comprobar('se puede cancelar', !empty($admin->pedir(PROD . 'cancelar_programado.
 comprobar('no se cancela dos veces', ($admin->pedir(PROD . 'cancelar_programado.php', ['id_programado' => $idProg])['json']['success'] ?? true) === false);
 
 echo "\n6. Avisos de la página principal\n";
+$alertasIniciales = $pdo->query("SELECT valor FROM configuracion WHERE clave = 'inicio_alertas'")->fetchColumn();
 $pdo->exec("INSERT INTO clientes (nombre_completo, dni_ruc) VALUES ('CLIENTE MOROSO', '11111111')");
 $cli = (int) $pdo->lastInsertId();
 $pdo->exec("INSERT INTO ventas_credito (id_cliente, numero_vale, monto, saldo_pendiente, fecha_vencimiento) VALUES ($cli, 'V-MORA', 50, 50, DATE_SUB(CURDATE(), INTERVAL 5 DAY))");
@@ -202,7 +203,7 @@ $admin->pedir('controller/configuracion/controlador_guardar.php', ['inicio_alert
 $avisos = array_column($admin->pedir('controller/dashboard/controlador_alertas.php', [])['json']['data'], null, 'clave');
 comprobar('respeta lo elegido en Configuración', !isset($avisos['creditos_vencidos']), json_encode($avisos));
 comprobar('ignora una opción inventada', $pdo->query("SELECT valor FROM configuracion WHERE clave = 'inicio_alertas'")->fetchColumn() === 'turnos_sin_validar');
-$admin->pedir('controller/configuracion/controlador_guardar.php', ['inicio_alertas' => implode(',', ['creditos_vencidos', 'turnos_sin_validar', 'stock_bajo', 'compras_por_vencer', 'varillaje_diferencia', 'arqueos_pendientes', 'diferencias_caja', 'precios_programados'])]);
+$admin->pedir('controller/configuracion/controlador_guardar.php', ['inicio_alertas' => $alertasIniciales]);
 
 echo "\n7. Limpieza\n";
 $r = $admin->pedir('controller/turnos/controlador_eliminar_turno.php', ['id_reporte' => $turno, 'motivo' => 'prueba']);

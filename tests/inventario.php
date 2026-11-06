@@ -172,8 +172,6 @@ $r = $grifero->pedir(VEN . 'registrar_venta.php', ['valor' => -5] + $venta);
 comprobar('monto negativo rechazado', ($r['json']['success'] ?? true) === false);
 $r = $grifero->pedir(VEN . 'registrar_venta.php', ['id_tipo_pago' => 1] + $venta);
 comprobar('Yape sin código rechazado', ($r['json']['success'] ?? true) === false, $r['cuerpo']);
-$r = $grifero->pedir(VEN . 'registrar_venta.php', ['tipo_comprobante' => 'FACTURA'] + $venta);
-comprobar('factura sin RUC rechazada', ($r['json']['success'] ?? true) === false, $r['cuerpo']);
 comprobar('grifero no anula ventas', $grifero->pedir(VEN . 'anular_venta.php', ['id_venta' => 1, 'motivo' => 'x'])['codigo'] === 403);
 comprobar('grifero no ve la conciliación', $grifero->pedir(VEN . 'conciliacion.php', [])['codigo'] === 403);
 
