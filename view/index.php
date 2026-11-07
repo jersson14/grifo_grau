@@ -175,7 +175,7 @@ $capacidades = capacidades_sesion();
     $.ajaxSetup({ headers: { 'X-CSRF-Token': <?php echo json_encode(token_csrf()); ?> } });
     $(document).ajaxError(function(evento, xhr) {
       if (xhr.status === 401) {
-        window.location.href = '../index.php';
+        window.location.href = '../login.php';
       } else if (xhr.status === 403 && window.Swal) {
         var r = xhr.responseJSON || {};
         Swal.fire('Acceso denegado', r.message || 'No tiene permisos para realizar esta acción.', 'warning');

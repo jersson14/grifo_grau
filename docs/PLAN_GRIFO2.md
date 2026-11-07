@@ -23,6 +23,7 @@ Actualizado el 2026-11-07. Todo está en commits locales, sin publicar.
 | Fase 5 | Facturación con Nubefact: boletas, facturas, anulaciones, reintentos y bandeja, probados contra un **simulador**. Falta probar en su modo demo y notas de crédito, facturar vales y validar con el contador |
 | Fase 2 | Hecho: PHP 8.4 y MySQL 8.4 en Docker, sin avisos de obsolescencia, mPDF 8.3, una conexión por petición, CI en GitHub Actions y copias de seguridad (2.6). Todas las pruebas pasan en XAMPP, PHP 8.4 y Docker. Falta PHPStan, `utf8mb4` (depende del esquema de producción) y confirmar el motor de producción (D3) |
 | Fase 8 | Hecha: estilo unificado, celular, errores junto al campo, valores por defecto, contraste AA medido en 15 pantallas y datos mostrados como texto. Pruebas: `tests/ui.cjs` y `tests/contraste.cjs` |
+| Fase 9 | En curso: página pública con Tailwind (precios en vivo, servicios, promociones, solicitudes de flota) y su administración, hechas y probadas. Falta: rediseñar el panel en el mismo mundo visual y los módulos de gastos, tienda, flotas y personal |
 | Fase 7 | Sin empezar |
 
 **Pruebas:** `php tests/smoke.php`, `php tests/inventario.php`, `php tests/caja.php`, `tests/chatbot.php` y `tests/ui.cjs` en Edge real (estos dos, ver su cabecera). `php tests/roles.php` cubre roles, menú y auditoría. `php tests/permisos_grifero.php` lista lo que las pantallas del grifero piden y no se le permite: hay que revisarlo al cambiar permisos.
@@ -323,6 +324,19 @@ Pedida por el dueño el 2026-11-07. Las pantallas nuevas usan un estilo propio y
 
 **Listo cuando:** la prueba en navegador recorre todas las pantallas a ancho de celular sin desplazamiento horizontal, y cada formulario se puede completar solo con teclado.
 
+### Fase 9. Interfaz nueva, página pública y módulos que faltan
+
+Pedida por el dueño el 2026-11-07: interfaz que sorprenda, con Tailwind; página pública administrable desde el panel; agregar módulos que faltan y mejorar los existentes. Mundo visual elegido por el dueño: «Carrocería y cinta reflectiva» (arte de carrocería de camiones y combis). Producto en `PRODUCT.md`; contrato de dirección en `.impeccable/surfaces/index-php.md`.
+
+- [x] **9.1** Tailwind 3.4 compilado con `npm run css` (solo en desarrollo) a `css/publico.css`, que se versiona. Fuentes propias en `fuentes/` (Big Shoulders Display y Barlow Semi Condensed, licencia OFL).
+- [x] **9.2** Página pública (`publico/landing.php`): precios en vivo desde Productos con sello si cambiaron hoy, servicios, promociones vigentes, solicitud de crédito para flotas y cómo llegar. Módulo `pagina_publica` apagado por defecto: entonces la dirección del sistema muestra el acceso. El acceso pasa a `login.php`.
+- [x] **9.3** Administración en Configuración → Página pública: datos con validación, servicios con icono y orden, promociones con vigencia, bandeja de solicitudes de flota con estado y nota. Permiso `pagina_publica_gestionar`. Prueba: `tests/pagina_publica.php`.
+- [ ] **9.4** Panel en el mismo mundo visual: armazón (barra lateral y superior) y componentes en Tailwind con prefijo, conviviendo con las pantallas AdminLTE mientras se migran. Primero registrar turno y ventas.
+- [ ] **9.5** Gastos del grifo: categorías, registro diario y comparación con las ventas.
+- [ ] **9.6** Tienda / market: productos no combustibles, stock y venta rápida.
+- [ ] **9.7** Flotas y vales: empresas con varias placas, límite de crédito, consumo por placa y estado de cuenta mensual. Recibe las solicitudes de 9.3.
+- [ ] **9.8** Personal: datos, turnos asignados, asistencia y adelantos.
+
 ## 5. Riesgos
 
 | Riesgo | Mitigación |
@@ -362,4 +376,7 @@ Pedida por el dueño el 2026-11-07. Las pantallas nuevas usan un estilo propio y
 | 2026-11-06 | El rol y el estado del usuario se leen en cada petición | Un cambio o una baja surte efecto de inmediato, a cambio de una consulta más |
 | 2026-11-07 | Docker con PHP 8.4 y MySQL 8.4 LTS | Ambos con soporte; el modo estricto de MySQL descubre errores que MariaDB local oculta |
 | 2026-11-07 | Una conexión por petición, nueva solo dentro de una transacción | Menos conexiones sin cambiar el comportamiento de las transacciones |
+| 2026-11-07 | Tailwind compilado y versionado, no React + shadcn/ui | Funciona en el hosting compartido sin Node; se adopta el lenguaje visual de shadcn, no su código. Elegido por el dueño |
+| 2026-11-07 | Mundo visual «Carrocería y cinta reflectiva» | Elegido por el dueño entre las direcciones presentadas |
+| 2026-11-07 | La página pública es un módulo apagado por defecto y tiene vista previa | Se prepara el contenido antes de publicarla, sin mostrar una página vacía |
 | 2026-11-07 | La clase de conexión pasa a un archivo versionado | `model_conexion.php` está fuera de git y sus mejoras no llegaban a las instalaciones |

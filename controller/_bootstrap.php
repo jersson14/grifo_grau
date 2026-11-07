@@ -32,7 +32,7 @@ function iniciar_sesion_segura(): void
 function denegar_acceso(int $codigo, string $mensaje): void
 {
     if ($codigo === 401 && ruta_script_actual() === 'view/index.php') {
-        header('Location: ../index.php');
+        header('Location: ../login.php');
         exit;
     }
 

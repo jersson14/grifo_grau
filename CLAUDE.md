@@ -40,7 +40,7 @@ The web container waits for the database, creates `.env` and `model/model_conexi
 - Copy `.env.example` to `.env` and `model/model_conexion.example.php` to `model/model_conexion.php` (both gitignored), then run `composer install`
 - Create the empty database and run `php database/migrate.php --demo`. An empty database gets `database/schema/000_base_provisional.sql`, **reconstructed from code, not a copy of production**. `database/init.sql`, `tipos_pago.sql` and `fix_ventas_credito.sql` are legacy
 - Legacy modules not in the menu (gastos, ingresos, indicadores, pagos) call stored procedures the provisional schema doesn't include
-- Access at `http://localhost/grifo_grau`
+- Access at `http://localhost/grifo_grau` (the login is `login.php`; `index.php` shows the public page when the `pagina_publica` module is on)
 
 **Default credentials:**
 - Admin: `admin` / `admin123`
@@ -89,6 +89,12 @@ Follow the existing pattern exactly:
 2. **Controller** — create `controller/<module>/controlador_<action>.php`; instantiate the model, call the method, `echo json_encode($result)`
 3. **View** — add a view file in `view/<module>/`; load it by adding a menu item that calls `cargar_contenido('view/<module>/view_*.php')`
 4. **JS** — add AJAX calls in `js/console_<module>.js`
+
+## Public page and Tailwind
+
+- `publico/landing.php` is the public page, content edited in Configuración → Página pública (`model/model_pagina_publica.php`). Visual world: PRODUCT.md and `.impeccable/surfaces/index-php.md`.
+- Tailwind 3.4 is a dev-only tool: `npm install` then `npm run css` rebuilds `css/publico.css`, which is committed. The hosting never runs Node. Rebuild after changing classes in `publico/` or `js/publico.js`.
+- The public fleet form (`publico/solicitud_flota.php`) is a public route: it checks the module, its own CSRF token, a honeypot and a per-IP limit itself.
 
 ## PDF & Excel Export
 

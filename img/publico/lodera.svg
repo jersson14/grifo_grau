@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+  <!-- Lodera de caucho dibujada para la página pública: soporte de acero, cuerpo con estrías y esquinas cortadas. -->
+  <rect x="6" y="0" width="88" height="5" fill="#8b939c"/>
+  <rect x="6" y="4" width="88" height="1" fill="#5f6770"/>
+  <path d="M2 5 H98 V90 L91 100 H9 L2 90 Z" fill="#16181b"/>
+  <g stroke="#24282d" stroke-width="2" vector-effect="non-scaling-stroke">
+    <line x1="4" y1="70" x2="96" y2="70"/>
+    <line x1="4" y1="74" x2="96" y2="74"/>
+    <line x1="4" y1="78" x2="96" y2="78"/>
+  </g>
+  <path d="M2 5 H98 V90 L91 100 H9 L2 90 Z" fill="none" stroke="#2a2e33" stroke-width="2" vector-effect="non-scaling-stroke"/>
+</svg>

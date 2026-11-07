@@ -1,0 +1,12 @@
+{
+  "name": "grifo-grau",
+  "private": true,
+  "description": "Solo para desarrollo: compila los CSS de Tailwind. El hosting usa los archivos ya compilados en css/.",
+  "scripts": {
+    "css": "tailwindcss -c tailwind/config.js -i tailwind/publico.css -o css/publico.css --minify",
+    "css:ver": "tailwindcss -c tailwind/config.js -i tailwind/publico.css -o css/publico.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "3.4.17"
+  }
+}
