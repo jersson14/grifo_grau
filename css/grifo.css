@@ -1,0 +1,109 @@
+/*
+ * Capa común sobre AdminLTE para todas las pantallas, antiguas y nuevas.
+ * No cambia la identidad (azul corporativo, AdminLTE): unifica foco, tamaños táctiles,
+ * números en tablas y el comportamiento en celular.
+ */
+:root {
+  --g-azul: #023D77;
+  --g-azul-claro: #0266C8;
+  --g-azul-tenue: #e8f0fa;
+  --g-foco: #2f7de1;
+  --g-texto: #1c2733;
+  --g-texto-suave: #4f5d6b;
+  --g-borde: #d5dde6;
+}
+
+::selection { background: #cfe0f5; color: var(--g-azul); }
+
+/* Foco visible y uniforme, solo para teclado */
+a:focus-visible, button:focus-visible, .btn:focus-visible, [tabindex]:focus-visible,
+input:focus-visible, select:focus-visible, textarea:focus-visible, summary:focus-visible {
+  outline: 3px solid var(--g-foco);
+  outline-offset: 2px;
+  box-shadow: none;
+}
+.form-control:focus, .custom-select:focus {
+  border-color: var(--g-azul-claro);
+  box-shadow: 0 0 0 .2rem rgba(2, 102, 200, .22);
+}
+
+/* Cifras alineadas en tablas y tarjetas */
+td, .info-box-number, .small-box h3, .table th { font-variant-numeric: tabular-nums; }
+
+/* Errores junto al campo (ver G.validar en console_utilidades.js) */
+.campo-error { display: block; margin-top: .25rem; font-size: .875rem; color: #b42318; }
+.form-control.is-invalid, .custom-select.is-invalid { border-color: #b42318; }
+
+/* Pantallas táctiles: objetivos de al menos 44 px y letra de 16 px, que evita el zoom automático en iPhone */
+@media (pointer: coarse) {
+  .form-control, .custom-select, .select2-container .select2-selection--single {
+    min-height: 44px;
+    font-size: 16px;
+  }
+  .form-control-sm { height: auto; padding-top: .5rem; padding-bottom: .5rem; }
+  .btn { min-height: 44px; padding-top: .5rem; padding-bottom: .5rem; }
+  .btn-sm { min-height: 40px; min-width: 40px; }
+  .page-link { min-width: 44px; min-height: 44px; display: flex; align-items: center; justify-content: center; }
+  .form-check-input { width: 1.25rem; height: 1.25rem; margin-top: .15rem; }
+  .form-check-label { padding-left: .35rem; }
+  .nav-sidebar .nav-link { padding-top: .65rem; padding-bottom: .65rem; }
+}
+
+/* Celular */
+@media (max-width: 575.98px) {
+  .content-header h1 { font-size: 1.4rem; line-height: 1.25; }
+  .content-header .breadcrumb { display: none; }
+  .content-wrapper > .content { padding-left: .5rem; padding-right: .5rem; }
+  .card-body { padding: 1rem; }
+  .card-title { font-size: 1rem; }
+
+  /*
+   * Tablas de captura (las que contienen campos): cada fila se vuelve una tarjeta con su etiqueta
+   * al lado de cada valor. Las tablas de solo lectura conservan el desplazamiento horizontal.
+   */
+  table.tabla-apilable, table.tabla-apilable tbody, table.tabla-apilable tr, table.tabla-apilable td { display: block; width: 100%; }
+  table.tabla-apilable thead, table.tabla-apilable tfoot { display: none; }
+  table.tabla-apilable { border: 0; }
+  table.tabla-apilable tr {
+    background: #fff;
+    border: 1px solid var(--g-borde);
+    border-radius: .5rem;
+    margin-bottom: .75rem;
+    padding: .5rem .75rem;
+  }
+  table.tabla-apilable td {
+    border: 0 !important;
+    padding: .35rem 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+    text-align: right;
+  }
+  table.tabla-apilable td::before {
+    content: attr(data-label);
+    flex: 0 0 42%;
+    text-align: left;
+    font-weight: 600;
+    color: var(--g-texto-suave);
+  }
+  table.tabla-apilable td:not([data-label])::before, table.tabla-apilable td[data-label=""]::before { display: none; }
+  /* La primera celda identifica la fila (surtidor, n.º): hace de título de la tarjeta */
+  table.tabla-apilable td:first-child:not(:has(input, select, textarea, button)) {
+    justify-content: flex-start;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--g-texto);
+    padding-bottom: .5rem;
+    margin-bottom: .25rem;
+    border-bottom: 1px solid var(--g-borde) !important;
+  }
+  table.tabla-apilable td:first-child:not(:has(input, select, textarea, button))::before { display: none; }
+  table.tabla-apilable td > .form-control, table.tabla-apilable td > .custom-select,
+  table.tabla-apilable td > .select2-container { flex: 1 1 auto; width: auto !important; min-width: 0; }
+  .table-responsive:has(> table.tabla-apilable) { overflow: visible; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
+}

@@ -410,6 +410,56 @@ const espera = ms => new Promise(r => setTimeout(r, ms));
   await a.evaluate(() => $.post('../controller/administracion/controlador_mover_menu.php', { id_item: 203, direccion: 'ABAJO' }));
   await a.evaluate(() => $.post('../controller/administracion/controlador_guardar_menu.php', { id_item: 203, titulo: 'Surtidores', icono: 'fas fa-tint', visible: 1, roles: '[]' }));
 
+  console.log('\n6f. Celular (390 px, táctil)');
+  {
+    const ctx = await navegador.createBrowserContext();
+    const m = await ctx.newPage();
+    await m.setViewport({ width: 390, height: 844, isMobile: true, hasTouch: true });
+    m.errores = [];
+    m.on('dialog', async d => { m.errores.push('DIALOGO: ' + d.message().slice(0, 120)); await d.dismiss(); });
+    m.on('pageerror', e => m.errores.push('JS: ' + e.message));
+    await m.goto(BASE + '/', { waitUntil: 'networkidle2' });
+    comprobar('acceso: campos con etiqueta visible', await m.evaluate(() => !!document.querySelector('label[for="txt_usuario"]') && !!document.querySelector('label[for="txt_contra"]')));
+    await m.evaluate(() => { localStorage.pass = 'vieja'; localStorage.checkbox = '1'; localStorage.usuario = 'grifero1'; });
+    await m.reload({ waitUntil: 'networkidle2' });
+    comprobar('acceso: borra una contraseña guardada antes y solo recuerda el usuario', await m.evaluate(() => localStorage.getItem('pass') === null && document.getElementById('txt_usuario').value === 'grifero1' && document.getElementById('txt_contra').value === ''));
+    await m.type('#txt_contra', 'grifero123');
+    await m.click('#entrar');
+    await m.waitForFunction(() => location.href.includes('view/index.php'), { timeout: 15000 });
+    await m.waitForNetworkIdle({ idleTime: 600, timeout: 20000 }).catch(() => {});
+    comprobar('acceso: el formulario ingresa con Enter o con el botón', m.url().includes('view/index.php'));
+    for (const v of ['turnos/view_registrar_turno.php', 'ventas/view_ventas.php', 'inventario/view_varillaje.php', 'creditos/view_creditos_pendientes.php', 'reportes/view_mis_reportes.php']) {
+      m.errores.length = 0;
+      await abrir(m, v);
+      await espera(500);
+      const r = await m.evaluate(() => {
+        const raiz = document.getElementById('contenido_principal');
+        const campos = [...raiz.querySelectorAll('input:not([type=hidden]):not([type=checkbox]):not([type=radio]), select, textarea')].filter(e => e.offsetParent !== null);
+        return {
+          desborde: document.documentElement.scrollWidth - window.innerWidth,
+          sinEtiqueta: campos.filter(e => !(e.id && raiz.querySelector('label[for="' + e.id + '"]')) && !e.getAttribute('aria-label') && !e.closest('label')).map(e => e.id || e.className).slice(0, 3),
+          letraChica: campos.filter(e => parseFloat(getComputedStyle(e).fontSize) < 16).length,
+        };
+      });
+      comprobar(v + ': sin desplazamiento horizontal', r.desborde <= 0, String(r.desborde));
+      comprobar(v + ': todos los campos con etiqueta', r.sinEtiqueta.length === 0, r.sinEtiqueta.join(', '));
+      comprobar(v + ': letra de 16 px en los campos', r.letraChica === 0, String(r.letraChica));
+      comprobar(v + ': sin errores ni diálogos', m.errores.length === 0, m.errores.slice(0, 3).join(' | '));
+    }
+    await abrir(m, 'turnos/view_registrar_turno.php');
+    await m.waitForFunction(() => document.querySelectorAll('.lectura-final-input').length > 0, { timeout: 15000 });
+    comprobar('las lecturas se muestran como tarjetas', await m.evaluate(() => getComputedStyle(document.querySelector('#maquinas_lecturas tbody tr')).display === 'block' && document.querySelector('#maquinas_lecturas table').classList.contains('tabla-apilable')));
+    await abrir(m, 'ventas/view_ventas.php');
+    await m.waitForFunction(() => document.querySelectorAll('#venta_surtidor option').length > 1, { timeout: 15000 });
+    await m.click('#form_venta button[type=submit]');
+    await espera(400);
+    comprobar('un formulario incompleto marca los errores junto a cada campo', await m.evaluate(() => document.querySelectorAll('.campo-error').length >= 2 && document.activeElement && document.activeElement.classList.contains('is-invalid')));
+    await m.select('#venta_surtidor', await m.$eval('#venta_surtidor', s => s.options[1].value));
+    comprobar('corregir un campo quita su error', await m.evaluate(() => !document.getElementById('venta_surtidor').classList.contains('is-invalid')));
+    await pantalla(m, '21_celular_errores');
+    await ctx.close();
+  }
+
   console.log('\n7. Sesión vencida y cierre');
   await a.evaluate(() => { window.__marca = 1; });
   await g.goto(BASE + '/controller/usuario/controlador_cerrar_sesion.php', { waitUntil: 'networkidle2' });

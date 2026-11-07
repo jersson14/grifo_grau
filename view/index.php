@@ -11,6 +11,7 @@ $capacidades = capacidades_sesion();
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#023D77">
   <title>Sistema de Gestión - Grifo</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
   <link rel="stylesheet" href="../plantilla/plugins/fontawesome-free/css/all.min.css">
@@ -20,6 +21,7 @@ $capacidades = capacidades_sesion();
   <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
   <!-- Colores Suaves - Mejora Visual -->
   <link rel="stylesheet" href="../css/colores-suaves.css">
+  <link rel="stylesheet" href="../css/grifo.css?rev=<?php echo filemtime(__DIR__ . '/../css/grifo.css'); ?>">
 </head>
 
 <body class="hold-transition sidebar-mini">

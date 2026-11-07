@@ -22,7 +22,8 @@ Actualizado el 2026-11-06. Todo está en commits locales, sin publicar.
 | Fase 4 | Hecho y probado: tanques, kardex, varillaje, compras con cuentas por pagar, ventas individuales, precios (historial y programación) y caja con arqueo y depósitos (4.1 a 4.6). Falta: tienda, flotas, gastos, personal, reportes y cumplimiento sectorial |
 | Fase 5 | Facturación con Nubefact: boletas, facturas, anulaciones, reintentos y bandeja, probados contra un **simulador**. Falta probar en su modo demo y notas de crédito, facturar vales y validar con el contador |
 | Fase 2 | Copias de seguridad desde la interfaz, con restauración probada (2.6). Falta PHP 8.4, compatibilidad y CI |
-| Fases 7 y 8 | Sin empezar. La 8 es la mejora de interfaz, pedida por el dueño el 2026-11-07 |
+| Fase 8 | Hecho: acceso con logo y nombre configurables, uso en celular, errores junto al campo, sin `alert()` y etiquetas accesibles en todas las pantallas. Falta unificar el estilo visual de las pantallas antiguas (8.1) |
+| Fase 7 | Sin empezar |
 
 **Pruebas:** `php tests/smoke.php`, `php tests/inventario.php`, `php tests/caja.php`, `tests/chatbot.php` y `tests/ui.cjs` en Edge real (estos dos, ver su cabecera). `php tests/roles.php` cubre roles, menú y auditoría. `php tests/permisos_grifero.php` lista lo que las pantallas del grifero piden y no se le permite: hay que revisarlo al cambiar permisos.
 
@@ -312,12 +313,12 @@ Permite preguntar en lenguaje natural, por ejemplo: «¿Cuántos galones de Prem
 Pedida por el dueño el 2026-11-07. Las pantallas nuevas usan un estilo propio y las antiguas, otro: unificarlas sin rehacer la lógica.
 
 - [ ] **8.1** Revisión de diseño de todas las pantallas: jerarquía, espaciado, colores y textos coherentes. Hoy conviven estilos en línea, DataTables y tablas simples.
-- [ ] **8.2** Uso en celular y tablet para el grifero: registrar turno y venta con campos grandes, teclado numérico y sin desplazamiento horizontal.
-- [ ] **8.3** Formularios más rápidos: valores por defecto razonables, validación al escribir y mensajes de error junto al campo, no solo en ventanas emergentes.
-- [ ] **8.4** Reemplazar los `alert()` y avisos de DataTables por mensajes integrados, y mostrar estados de carga y de lista vacía.
-- [ ] **8.5** Accesibilidad: etiquetas en todos los campos, contraste suficiente, navegación con teclado y foco visible.
+- [x] **8.2** Uso en celular y tablet para el grifero: registrar turno y venta con campos grandes, teclado numérico y sin desplazamiento horizontal.
+- [ ] **8.3** *(parcial: errores junto al campo hechos)* Formularios más rápidos: valores por defecto razonables, validación al escribir y mensajes de error junto al campo, no solo en ventanas emergentes.
+- [x] **8.4** Reemplazar los `alert()` y avisos de DataTables por mensajes integrados, y mostrar estados de carga y de lista vacía.
+- [ ] **8.5** *(parcial: etiquetas, foco visible y tamaño táctil hechos; falta revisar contraste en pantallas antiguas)* Accesibilidad: etiquetas en todos los campos, contraste suficiente, navegación con teclado y foco visible.
 - [ ] **8.6** Escape de datos al mostrar en las pantallas antiguas (1.8), aprovechando la revisión.
-- [ ] **8.7** Pantalla de inicio de sesión con el logo y nombre de la empresa configurables.
+- [x] **8.7** Pantalla de inicio de sesión con el logo y nombre de la empresa configurables.
 
 **Listo cuando:** la prueba en navegador recorre todas las pantallas a ancho de celular sin desplazamiento horizontal, y cada formulario se puede completar solo con teclado.
 
@@ -352,6 +353,7 @@ Pedida por el dueño el 2026-11-07. Las pantallas nuevas usan un estilo propio y
 | 2026-11-06 | Se ocultan al grifero los botones de crédito y cliente que no puede usar | Pendiente de que el dueño confirme esos permisos |
 | 2026-11-06 | Los permisos son capacidades definidas en código y asignadas a roles desde la interfaz | Una ruta nueva exige una decisión en el catálogo; los roles se administran sin programar |
 | 2026-11-07 | Se agrega la Fase 8 de interfaz | Pedida por el dueño |
+| 2026-11-07 | La interfaz se mejora con una capa común (`css/grifo.css` y `console_utilidades.js`) en vez de tocar cada pantalla | Llega a las pantallas antiguas sin rehacer su lógica |
 | 2026-11-07 | Las copias se generan con PHP, sin mysqldump | El hosting compartido suele no ofrecerlo |
 | 2026-11-06 | Facturación con Nubefact, elegida por el dueño | Menor carga técnica que la emisión directa |
 | 2026-11-06 | La venta se guarda antes de emitir y conserva su número al reintentar | Una caída del proveedor no debe perder ventas ni duplicar comprobantes |
