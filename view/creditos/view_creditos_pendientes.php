@@ -10,7 +10,7 @@
             <div class="col-sm-6">
                 <ol class="breadcrumb float-sm-right">
                     <li class="breadcrumb-item"><a href="../view/index.php">Inicio</a></li>
-                    <li class="breadcrumb-item active">Créditos Pendientes</li>
+                    <li class="breadcrumb-item active">Créditos pendientes</li>
                 </ol>
             </div>
         </div>
@@ -19,157 +19,97 @@
 
 <div class="content">
     <div class="container-fluid">
-        
+
         <!-- RESUMEN DE CRÉDITOS -->
-        <div class="row">
-            <div class="col-md-3">
-                <div class="info-box bg-warning">
-                    <span class="info-box-icon"><i class="fas fa-file-invoice"></i></span>
-                    <div class="info-box-content">
-                        <span class="info-box-text">Créditos Pendientes</span>
-                        <span class="info-box-number" id="total_creditos_pendientes">0</span>
-                    </div>
-                </div>
+        <div class="row" aria-live="polite">
+            <div class="col-6 col-xl-3"><div class="card mb-3"><div class="card-body py-3">
+                <div class="small text-muted">Vales pendientes</div>
+                <div class="g-cifra" id="total_creditos_pendientes">0</div>
+                <div class="small text-muted">Con saldo por cobrar</div>
+            </div></div></div>
+            <div class="col-6 col-xl-3"><div class="card mb-3"><div class="card-body py-3">
+                <div class="small text-muted">Vales vencidos</div>
+                <div class="g-cifra" id="total_creditos_vencidos">0</div>
+                <div class="small text-muted">Pasaron su fecha de pago</div>
+            </div></div></div>
+            <div class="col-6 col-xl-3"><div class="card mb-3"><div class="card-body py-3">
+                <div class="small text-muted">Saldo por cobrar</div>
+                <div class="g-cifra" id="total_saldo_pendiente">S/ 0.00</div>
+                <div class="small text-muted">Suma de los saldos</div>
+            </div></div></div>
+            <div class="col-6 col-xl-3"><div class="card mb-3"><div class="card-body py-3">
+                <div class="small text-muted">Cobrado</div>
+                <div class="g-cifra" id="total_monto_pagado">S/ 0.00</div>
+                <div class="small text-muted">Pagos registrados</div>
+            </div></div></div>
+        </div>
+
+        <!-- FILTRO Y ACCIONES -->
+        <div class="d-flex flex-wrap align-items-end mb-3" style="gap: .5rem;">
+            <div>
+                <label for="filtro_estado" class="d-block mb-1">Estado</label>
+                <select class="form-control form-control-sm" id="filtro_estado" style="width: auto;" onchange="Filtrar_Creditos()">
+                    <option value="PENDIENTE" selected>Pendientes</option>
+                    <option value="PAGADO">Pagados</option>
+                    <option value="">Todos</option>
+                </select>
             </div>
-            <div class="col-md-3">
-                <div class="info-box" style="background-color:#e57373; color:white">
-                    <span class="info-box-icon"><i class="fas fa-exclamation-triangle"></i></span>
-                    <div class="info-box-content">
-                        <span class="info-box-text">Créditos Vencidos</span>
-                        <span class="info-box-number" id="total_creditos_vencidos">0</span>
-                    </div>
-                </div>
+            <div class="ml-auto d-flex flex-wrap" style="gap: .5rem;">
+                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="Exportar_Creditos_Excel()"><i class="fas fa-file-excel" aria-hidden="true"></i> Exportar a Excel</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="Exportar_Creditos_PDF()"><i class="fas fa-file-pdf" aria-hidden="true"></i> Exportar a PDF</button>
+                <button type="button" class="btn btn-primary btn-sm" onclick="Abrir_Modal_Agregar_Credito_Manual()"><i class="fas fa-plus" aria-hidden="true"></i> Agregar crédito</button>
             </div>
-            <div class="col-md-3">
-                <div class="info-box bg-info">
-                    <span class="info-box-icon"><i class="fas fa-dollar-sign"></i></span>
-                    <div class="info-box-content">
-                        <span class="info-box-text">Saldo Pendiente</span>
-                        <span class="info-box-number" id="total_saldo_pendiente">S/. 0.00</span>
-                    </div>
-                </div>
+        </div>
+
+        <!-- CLIENTES CON CRÉDITOS -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Clientes con créditos</h2>
+                <span class="card-tools small text-muted d-none d-md-inline">Busque por cliente, DNI o teléfono en «Buscar».</span>
             </div>
-            <div class="col-md-3">
-                <div class="info-box bg-success">
-                    <span class="info-box-icon"><i class="fas fa-check-circle"></i></span>
-                    <div class="info-box-content">
-                        <span class="info-box-text">Monto Pagado</span>
-                        <span class="info-box-number" id="total_monto_pagado">S/. 0.00</span>
-                    </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                <table id="tabla_creditos_por_cliente" class="table table-hover" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>Cliente</th>
+                            <th>DNI/RUC</th>
+                            <th>Teléfono</th>
+                            <th class="text-right">Vales</th>
+                            <th class="text-right">Monto total</th>
+                            <th class="text-right">Pagado</th>
+                            <th class="text-right">Saldo</th>
+                            <th>Vencimiento</th>
+                            <th><span class="sr-only">Acciones</span></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
                 </div>
             </div>
         </div>
 
-        <!-- FILTROS -->
-        <div class="row mb-3">
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="card-header" style="background-color:#6c757d; color:white">
-                        <h3 class="card-title"><i class="fas fa-filter"></i> Filtros</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-6 form-group">
-                                <label>Estado</label>
-                                <select class="form-control" id="filtro_estado">
-                                    <option value="PENDIENTE" selected>PENDIENTE</option>
-                                    <option value="PAGADO">PAGADO</option>
-                                    <option value="">TODOS</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6 form-group">
-                                <label>&nbsp;</label><br>
-                                <button class="btn btn-primary btn-block" onclick="Filtrar_Creditos()">
-                                    <i class="fas fa-search"></i> Buscar
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <!-- BOTONES DE ACCIÓN -->
-                        <div class="row mt-3">
-                            <div class="col-md-3">
-                                <button class="btn btn-success btn-block" onclick="Abrir_Modal_Agregar_Credito_Manual()">
-                                    <i class="fas fa-plus-circle"></i> Agregar Crédito
-                                </button>
-                            </div>
-                            <div class="col-md-3">
-                                <button class="btn btn-block" style="background-color:#e57373; color:white; border-color:#e57373" onclick="Exportar_Creditos_PDF()">
-                                    <i class="fas fa-file-pdf"></i> Exportar PDF
-                                </button>
-                            </div>
-                            <div class="col-md-3">
-                                <button class="btn btn-info btn-block" onclick="Exportar_Creditos_Excel()">
-                                    <i class="fas fa-file-excel"></i> Exportar Excel
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <div class="alert alert-info mt-2">
-                            <i class="fas fa-info-circle"></i> <strong>Nota:</strong> Usa el buscador de la tabla para filtrar por cliente, DNI o teléfono.
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- TABLA DE CRÉDITOS AGRUPADOS POR CLIENTE -->
-        <div class="row">
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="card-header" style="background: linear-gradient(135deg, #e57373, #ef5350)">
-                        <h3 class="card-title" style="color:white"><i class="fas fa-users"></i> Clientes con Créditos Pendientes</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="table-responsive">
-                        <table id="tabla_creditos_por_cliente" class="table table-striped table-bordered table-hover" style="width:100%">
-                            <thead style="background-color:#e57373; color:white">
-                                <tr>
-                                    <th>Cliente</th>
-                                    <th>DNI/RUC</th>
-                                    <th>Teléfono</th>
-                                    <th>Total Vales</th>
-                                    <th>Monto Total</th>
-                                    <th>Pagado</th>
-                                    <th>Saldo Pendiente</th>
-                                    <th>Vencimiento</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                            </tbody>
-                        </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- TOP CLIENTES CON MÁS DEUDA -->
-        <div class="row">
-            <div class="col-md-12">
-                <div class="card" style="border-top: 3px solid #e57373">
-                    <div class="card-header" style="background-color:#e57373; color:white">
-                        <h3 class="card-title"><i class="fas fa-chart-bar"></i> Top 10 Clientes con Más Deuda</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="table-responsive">
-                        <table id="tabla_top_deudores" class="table table-sm table-bordered">
-                            <thead style="background-color:#e57373; color:white">
-                                <tr>
-                                    <th>#</th>
-                                    <th>Cliente</th>
-                                    <th>DNI/RUC</th>
-                                    <th>Teléfono</th>
-                                    <th>Total Créditos</th>
-                                    <th>Saldo Pendiente</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tbody_top_deudores">
-                            </tbody>
-                        </table>
-                        </div>
-                    </div>
+        <!-- CLIENTES CON MÁS DEUDA -->
+        <div class="card">
+            <div class="card-header"><h2 class="card-title">Los 10 clientes con más deuda</h2></div>
+            <div class="card-body">
+                <div class="table-responsive">
+                <table id="tabla_top_deudores" class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Cliente</th>
+                            <th>DNI/RUC</th>
+                            <th>Teléfono</th>
+                            <th class="text-right">Créditos</th>
+                            <th class="text-right">Saldo</th>
+                            <th><span class="sr-only">Acciones</span></th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody_top_deudores">
+                    </tbody>
+                </table>
                 </div>
             </div>
         </div>

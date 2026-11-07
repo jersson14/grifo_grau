@@ -11,20 +11,20 @@ function Cargar_Resumen_Creditos() {
     }).done(function(resp) {
         var data = JSON.parse(resp);
         $('#total_creditos_pendientes').text(data.creditos_pendientes);
-        $('#total_creditos_vencidos').text(data.creditos_vencidos);
-        $('#total_saldo_pendiente').text('S/. ' + parseFloat(data.saldo_pendiente).toFixed(2));
-        $('#total_monto_pagado').text('S/. ' + parseFloat(data.monto_pagado).toFixed(2));
+        $('#total_creditos_vencidos').text(data.creditos_vencidos).toggleClass('text-danger', Number(data.creditos_vencidos) > 0);
+        $('#total_saldo_pendiente').text(G.soles(data.saldo_pendiente));
+        $('#total_monto_pagado').text(G.soles(data.monto_pagado));
     });
 }
 
 // LISTAR CRÉDITOS AGRUPADOS POR CLIENTE
 function Listar_Creditos_Por_Cliente() {
     var filtro_estado = $('#filtro_estado').val() || 'PENDIENTE';
-    
+
     if (tabla_creditos_por_cliente) {
         tabla_creditos_por_cliente.destroy();
     }
-    
+
     tabla_creditos_por_cliente = $("#tabla_creditos_por_cliente").DataTable({
         "ordering": true,
         "bLengthChange": true,
@@ -43,57 +43,39 @@ function Listar_Creditos_Por_Cliente() {
         "columns": [
             { "data": "nombre_completo" },
             { "data": "dni_ruc" },
-            { 
+            {
                 "data": "telefono",
                 "render": function(data) {
                     return data ? data : '-';
                 }
             },
-            { 
-                "data": "total_vales",
-                "render": function(data) {
-                    return '<span class="badge badge-info">' + data + '</span>';
-                }
-            },
-            { 
-                "data": "monto_total",
-                "render": function(data) {
-                    return 'S/. ' + parseFloat(data).toFixed(2);
-                }
-            },
-            { 
-                "data": "monto_pagado",
-                "render": function(data) {
-                    return 'S/. ' + parseFloat(data).toFixed(2);
-                }
-            },
-            { 
-                "data": "saldo_pendiente",
-                "render": function(data) {
-                    return '<strong class="text-danger">S/. ' + parseFloat(data).toFixed(2) + '</strong>';
-                }
-            },
-            { 
+            { "data": "total_vales", "className": "text-right" },
+            { "data": "monto_total", "className": "text-right text-nowrap", "render": function (d, tipo) { return tipo === 'display' ? G.soles(d) : Number(d); } },
+            { "data": "monto_pagado", "className": "text-right text-nowrap", "render": function (d, tipo) { return tipo === 'display' ? G.soles(d) : Number(d); } },
+            { "data": "saldo_pendiente", "className": "text-right text-nowrap", "render": function (d, tipo) { return tipo === 'display' ? '<strong>' + G.soles(d) + '</strong>' : Number(d); } },
+            {
                 "data": "fecha_vencimiento_mas_antigua",
                 "render": function(data, type, row) {
                     if (data) {
                         var fecha = Fecha_Local(data);
                         var dias = row.dias_vencido_max;
-                        var html = fecha.toLocaleDateString('es-PE');
+                        var html = '<span class="text-nowrap">' + fecha.toLocaleDateString('es-PE') + '</span>';
                         if (dias > 0) {
-                            html += '<br><span class="badge badge-danger">Vencido ' + dias + ' días</span>';
+                            html += '<br><span class="badge badge-danger">Vencido hace ' + dias + (dias == 1 ? ' día' : ' días') + '</span>';
                         } else if (dias < 0) {
-                            html += '<br><span class="badge badge-warning">Vence en ' + Math.abs(dias) + ' días</span>';
+                            html += '<br><span class="badge badge-light">Vence en ' + Math.abs(dias) + (dias == -1 ? ' día' : ' días') + '</span>';
+                        } else {
+                            html += '<br><span class="badge badge-warning">Vence hoy</span>';
                         }
                         return html;
                     }
-                    return '-';
+                    return '<span class="text-muted">Sin fecha</span>';
                 }
             },
             {
-                "data": "id_cliente",
-                "render": function(data) {
-                    return "<button class='ver_vales btn btn-primary btn-sm' title='Ver Vales'><i class='fas fa-eye'></i> Ver Vales</button>";
+                "data": "id_cliente", "orderable": false,
+                "render": function(data, type, row) {
+                    return "<button type='button' class='ver_vales btn btn-outline-secondary btn-sm text-nowrap' aria-label='Ver los vales de " + Texto_Seguro(row.nombre_completo) + "'><i class='fas fa-receipt' aria-hidden='true'></i> Ver vales</button>";
                 }
             }
         ],
@@ -116,22 +98,22 @@ function Ver_Vales_Cliente(id_cliente, nombre_cliente, dni, total_vales, saldo_t
     $('#info_dni_vales').text(dni);
     $('#info_total_vales').text(total_vales);
     $('#info_saldo_total_vales').text('S/. ' + parseFloat(saldo_total).toFixed(2));
-    
+
     // Actualizar el monto total a pagar en el botón
     $('#monto_total_pagar').text('S/. ' + parseFloat(saldo_total).toFixed(2));
-    
+
     // Mostrar u ocultar el botón "Pagar Todo" según el saldo
     if (parseFloat(saldo_total) > 0) {
         $('#btn_pagar_todo_cliente').show();
     } else {
         $('#btn_pagar_todo_cliente').hide();
     }
-    
+
     // Cargar tabla de vales
     if (tabla_vales_cliente) {
         tabla_vales_cliente.destroy();
     }
-    
+
     tabla_vales_cliente = $("#tabla_vales_cliente").DataTable({
         "ordering": true,
         "bLengthChange": false,
@@ -161,14 +143,14 @@ function Ver_Vales_Cliente(id_cliente, nombre_cliente, dni, total_vales, saldo_t
                     return data ? '<strong>' + data + '</strong>' : '<span class="text-muted">-</span>';
                 }
             },
-            { 
+            {
                 "data": "created_at",
                 "render": function(data) {
                     var fecha = Fecha_Local(data);
                     return fecha.toLocaleDateString('es-PE');
                 }
             },
-            { 
+            {
                 "data": "turno",
                 "render": function(data, type, row) {
                     if (row.numero_documento && row.numero_documento !== 'null' && row.numero_documento !== null) {
@@ -177,19 +159,19 @@ function Ver_Vales_Cliente(id_cliente, nombre_cliente, dni, total_vales, saldo_t
                     return '<small class="text-muted">Manual</small>';
                 }
             },
-            { 
+            {
                 "data": "monto",
                 "render": function(data) {
                     return 'S/. ' + parseFloat(data).toFixed(2);
                 }
             },
-            { 
+            {
                 "data": "monto_pagado",
                 "render": function(data) {
                     return 'S/. ' + parseFloat(data).toFixed(2);
                 }
             },
-            { 
+            {
                 "data": "saldo_pendiente",
                 "render": function(data) {
                     return '<strong>S/. ' + parseFloat(data).toFixed(2) + '</strong>';
@@ -289,7 +271,7 @@ function Ver_Vales_Cliente(id_cliente, nombre_cliente, dni, total_vales, saldo_t
             Abrir_Modal_Pago(data.id_credito);
         }, 300);
     });
-    
+
     $('#tabla_vales_cliente tbody').on('click', '.editar_vale', function() {
         var data = tabla_vales_cliente.row($(this).closest('tr')).data();
         $('#modal_vales_cliente').modal('hide');
@@ -297,7 +279,7 @@ function Ver_Vales_Cliente(id_cliente, nombre_cliente, dni, total_vales, saldo_t
             Abrir_Modal_Editar_Credito(data.id_credito);
         }, 300);
     });
-    
+
     $('#tabla_vales_cliente tbody').on('click', '.historial_vale', function() {
         var data = tabla_vales_cliente.row($(this).closest('tr')).data();
         $('#modal_vales_cliente').modal('hide');
@@ -305,7 +287,7 @@ function Ver_Vales_Cliente(id_cliente, nombre_cliente, dni, total_vales, saldo_t
             Ver_Historial_Pagos(data.id_credito);
         }, 300);
     });
-    
+
     $('#tabla_vales_cliente tbody').on('click', '.eliminar_vale', function() {
         var data = tabla_vales_cliente.row($(this).closest('tr')).data();
         Eliminar_Credito(data.id_credito, data.numero_vale);
@@ -347,7 +329,7 @@ function Eliminar_Credito(id_credito, numero_vale) {
                         text: 'El registro ha sido eliminado del sistema',
                         confirmButtonColor: '#023D77'
                     });
-                    
+
                     // Actualizar tablas y resumen
                     tabla_vales_cliente.ajax.reload();
                     Listar_Creditos_Por_Cliente();
@@ -376,7 +358,7 @@ function Filtrar_Creditos() {
 function Listar_Creditos_Pendientes() {
     var filtro_cliente = $('#filtro_cliente').val();
     var filtro_estado = $('#filtro_estado').val();
-    
+
     tabla_creditos_pendientes = $("#tabla_creditos_pendientes").DataTable({
         "ordering": true,
         "bLengthChange": true,
@@ -397,38 +379,38 @@ function Listar_Creditos_Pendientes() {
         "columns": [
             { "data": "numero_vale" },
             { "data": "cliente_nombre" },
-            { 
+            {
                 "data": "created_at",
                 "render": function(data) {
                     var fecha = Fecha_Local(data);
                     return fecha.toLocaleDateString('es-PE');
                 }
             },
-            { 
+            {
                 "data": "turno",
                 "render": function(data, type, row) {
                     return '<small>' + row.numero_documento + '<br>' + data + '</small>';
                 }
             },
-            { 
+            {
                 "data": "monto",
                 "render": function(data) {
                     return 'S/. ' + parseFloat(data).toFixed(2);
                 }
             },
-            { 
+            {
                 "data": "monto_pagado",
                 "render": function(data) {
                     return 'S/. ' + parseFloat(data).toFixed(2);
                 }
             },
-            { 
+            {
                 "data": "saldo_pendiente",
                 "render": function(data) {
                     return '<strong>S/. ' + parseFloat(data).toFixed(2) + '</strong>';
                 }
             },
-            { 
+            {
                 "data": "fecha_vencimiento",
                 "render": function(data, type, row) {
                     if (data) {
@@ -461,7 +443,7 @@ function Listar_Creditos_Pendientes() {
                 "data": "estado",
                 "render": function(data, type, row) {
                                         var botones = "";
-                    
+
                     if (data == 'PENDIENTE') {
                         // Botón de pagar (todos pueden)
                         botones += "<button class='pagar btn btn-success btn-sm' title='Registrar Pago'><i class='fas fa-money-bill-wave'></i></button>&nbsp;";
@@ -475,7 +457,7 @@ function Listar_Creditos_Pendientes() {
                         // Solo historial para créditos pagados o anulados
                         botones = "<button class='historial btn btn-info btn-sm' title='Ver Historial'><i class='fas fa-history'></i></button>";
                     }
-                    
+
                     return botones;
                 }
             }
@@ -508,7 +490,7 @@ function Abrir_Modal_Pago(id_credito) {
         data: { id_credito: id_credito }
     }).done(function(resp) {
         var data = JSON.parse(resp);
-        
+
         $('#txt_id_credito_pago').val(data.id_credito);
         $('#info_cliente_pago').text(data.cliente_nombre);
         $('#info_vale_pago').text(data.numero_vale);
@@ -601,7 +583,7 @@ function Registrar_Pago_Credito() {
         });
         return;
     }
-    
+
     if (parseFloat(monto_pagado) <= 0) {
         Swal.fire({
             icon: 'warning',
@@ -611,12 +593,12 @@ function Registrar_Pago_Credito() {
         });
         return;
     }
-    
+
     // Detectar si es un pago total de cliente (múltiples créditos)
     var es_pago_total = id_credito.indexOf('CLIENTE_') === 0;
     var url_controlador = '';
     var datos_envio = {};
-    
+
     if (es_pago_total) {
         // Pago total de todas las deudas del cliente
         var id_cliente = id_credito.replace('CLIENTE_', '');
@@ -644,7 +626,7 @@ function Registrar_Pago_Credito() {
             observaciones: observaciones
         };
     }
-    
+
     $.ajax({
         url: url_controlador,
         type: 'POST',
@@ -703,7 +685,7 @@ function Pagar_Todo_Cliente() {
     var id_cliente = $('#txt_id_cliente_vales').val();
     var nombre_cliente = $('#info_cliente_vales').text();
     var saldo_total = $('#info_saldo_total_vales').text().replace('S/. ', '');
-    
+
     if (parseFloat(saldo_total) <= 0) {
         Swal.fire({
             icon: 'info',
@@ -713,10 +695,10 @@ function Pagar_Todo_Cliente() {
         });
         return;
     }
-    
+
     // Cerrar modal de vales
     $('#modal_vales_cliente').modal('hide');
-    
+
     // Esperar a que se cierre el modal antes de abrir el nuevo
     setTimeout(function() {
         // Configurar el modal de pago para todas las deudas
@@ -726,7 +708,7 @@ function Pagar_Todo_Cliente() {
         $('#info_monto_total_pago').text('S/. ' + parseFloat(saldo_total).toFixed(2));
         $('#info_saldo_pendiente_pago').text('S/. ' + parseFloat(saldo_total).toFixed(2));
         $('#max_monto_pago').text('S/. ' + parseFloat(saldo_total).toFixed(2));
-        
+
         // Pre-llenar el monto con el saldo total
         $('#txt_monto_pago_credito').val(parseFloat(saldo_total).toFixed(2));
         $('#txt_fecha_pago_credito').val(Hoy_ISO());
@@ -747,18 +729,18 @@ function Ver_Historial_Pagos(id_credito) {
         data: { id_credito: id_credito }
     }).done(function(resp) {
         var data = JSON.parse(resp);
-        
+
         $('#hist_cliente').text(data.cliente_nombre);
         $('#hist_vale').text(data.numero_vale);
         $('#hist_monto_total').text('S/. ' + parseFloat(data.monto).toFixed(2));
         $('#hist_saldo_pendiente').text('S/. ' + parseFloat(data.saldo_pendiente).toFixed(2));
     });
-    
+
     // Cargar historial de pagos
     if (tabla_historial_pagos_credito) {
         tabla_historial_pagos_credito.destroy();
     }
-    
+
     tabla_historial_pagos_credito = $("#tabla_historial_pagos_credito").DataTable({
         "ordering": false,
         "bLengthChange": false,
@@ -772,7 +754,7 @@ function Ver_Historial_Pagos(id_credito) {
             "data": { id_credito: id_credito }
         },
         "columns": [
-            { 
+            {
                 "data": "fecha_pago",
                 "render": function(data) {
                     var fecha = Fecha_Local(data);
@@ -780,32 +762,32 @@ function Ver_Historial_Pagos(id_credito) {
                 }
             },
             { "data": "tipo_pago_nombre" },
-            { 
+            {
                 "data": "codigo_operacion",
                 "render": function(data) {
                     return data ? data : '-';
                 }
             },
-            { 
+            {
                 "data": "monto_pagado",
                 "render": function(data) {
                     return '<strong>S/. ' + parseFloat(data).toFixed(2) + '</strong>';
                 }
             },
-            { 
+            {
                 "data": "saldo_anterior",
                 "render": function(data) {
                     return 'S/. ' + parseFloat(data).toFixed(2);
                 }
             },
-            { 
+            {
                 "data": "saldo_nuevo",
                 "render": function(data) {
                     return 'S/. ' + parseFloat(data).toFixed(2);
                 }
             },
             { "data": "registrado_por" },
-            { 
+            {
                 "data": "observaciones",
                 "render": function(data) {
                     return data ? data : '-';
@@ -814,7 +796,7 @@ function Ver_Historial_Pagos(id_credito) {
         ],
         "language": idioma_espanol
     });
-    
+
     $('#modal_historial_pagos').modal('show');
 }
 
@@ -1001,23 +983,25 @@ function Cargar_Top_Deudores() {
         type: 'POST'
     }).done(function(resp) {
         var data = JSON.parse(resp);
-        var html = '';
-        var contador = 1;
-        
-        data.forEach(function(item) {
-            html += '<tr>';
-            html += '<td>' + contador + '</td>';
-            html += '<td>' + Texto_Seguro(item.nombre_completo) + '</td>';
-            html += '<td>' + (item.dni_ruc ? item.dni_ruc : '-') + '</td>';
-            html += '<td>' + (item.telefono ? item.telefono : '-') + '</td>';
-            html += '<td>' + item.total_creditos + '</td>';
-            html += '<td><strong class="text-danger">S/. ' + parseFloat(item.saldo_pendiente).toFixed(2) + '</strong></td>';
-            html += '<td><button class="btn btn-info btn-sm" onclick="Ver_Vales_Cliente(' + item.id_cliente + ', \'' + item.nombre_completo.replace(/'/g, "\\'") + '\', \'' + (item.dni_ruc ? item.dni_ruc : '-') + '\', ' + item.total_creditos + ', ' + parseFloat(item.saldo_pendiente).toFixed(2) + ')"><i class="fas fa-eye"></i> Ver</button></td>';
-            html += '</tr>';
-            contador++;
+        var cuerpo = $('#tbody_top_deudores').empty();
+        if (!data.length) {
+            cuerpo.append($('<tr></tr>').append($('<td colspan="7" class="text-center text-muted"></td>').text('No hay clientes con deuda.')));
+        }
+        data.forEach(function(item, n) {
+            var boton = $('<button type="button" class="btn btn-outline-secondary btn-sm"></button>')
+                .attr('aria-label', 'Ver los vales de ' + item.nombre_completo)
+                .append($('<i class="fas fa-receipt" aria-hidden="true"></i>'), ' Ver')
+                .on('click', function () { Ver_Vales_Cliente(item.id_cliente, item.nombre_completo, item.dni_ruc || '-', item.total_creditos, parseFloat(item.saldo_pendiente)); });
+            cuerpo.append($('<tr></tr>').append(
+                $('<td></td>').text(n + 1),
+                $('<td></td>').text(item.nombre_completo),
+                $('<td></td>').text(item.dni_ruc || '—'),
+                $('<td></td>').text(item.telefono || '—'),
+                $('<td class="text-right"></td>').text(item.total_creditos),
+                $('<td class="text-right text-nowrap font-weight-bold"></td>').text(G.soles(item.saldo_pendiente)),
+                $('<td></td>').append(boton)
+            ));
         });
-        
-        $('#tbody_top_deudores').html(html);
     });
 }
 
@@ -1045,7 +1029,7 @@ function Cargar_Clientes_Filtro() {
             opciones += '<option value="' + item.id_cliente + '">' + Texto_Seguro(item.nombre_completo) + '</option>';
         });
         $("#filtro_cliente").html(opciones);
-        
+
         // Inicializar Select2
         $('#filtro_cliente').select2({
             placeholder: 'Todos los clientes',
@@ -1066,7 +1050,7 @@ function Cargar_Clientes_Filtro() {
 function Exportar_Creditos_PDF() {
     var filtro_cliente = $('#filtro_cliente').val() || '';
     var filtro_estado = $('#filtro_estado').val() || '';
-    
+
     var url = '../controller/creditos/controlador_exportar_creditos_pdf.php?filtro_cliente=' + filtro_cliente + '&filtro_estado=' + filtro_estado;
     window.open(url, '_blank');
 }
@@ -1075,7 +1059,7 @@ function Exportar_Creditos_PDF() {
 function Exportar_Creditos_Excel() {
     var filtro_cliente = $('#filtro_cliente').val() || '';
     var filtro_estado = $('#filtro_estado').val() || '';
-    
+
     var url = '../controller/creditos/controlador_exportar_creditos_excel.php?filtro_cliente=' + filtro_cliente + '&filtro_estado=' + filtro_estado;
     window.location.href = url;
 }
@@ -1093,24 +1077,24 @@ function Abrir_Modal_Agregar_Credito_Manual() {
     $('#tbody_creditos_manual_editable').empty();
     contador_filas_credito_manual = 0;
     creditos_manual_data = [];
-    
+
     // Destruir instancias de Select2 existentes
     $('.select2-cliente-manual').each(function() {
         if ($(this).hasClass("select2-hidden-accessible")) {
             $(this).select2('destroy');
         }
     });
-    
+
     // Agregar 5 filas vacías por defecto
     for (var i = 0; i < 5; i++) {
         Agregar_Fila_Credito_Manual();
     }
-    
+
     // Inicializar Select2 para todas las filas después de agregarlas
     setTimeout(function() {
         Inicializar_Select2_Creditos();
     }, 100);
-    
+
     $('#modal_agregar_credito_manual').modal('show');
 }
 
@@ -1119,13 +1103,13 @@ function Agregar_Fila_Credito_Manual(datos = null) {
     contador_filas_credito_manual++;
     var fila_id = 'credito_manual_' + contador_filas_credito_manual;
     var numero_fila = contador_filas_credito_manual;
-    
+
     // Obtener fecha actual en formato YYYY-MM-DD
     var hoy = new Date();
-    var fecha_actual = hoy.getFullYear() + '-' + 
-                      String(hoy.getMonth() + 1).padStart(2, '0') + '-' + 
+    var fecha_actual = hoy.getFullYear() + '-' +
+                      String(hoy.getMonth() + 1).padStart(2, '0') + '-' +
                       String(hoy.getDate()).padStart(2, '0');
-    
+
     // Cargar clientes
     $.ajax({
         url: '../controller/clientes/controlador_clientes_activos.php',
@@ -1138,7 +1122,7 @@ function Agregar_Fila_Credito_Manual(datos = null) {
             var selected = (datos && datos.id_cliente == cliente.id_cliente) ? 'selected' : '';
             opciones += '<option value="' + cliente.id_cliente + '" ' + selected + '>' + Texto_Seguro(cliente.nombre_completo) + '</option>';
         });
-        
+
         var fila = '<tr id="' + fila_id + '">';
         fila += '<td class="text-center"><strong>' + numero_fila + '</strong></td>';
         fila += '<td><select class="form-control form-control-sm cliente-select-manual select2-cliente-manual" data-fila-id="' + fila_id + '" data-numero-fila="' + numero_fila + '">' + opciones + '</select></td>';
@@ -1148,7 +1132,7 @@ function Agregar_Fila_Credito_Manual(datos = null) {
         fila += '<td><input type="date" class="form-control form-control-sm fecha-registro-input-manual" value="' + fecha_actual + '"></td>';
         fila += '<td><button class="btn btn-danger btn-sm" onclick="Eliminar_Fila_Credito_Manual(\'' + fila_id + '\')"><i class="fas fa-trash"></i></button></td>';
         fila += '</tr>';
-        
+
         $('#tbody_creditos_manual_editable').append(fila);
     });
 }
@@ -1161,7 +1145,7 @@ function Inicializar_Select2_Creditos() {
             $(this).select2('destroy');
         }
     });
-    
+
     // Inicializar Select2 para todos los selects
     $('.select2-cliente-manual').select2({
         placeholder: '-- Seleccione --',
@@ -1177,10 +1161,10 @@ function Inicializar_Select2_Creditos() {
             }
         }
     });
-    
+
     // Remover eventos anteriores
     $('.select2-cliente-manual').off('change.autofill');
-    
+
     // Agregar evento solo a la primera fila para auto-llenar
     var primera_fila = $('.select2-cliente-manual[data-numero-fila="1"]');
     if (primera_fila.length > 0) {
@@ -1215,7 +1199,7 @@ function Eliminar_Fila_Credito_Manual(fila_id) {
 function Guardar_Todos_Creditos_Manual() {
     var creditos = [];
     var errores = [];
-    
+
     // Recopilar datos de todas las filas
     $('#tbody_creditos_manual_editable tr').each(function(index) {
         var fila = $(this);
@@ -1224,7 +1208,7 @@ function Guardar_Todos_Creditos_Manual() {
         var placa = fila.find('.placa-input-manual').val().trim().toUpperCase();
         var monto = fila.find('.monto-credito-input-manual').val();
         var fecha_registro = fila.find('.fecha-registro-input-manual').val();
-        
+
         // Solo procesar filas con datos
         if (id_cliente || numero_vale || (monto && parseFloat(monto) > 0)) {
             // Validar que tenga todos los campos obligatorios
@@ -1237,7 +1221,7 @@ function Guardar_Todos_Creditos_Manual() {
             if (!monto || parseFloat(monto) <= 0) {
                 errores.push('Fila ' + (index + 1) + ': El monto debe ser mayor a 0');
             }
-            
+
             // Si no hay errores en esta fila, agregarla
             if (id_cliente && numero_vale && monto && parseFloat(monto) > 0) {
                 creditos.push({
@@ -1250,7 +1234,7 @@ function Guardar_Todos_Creditos_Manual() {
             }
         }
     });
-    
+
     // Mostrar errores si los hay
     if (errores.length > 0) {
         Swal.fire({
@@ -1261,7 +1245,7 @@ function Guardar_Todos_Creditos_Manual() {
         });
         return;
     }
-    
+
     // Validar que haya al menos un crédito
     if (creditos.length === 0) {
         Swal.fire({
@@ -1272,7 +1256,7 @@ function Guardar_Todos_Creditos_Manual() {
         });
         return;
     }
-    
+
     // Confirmar guardado
     Swal.fire({
         title: '¿Guardar créditos?',
@@ -1295,7 +1279,7 @@ function Guardar_Todos_Creditos_Manual() {
             }).done(function(resp) {
                 try {
                     var data = (typeof resp === 'object') ? resp : JSON.parse(resp);
-                    
+
                     if (data.success) {
                         Swal.fire({
                             icon: 'success',
@@ -1346,14 +1330,14 @@ function Abrir_Modal_Editar_Credito(id_credito) {
         data: { id_credito: id_credito }
     }).done(function(resp) {
         var data = JSON.parse(resp);
-        
+
         $('#txt_id_credito_editar').val(data.id_credito);
         $('#txt_numero_vale_editar').val(data.numero_vale);
         $('#txt_monto_editar').val(data.monto);
         $('#txt_fecha_vencimiento_editar').val(data.fecha_vencimiento);
         $('#txt_estado_editar').val(data.estado);
         $('#txt_observaciones_editar').val(data.observaciones);
-        
+
         $('#modal_editar_credito').modal('show');
     });
 }
@@ -1366,7 +1350,7 @@ function Actualizar_Credito() {
     var fecha_vencimiento = $('#txt_fecha_vencimiento_editar').val();
     var estado = $('#txt_estado_editar').val();
     var observaciones = $('#txt_observaciones_editar').val();
-    
+
     if (monto && parseFloat(monto) <= 0) {
         Swal.fire({
             icon: 'warning',
@@ -1376,7 +1360,7 @@ function Actualizar_Credito() {
         });
         return;
     }
-    
+
     $.ajax({
         url: '../controller/creditos/controlador_editar_credito.php',
         type: 'POST',
@@ -1400,7 +1384,7 @@ function Actualizar_Credito() {
             $('#modal_editar_credito').modal('hide');
             Listar_Creditos_Por_Cliente();
             Cargar_Resumen_Creditos();
-            
+
             // Si hay un modal de vales abierto, recargarlo
             if ($('#modal_vales_cliente').hasClass('show')) {
                 var id_cliente = $('#txt_id_cliente_vales').val();
@@ -1423,7 +1407,7 @@ function Actualizar_Credito() {
 function Exportar_Historial_Vales_PDF() {
     var id_cliente = $('#txt_id_cliente_vales').val();
     var filtro_estado = ''; // Exportar todos los vales del cliente
-    
+
     if (!id_cliente) {
         Swal.fire({
             icon: 'warning',
@@ -1433,7 +1417,7 @@ function Exportar_Historial_Vales_PDF() {
         });
         return;
     }
-    
+
     var url = '../controller/creditos/controlador_exportar_historial_vales_pdf.php?id_cliente=' + id_cliente + '&filtro_estado=' + filtro_estado;
     window.open(url, '_blank');
 }
@@ -1442,7 +1426,7 @@ function Exportar_Historial_Vales_PDF() {
 function Exportar_Historial_Vales_Excel() {
     var id_cliente = $('#txt_id_cliente_vales').val();
     var filtro_estado = ''; // Exportar todos los vales del cliente
-    
+
     if (!id_cliente) {
         Swal.fire({
             icon: 'warning',
@@ -1452,7 +1436,7 @@ function Exportar_Historial_Vales_Excel() {
         });
         return;
     }
-    
+
     var url = '../controller/creditos/controlador_exportar_historial_vales_excel.php?id_cliente=' + id_cliente + '&filtro_estado=' + filtro_estado;
     window.location.href = url;
 }

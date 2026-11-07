@@ -483,6 +483,8 @@ $html .= '
 $total_ventas = $total_general;
 $total_suma = $total_yape + $total_bcp + $total_visa + $total_efectivo + $total_creditos;
 $monto_faltante = $total_ventas - $total_suma - $descuentos - $otros_gastos;
+// Positivo: la venta supera lo cobrado y justificado, es decir, falta dinero. Negativo: sobra.
+$etiqueta_cuadre = $monto_faltante > 0.005 ? 'MONTO FALTANTE' : ($monto_faltante < -0.005 ? 'MONTO SOBRANTE' : 'CUADRADO');
 
 $html .= '
 <table style="width: 50%; margin-left: auto; margin-top: 10px;">
@@ -495,8 +497,8 @@ $html .= '
         <td style="font-weight: bold;">S/. ' . number_format($total_suma, 2) . '</td>
     </tr>
     <tr style="background-color: #FFE4E1;">
-        <td class="text-right" style="font-weight: bold;">MONTO SOBRANTE</td>
-        <td style="font-weight: bold; color: ' . ($monto_faltante < 0 ? 'red' : 'green') . ';">S/. ' . number_format($monto_faltante, 2) . '</td>
+        <td class="text-right" style="font-weight: bold;">' . $etiqueta_cuadre . '</td>
+        <td style="font-weight: bold; color: ' . ($monto_faltante > 0.005 ? 'red' : 'green') . ';">S/. ' . number_format(abs($monto_faltante), 2) . '</td>
     </tr>
 </table>
 
