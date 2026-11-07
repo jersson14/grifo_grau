@@ -1,5 +1,6 @@
 var RUTA_PUB = '../controller/publico/controlador_';
 var PUB_ICONOS = [];
+var PUB_FLOTAS = false;
 var PUB_ESTADOS = { NUEVA: ['Nueva', 'badge-warning'], EN_PROCESO: ['En proceso', 'badge-info'], ATENDIDA: ['Atendida', 'badge-success'], DESCARTADA: ['Descartada', 'badge-secondary'] };
 
 function iniciar_pagina_publica() {
@@ -56,6 +57,7 @@ function iniciar_pagina_publica() {
 function cargar_pagina_publica() {
   G.post(RUTA_PUB + 'datos.php', {}, function (r) {
     PUB_ICONOS = r.iconos;
+    PUB_FLOTAS = !!r.flotas;
     var estado = $('#pub_estado').removeClass('d-none alert-success alert-warning');
     if (r.activa) {
       estado.addClass('alert-success').text('La página pública está activa: es lo primero que ve quien entra a la dirección del sistema.');
@@ -149,7 +151,14 @@ function listar_solicitudes() {
       function (s) { return (s.unidades ? s.unidades + ' unid.' : '—') + (s.galones_mes ? ' · ' + G.num(s.galones_mes, 0) + ' gal/mes' : ''); },
       function (s) { return $('<div class="small"></div>').text(s.mensaje || '').append(s.nota ? $('<div class="text-muted"></div>').text('Nota: ' + s.nota) : null); },
       function (s) { var e = PUB_ESTADOS[s.estado] || [s.estado, 'badge-secondary']; return G.etiqueta(e[0], e[1]); },
-      function (s) { return G.boton('Atender', 'btn-outline-primary', function () { atender_solicitud(s); }).attr('aria-label', 'Atender la solicitud de ' + s.empresa); }
+      function (s) {
+        return G.grupo(
+          G.boton('Atender', 'btn-outline-primary', function () { atender_solicitud(s); }).attr('aria-label', 'Atender la solicitud de ' + s.empresa),
+          PUB_FLOTAS && s.estado !== 'ATENDIDA' && s.estado !== 'DESCARTADA'
+            ? G.boton('Convertir en flota', 'btn-primary', function () { convertir_en_flota(s); }).attr('aria-label', 'Convertir en flota a ' + s.empresa)
+            : null
+        );
+      }
     ], 'No hay solicitudes en este estado.');
   });
 }
@@ -169,6 +178,25 @@ function atender_solicitud(s) {
     if (!r.isConfirmed) { return; }
     G.post(RUTA_PUB + 'estado_solicitud.php', { id_solicitud: s.id_solicitud, estado: r.value.estado, nota: r.value.nota }, function () {
       G.ok('Solicitud actualizada'); listar_solicitudes(); cargar_pagina_publica();
+    });
+  });
+}
+
+// Crea la flota con los datos de la solicitud (empresa, RUC, contacto) y la marca como atendida.
+function convertir_en_flota(s) {
+  Swal.fire({
+    title: 'Convertir en flota',
+    html: '<p class="text-left mb-2"></p><label for="swal_limite" class="d-block text-left">Límite de crédito (S/)</label><input id="swal_limite" type="number" min="0" step="0.01" class="swal2-input m-0 w-100" placeholder="Sin límite">' +
+      '<label for="swal_dias" class="d-block text-left mt-3">Días de crédito</label><input id="swal_dias" type="number" min="0" max="180" class="swal2-input m-0 w-100" value="30">',
+    showCancelButton: true, confirmButtonText: 'Crear flota', cancelButtonText: 'Cancelar',
+    didOpen: function () { Swal.getHtmlContainer().querySelector('p').textContent = s.empresa + (s.ruc ? ' · RUC ' + s.ruc : ''); },
+    preConfirm: function () { return { limite: document.getElementById('swal_limite').value, dias: document.getElementById('swal_dias').value }; }
+  }).then(function (r) {
+    if (!r.isConfirmed) { return; }
+    G.post('../controller/flotas/controlador_desde_solicitud.php', { id_solicitud: s.id_solicitud, limite_credito: r.value.limite, dias_credito: r.value.dias, solo_placas_autorizadas: '1' }, function () {
+      G.ok('Flota creada. Agregue sus placas en Flotas.');
+      listar_solicitudes();
+      cargar_pagina_publica();
     });
   });
 }

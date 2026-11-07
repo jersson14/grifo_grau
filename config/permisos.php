@@ -22,6 +22,9 @@ return [
         'view/facturacion/*'      => 'facturacion',
         'controller/gastos_grifo/*' => 'gastos',
         'view/gastos_grifo/*'      => 'gastos',
+        'controller/flotas/*'     => 'flotas',
+        'view/flotas/*'           => 'flotas',
+        'view/MPDF/REPORTE/estado_cuenta_flota.php' => 'flotas',
     ],
 
     'publico' => [

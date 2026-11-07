@@ -371,6 +371,36 @@ $(document).ready(function() {
 })();
 </script>
 <script>
+// Vales de flota: avisa (sin impedir el registro) si la placa no está autorizada o si se supera el límite de crédito.
+// Con el módulo de flotas apagado, el servidor responde que el cliente no es flota.
+(function () {
+  var espera = {};
+  function revisar(fila) {
+    var id = fila.attr('id');
+    clearTimeout(espera[id]);
+    espera[id] = setTimeout(function () {
+      var cliente = fila.find('.cliente-select').val();
+      if (!cliente) { fila.find('.aviso-flota').remove(); return; }
+      $.ajax({ url: '../controller/turnos/controlador_verificar_vale_flota.php', type: 'POST', dataType: 'json',
+        data: { id_cliente: cliente, placa: fila.find('.placa-credito-input').val(), monto: fila.find('.monto-credito-input').val() || 0 } })
+        .done(function (r) {
+          fila.find('.aviso-flota').remove();
+          if (!r || !r.es_flota || !r.avisos || !r.avisos.length) { return; }
+          var caja = $('<div class="aviso-flota small text-warning mt-1" role="status"></div>');
+          r.avisos.forEach(function (t) {
+            caja.append($('<div></div>').append($('<i class="fas fa-exclamation-triangle mr-1" aria-hidden="true"></i>'), document.createTextNode(t)));
+          });
+          fila.find('td').first().append(caja);
+        });
+    }, 350);
+  }
+  $(document).on('change input', '#tbody_creditos_registro .cliente-select, #tbody_creditos_registro .placa-credito-input, #tbody_creditos_registro .monto-credito-input', function () {
+    revisar($(this).closest('tr'));
+  });
+})();
+</script>
+
+<script>
 // Valores por defecto: el tipo de turno según la hora actual y sus horas al elegirlo.
 // Las horas se rellenan solo si están vacías o las puso el sistema, nunca sobre lo escrito a mano.
 (function () {

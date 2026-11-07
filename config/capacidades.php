@@ -28,6 +28,7 @@ return [
         'view/turnos/view_cerrar_turno.php',
         'view/reportes/view_mis_reportes.php',
         'controller/usuario/controlador_listar_griferos.php',
+        'controller/turnos/controlador_verificar_vale_flota.php',
         'controller/turnos/controlador_abrir_turno.php',
         'controller/turnos/controlador_actualizar_lectura_turno.php',
         'controller/turnos/controlador_calcular_totales_turno.php',
@@ -94,6 +95,8 @@ return [
         'controller/creditos/controlador_top_deudores.php',
         'controller/creditos/controlador_ultimos_vales.php',
     ]],
+    'flotas_gestionar' => ['Créditos', 'Gestionar flotas, placas y estados de cuenta', ['view/flotas/*', 'controller/flotas/*', 'view/MPDF/REPORTE/estado_cuenta_flota.php']],
+
     'creditos_gestionar' => ['Créditos', 'Editar, anular y eliminar créditos y pagos', [
         'controller/creditos/controlador_anular_credito.php',
         'controller/creditos/controlador_anular_pago_credito.php',

@@ -15,5 +15,7 @@ responder_json(function () {
         "iconos"       => $iconos,
         "activa"       => modulo_activo("pagina_publica"),
         "nuevas"       => $m->Solicitudes_Nuevas(),
+        // Una solicitud se puede convertir en flota si el módulo está activo y el usuario lo gestiona.
+        "flotas"       => modulo_activo("flotas") && puede("flotas_gestionar"),
     ];
 });
