@@ -1659,3 +1659,36 @@ function Registrar_Turno_Completo() {
         }
     });
 }
+
+// Registrar y cerrar turno: la barra repite el total y el cuadre que calcula la pantalla, con una forma distinta para cada estado.
+function Iniciar_Barra_Cuadre() {
+  var total = document.getElementById('cuadre_total_ventas');
+  var faltante = document.getElementById('cuadre_faltante');
+  var barraTotal = document.getElementById('barra_total');
+  var barraEstado = document.getElementById('barra_estado');
+  if (!total || !faltante || !barraTotal || !barraEstado) { return; }
+  function icono(nombre) { var i = document.createElement('i'); i.className = 'fas fa-' + nombre; i.setAttribute('aria-hidden', 'true'); return i; }
+  function reflejar() {
+    var monto = total.textContent.replace('S/.', 'S/').trim();
+    barraTotal.textContent = monto;
+    var texto = faltante.textContent;
+    var cifra = (texto.match(/\d[\d.,]*/) || ['0'])[0];
+    barraEstado.textContent = '';
+    if (!(parseFloat(monto.replace(/[^\d.]/g, '')) > 0)) {
+      barraEstado.dataset.estado = 'vacio';
+      barraEstado.textContent = 'Faltan lecturas';
+    } else if (texto.indexOf('FALTANTE') !== -1) {
+      barraEstado.dataset.estado = 'falta';
+      barraEstado.append(icono('arrow-down'), ' Falta S/ ' + cifra);
+    } else if (texto.indexOf('SOBRANTE') !== -1) {
+      barraEstado.dataset.estado = 'sobra';
+      barraEstado.append(icono('plus'), ' Sobra S/ ' + cifra);
+    } else {
+      barraEstado.dataset.estado = 'cuadra';
+      barraEstado.append(icono('check'), ' Cuadra');
+    }
+  }
+  var observador = new MutationObserver(reflejar);
+  [total, faltante].forEach(function (nodo) { observador.observe(nodo, { childList: true, characterData: true, subtree: true }); });
+  reflejar();
+}

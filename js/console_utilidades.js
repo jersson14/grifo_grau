@@ -82,11 +82,19 @@ if (window.Chart && Chart.defaults && Chart.defaults.font) { Chart.defaults.font
     evento.preventDefault();
     evento.stopImmediatePropagation();
     var primero = null;
+    var grupos = {};
     $(form).find('input, select, textarea').each(function () {
       if (this.willValidate && !this.checkValidity()) {
-        var id = (this.id || 'campo') + '_error';
-        $(this).addClass('is-invalid').attr({ 'aria-invalid': 'true', 'aria-describedby': id });
-        $('<span class="campo-error" role="alert"></span>').attr('id', id).text(this.validationMessage).insertAfter(this);
+        // Un grupo de opciones (radio) es un solo campo: un mensaje, debajo del grupo.
+        var esOpcion = this.type === 'radio';
+        if (esOpcion && grupos[this.name]) { return; }
+        if (esOpcion) { grupos[this.name] = true; }
+        var id = (esOpcion ? this.name : (this.id || 'campo')) + '_error';
+        var nombre = this.name;
+        var campos = esOpcion ? $(form).find('input[type=radio]').filter(function () { return this.name === nombre; }) : $(this);
+        var ancla = esOpcion ? ($(this).closest('[role=radiogroup], fieldset')[0] || this) : this;
+        campos.addClass('is-invalid').attr({ 'aria-invalid': 'true', 'aria-describedby': id });
+        $('<span class="campo-error" role="alert"></span>').attr('id', id).text(esOpcion ? 'Elija una opción.' : this.validationMessage).insertAfter(ancla);
         primero = primero || this;
       }
     });
@@ -94,6 +102,11 @@ if (window.Chart && Chart.defaults && Chart.defaults.font) { Chart.defaults.font
   }, true);
   document.addEventListener('input', function (evento) {
     var campo = evento.target;
+    if (campo.type === 'radio' && campo.classList.contains('is-invalid') && campo.form) {
+      $(campo.form).find('input[type=radio]').filter(function () { return this.name === campo.name; }).removeClass('is-invalid').removeAttr('aria-invalid');
+      $('#' + campo.name + '_error').remove();
+      return;
+    }
     if (campo.classList && campo.classList.contains('is-invalid') && campo.checkValidity()) {
       $(campo).removeClass('is-invalid').removeAttr('aria-invalid');
       $('#' + (campo.id || 'campo') + '_error').remove();

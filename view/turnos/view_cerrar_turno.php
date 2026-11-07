@@ -5,12 +5,12 @@
     <div class="container-fluid">
         <div class="row mb-2">
             <div class="col-sm-6">
-                <h1 class="m-0"><i class="fas fa-tasks"></i> <b>GESTIONAR TURNO ACTUAL</b></h1>
+                <h1 class="m-0"><i class="fas fa-lock"></i> <b>CERRAR TURNO</b></h1>
             </div>
             <div class="col-sm-6">
                 <ol class="breadcrumb float-sm-right">
                     <li class="breadcrumb-item"><a href="../view/index.php">Inicio</a></li>
-                    <li class="breadcrumb-item active">Gestionar Turno</li>
+                    <li class="breadcrumb-item active">Cerrar turno</li>
                 </ol>
             </div>
         </div>
@@ -22,13 +22,14 @@
         
         <!-- SIN TURNO ABIERTO -->
         <div id="sin_turno_abierto" style="display:none">
-            <div class="alert alert-info">
-                <h5><i class="icon fas fa-info-circle"></i> No hay un turno abierto en el sistema</h5>
-                Debes abrir un turno para comenzar a gestionar las ventas.
-                <br><br>
-                <button class="btn btn-primary" onclick="cargar_contenido('contenido_principal','turnos/view_abrir_turno.php')">
-                    <i class="fas fa-plus-circle"></i> Abrir Turno
-                </button>
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-door-open fa-2x text-muted mb-3" aria-hidden="true"></i>
+                    <h2 class="h5 font-weight-bold">No hay un turno abierto</h2>
+                    <p class="text-muted mx-auto mb-4" style="max-width: 32rem">Para cerrar un turno primero hay que abrirlo. Si el turno ya terminó y no se abrió en el sistema, regístrelo completo de una vez.</p>
+                    <button type="button" class="btn btn-primary mb-2" onclick="cargar_contenido('contenido_principal','turnos/view_abrir_turno.php')"><i class="fas fa-plus-circle" aria-hidden="true"></i> Abrir turno</button>
+                    <button type="button" class="btn btn-outline-secondary mb-2" onclick="cargar_contenido('contenido_principal','turnos/view_registrar_turno.php')"><i class="fas fa-clipboard-check" aria-hidden="true"></i> Registrar turno completo</button>
+                </div>
             </div>
         </div>
 
@@ -41,7 +42,7 @@
                 <div class="col-md-12">
                     <div class="card card-primary">
                         <div class="card-header">
-                            <h3 class="card-title"><i class="fas fa-info-circle"></i> Información del Turno</h3>
+                            <h3 class="card-title g-titulo-paso"><span class="g-paso" aria-hidden="true">1</span> <span class="sr-only">Paso 1: </span>Turno abierto</h3>
                         </div>
                         <div class="card-body">
                             <div class="row">
@@ -74,7 +75,7 @@
                 <div class="col-md-12">
                     <div class="card card-primary">
                         <div class="card-header" data-card-widget="collapse">
-                            <h3 class="card-title"><i class="fas fa-gas-pump"></i> <strong>PASO 2:</strong> LECTURAS DE SURTIDORES</h3>
+                            <h3 class="card-title g-titulo-paso"><span class="g-paso" aria-hidden="true">2</span> <span class="sr-only">Paso 2: </span>Lecturas finales de surtidores</h3>
                             <div class="card-tools">
                                 <button type="button" class="btn btn-tool" data-card-widget="collapse">
                                     <i class="fas fa-minus"></i>
@@ -140,7 +141,7 @@
                 <div class="col-md-12">
                     <div class="card card-warning">
                         <div class="card-header" data-card-widget="collapse">
-                            <h3 class="card-title"><i class="fas fa-money-bill-wave"></i> <strong>PASO 3:</strong> MÉTODOS DE PAGO (Opcional)</h3>
+                            <h3 class="card-title g-titulo-paso"><span class="g-paso" aria-hidden="true">3</span> <span class="sr-only">Paso 3: </span>Métodos de pago <small>(opcional)</small></h3>
                             <div class="card-tools">
                                 <button type="button" class="btn btn-tool" data-card-widget="collapse">
                                     <i class="fas fa-minus"></i>
@@ -180,7 +181,7 @@
                 <div class="col-md-12">
                     <div class="card card-danger">
                         <div class="card-header" data-card-widget="collapse">
-                            <h3 class="card-title"><i class="fas fa-credit-card"></i> <strong>PASO 4:</strong> VENTAS A CRÉDITO (Opcional)</h3>
+                            <h3 class="card-title g-titulo-paso"><span class="g-paso" aria-hidden="true">4</span> <span class="sr-only">Paso 4: </span>Ventas a crédito <small>(opcional)</small></h3>
                             <div class="card-tools">
                                 <button type="button" class="btn btn-tool" data-card-widget="collapse">
                                     <i class="fas fa-minus"></i>
@@ -220,7 +221,7 @@
                 <div class="col-md-12">
                     <div class="card card-secondary">
                         <div class="card-header" data-card-widget="collapse">
-                            <h3 class="card-title"><i class="fas fa-calculator"></i> <strong>PASO 5:</strong> OTROS CONCEPTOS Y CUADRE DE CAJA</h3>
+                            <h3 class="card-title g-titulo-paso"><span class="g-paso" aria-hidden="true">5</span> <span class="sr-only">Paso 5: </span>Otros conceptos y cuadre de caja</h3>
                             <div class="card-tools">
                                 <button type="button" class="btn btn-tool" data-card-widget="collapse">
                                     <i class="fas fa-minus"></i>
@@ -291,24 +292,27 @@
                             </table>
                             </div>
                         </div>
-                        </div>
                     </div>
                 </div>
-            </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- BOTÓN CERRAR TURNO -->
-            <div class="row">
-                <div class="col-md-12 text-center mb-4">
-                    <button class="btn btn-danger btn-lg" onclick="Cerrar_Turno_Final()" style="font-size:20px; padding:15px 50px; box-shadow: 0 4px 6px rgba(0,0,0,0.2);">
-                        <i class="fas fa-lock"></i> CERRAR TURNO
-                    </button>
-                    <br><br>
-                    <small class="text-muted">Al cerrar el turno se guardarán todos los datos y se actualizarán las lecturas de los surtidores</small>
+            <p class="text-muted text-center small mb-3">Al cerrar el turno se guardan todos los datos y se actualizan las lecturas de los surtidores.</p>
+
+            <!-- Barra de cuadre: siempre a la vista mientras se completa el cierre -->
+            <div class="g-barra-cuadre" role="region" aria-label="Cuadre del turno">
+                <div class="g-barra-dato">
+                    <span class="g-barra-etiqueta">Total ventas</span>
+                    <span class="g-cifra" id="barra_total">S/ 0.00</span>
                 </div>
+                <div class="g-barra-dato">
+                    <span class="g-barra-etiqueta">Cuadre</span>
+                    <span class="g-estado-cuadre" id="barra_estado" data-estado="vacio" aria-live="polite">Faltan lecturas</span>
+                </div>
+                <button type="button" class="btn btn-danger btn-lg g-barra-boton" onclick="Cerrar_Turno_Final()"><i class="fas fa-lock" aria-hidden="true"></i> Cerrar turno</button>
             </div>
         </div>
     </div>
@@ -360,5 +364,6 @@
 <script>
 $(document).ready(function() {
     Cargar_Turno_Actual();
+    Iniciar_Barra_Cuadre();
 });
 </script>

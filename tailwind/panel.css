@@ -256,6 +256,63 @@ a:focus-visible, button:focus-visible, .btn:focus-visible, [tabindex]:focus-visi
   table.tabla-apilable.tabla-surtidores td > .form-control { width: 100% !important; }
 }
 
+/* ---------- Venta rápida: surtidores como botones, selectores segmentados y monto grande ---------- */
+.g-leyenda { display: block; width: auto; margin-bottom: .5rem; font-size: 1rem; font-weight: 600; color: theme('colors.zinc.900'); }
+.g-maquina + .g-maquina { margin-top: .875rem; }
+.g-maquina-titulo { display: block; margin-bottom: .375rem; font-size: .75rem; font-weight: 500; color: theme('colors.zinc.500'); text-transform: uppercase; letter-spacing: .04em; }
+.g-opciones { display: grid; gap: .5rem; grid-template-columns: repeat(auto-fill, minmax(8.25rem, 1fr)); }
+.g-opcion { position: relative; display: block; margin: 0; font-weight: 400; cursor: pointer; }
+/* El radio queda encima de la tarjeta, invisible pero real: se enfoca, se valida y se lee como opción. */
+.g-opcion > input, .g-segmento input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.g-opcion-cuerpo {
+  display: flex; flex-direction: column; gap: .125rem; height: 100%; padding: .5rem .75rem;
+  background: #fff; border: 1px solid theme('colors.zinc.200'); border-radius: 8px;
+  transition: border-color .15s ease, background-color .15s ease, box-shadow .15s ease;
+}
+.g-opcion:hover .g-opcion-cuerpo { border-color: theme('colors.zinc.400'); }
+.g-opcion > input:checked + .g-opcion-cuerpo { border-color: theme('colors.blue.600'); background: theme('colors.blue.50'); box-shadow: inset 0 0 0 1px theme('colors.blue.600'); }
+.g-opcion > input:focus-visible + .g-opcion-cuerpo { outline: 2px solid theme('colors.blue.600'); outline-offset: 2px; }
+.g-opcion > input.is-invalid + .g-opcion-cuerpo { border-color: theme('colors.red.600'); }
+.g-opcion-titulo { font-size: 1.0625rem; font-weight: 600; color: theme('colors.zinc.950'); line-height: 1.25; }
+.g-opcion-detalle { display: flex; align-items: center; gap: .375rem; font-size: .8125rem; color: theme('colors.zinc.700'); line-height: 1.25; }
+.g-opcion-precio { font-size: .8125rem; color: theme('colors.zinc.500'); font-variant-numeric: tabular-nums; }
+.g-punto { display: inline-block; flex: none; width: .5rem; height: .5rem; border-radius: 9999px; background: theme('colors.zinc.400'); }
+[data-combustible="diesel"] .g-punto, .g-punto[data-combustible="diesel"] { background: theme('colors.blue.600'); }
+[data-combustible="regular"] .g-punto, .g-punto[data-combustible="regular"] { background: theme('colors.emerald.600'); }
+[data-combustible="premium"] .g-punto, .g-punto[data-combustible="premium"] { background: theme('colors.amber.500'); }
+
+.g-segmento { display: inline-flex; flex-wrap: wrap; gap: 2px; padding: 3px; background: theme('colors.zinc.100'); border-radius: 8px; }
+.g-segmento label { position: relative; margin: 0; font-weight: 500; cursor: pointer; }
+.g-segmento span { display: block; padding: .375rem .875rem; border-radius: 6px; color: theme('colors.zinc.600'); white-space: nowrap; transition: background-color .15s ease, color .15s ease; }
+.g-segmento label:hover span { color: theme('colors.zinc.900'); }
+.g-segmento input:checked + span { background: #fff; color: theme('colors.zinc.950'); box-shadow: 0 1px 2px rgba(0, 0, 0, .08), 0 0 0 1px theme('colors.zinc.200'); }
+.g-segmento input:focus-visible + span { outline: 2px solid theme('colors.blue.600'); outline-offset: 1px; }
+.g-segmento input.is-invalid + span { color: theme('colors.red.700'); }
+.g-segmento-ancho { display: flex; }
+.g-segmento-ancho label { flex: 1 1 0; text-align: center; }
+.g-segmento-ancho span { padding: .5rem .5rem; }
+
+.form-control.g-monto { height: auto; padding: .5rem .875rem; font-size: 2rem; font-weight: 600; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.g-chips { display: flex; flex-wrap: wrap; gap: .5rem; }
+.btn.g-chip { border-radius: 9999px; padding: .25rem .875rem; font-variant-numeric: tabular-nums; }
+.g-equivale { color: theme('colors.zinc.600'); font-size: 1rem; }
+.g-equivale strong { color: theme('colors.zinc.950'); font-size: 1.125rem; font-variant-numeric: tabular-nums; }
+.g-resumen-ventas { color: theme('colors.zinc.600'); font-variant-numeric: tabular-nums; }
+.g-resumen-ventas strong { color: theme('colors.zinc.950'); }
+@media (max-width: 575.98px) {
+  .g-boton-venta { display: block; width: 100%; }
+  .g-opciones { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .375rem; }
+  .g-opcion-cuerpo { padding: .4rem .5rem; }
+  .g-opcion-detalle, .g-opcion-precio { font-size: .75rem; }
+  .g-por-galon { display: none; }
+  /* En el celular la lista muestra lo esencial: hora, combustible, galones, total, pago, placa y estado. */
+  .tabla-ventas th:nth-child(2), .tabla-ventas td:nth-child(2),
+  .tabla-ventas th:nth-child(7), .tabla-ventas td:nth-child(7),
+  .tabla-ventas th:nth-child(9), .tabla-ventas td:nth-child(9),
+  .tabla-ventas th:nth-child(10), .tabla-ventas td:nth-child(10),
+  .tabla-ventas th:nth-child(11), .tabla-ventas td:nth-child(11) { display: none; }
+}
+
 /* Pantallas táctiles: todo campo con letra de 16 px, que evita el zoom automático del iPhone. */
 @media (pointer: coarse) { input, select, textarea, .select2-container { font-size: 16px; } }
 

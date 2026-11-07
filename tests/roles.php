@@ -160,7 +160,11 @@ comprobar('el supervisor valida pero no elimina', $supervisor->pedir('controller
 $pdo->exec("DELETE FROM reportes_turno WHERE id_reporte = $idTurno");
 
 echo "\n6. Menú\n";
+// La prueba apaga el módulo de ventas para ver el menú sin él y lo deja como estaba.
+$ventasAntes = (int) $pdo->query("SELECT activo FROM modulos WHERE codigo = 'ventas'")->fetchColumn();
+$pdo->exec("UPDATE modulos SET activo = 0 WHERE codigo = 'ventas'");
 $panel = $admin->pedir('view/index.php')['cuerpo'];
+$pdo->exec("UPDATE modulos SET activo = $ventasAntes WHERE codigo = 'ventas'");
 comprobar('el administrador ve todas sus secciones', strpos($panel, 'MENÚ PRINCIPAL') !== false && strpos($panel, 'administracion/view_roles') !== false);
 comprobar('los módulos apagados no aparecen', strpos($panel, 'ventas/view_ventas') === false);
 $panelG = $grifero->pedir('view/index.php')['cuerpo'];
