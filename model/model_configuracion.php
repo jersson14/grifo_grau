@@ -9,6 +9,7 @@ class Modelo_Configuracion extends conexionBD
         'credito_dias'           => ['tipo' => 'numero', 'min' => 0, 'max' => 365],
         'moneda_simbolo'         => ['tipo' => 'texto'],
         'turno_tolerancia_soles' => ['tipo' => 'numero', 'min' => 0, 'max' => 10000],
+        'respaldo_conservar'     => ['tipo' => 'numero', 'min' => 1, 'max' => 365],
         'varillaje_tolerancia_pct' => ['tipo' => 'numero', 'min' => 0, 'max' => 100],
         'ia_modelo'              => ['tipo' => 'opcion', 'opciones' => ['claude-opus-5-5', 'claude-sonnet-5-5', 'claude-haiku-5-5']],
         'ia_esfuerzo'            => ['tipo' => 'opcion', 'opciones' => ['low', 'medium', 'high']],

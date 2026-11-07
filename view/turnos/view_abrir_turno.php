@@ -84,51 +84,8 @@
                                 <i class="fas fa-info-circle"></i> Las lecturas iniciales se cargarán automáticamente desde las lecturas actuales de cada surtidor.
                             </div>
 
-                            <!-- MÁQUINA 1 -->
-                            <div class="card card-primary">
-                                <div class="card-header">
-                                    <h3 class="card-title"><i class="fas fa-cogs"></i> MÁQUINA 1</h3>
-                                </div>
-                                <div class="card-body">
-                                    <div class="table-responsive">
-                                    <table class="table table-sm table-bordered">
-                                        <thead style="background-color:#007bff; color:white">
-                                            <tr>
-                                                <th>Código</th>
-                                                <th>Producto</th>
-                                                <th>Lectura Inicial</th>
-                                                <th>Precio (S/.)</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="tabla_lecturas_maquina_1">
-                                        </tbody>
-                                    </table>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- MÁQUINA 2 -->
-                            <div class="card card-success">
-                                <div class="card-header">
-                                    <h3 class="card-title"><i class="fas fa-cogs"></i> MÁQUINA 2</h3>
-                                </div>
-                                <div class="card-body">
-                                    <div class="table-responsive">
-                                    <table class="table table-sm table-bordered">
-                                        <thead style="background-color:#28a745; color:white">
-                                            <tr>
-                                                <th>Código</th>
-                                                <th>Producto</th>
-                                                <th>Lectura Inicial</th>
-                                                <th>Precio (S/.)</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="tabla_lecturas_maquina_2">
-                                        </tbody>
-                                    </table>
-                                    </div>
-                                </div>
-                            </div>
+                            <!-- Una sección por máquina, generada desde los surtidores activos -->
+                            <div id="maquinas_lecturas"></div>
 
                             <div class="row">
                                 <div class="col-md-12 text-center">

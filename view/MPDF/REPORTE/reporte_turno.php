@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../../../controller/_bootstrap.php';
+exigir_acceso_turno('reporte', $_GET['id'] ?? 0);
 // Error reporting
 error_reporting(E_ALL);
 ini_set('display_errors', 0); // No mostrar en pantalla (rompe el PDF)
@@ -264,8 +265,16 @@ $html = '
     </tr>
 </table>
 
-<!-- MÁQUINA 1 -->
-<div class="section-title">MAQUINA 1</div>
+';
+
+// Una tabla por máquina, las que existan.
+$por_maquina = [];
+foreach ($lecturas as $lectura) {
+    $por_maquina[(int) $lectura['numero_maquina']][] = $lectura;
+}
+ksort($por_maquina);
+foreach ($por_maquina as $numero_maquina => $filas_maquina) {
+    $html .= '<div class="section-title">MAQUINA ' . $numero_maquina . '</div>
 <table>
     <thead>
         <tr>
@@ -279,73 +288,32 @@ $html = '
         </tr>
     </thead>
     <tbody>';
-
-$total_maq1 = 0;
-foreach ($lecturas as $lectura) {
-    if ($lectura['numero_maquina'] == 1) {
+    $total_maquina = 0;
+    foreach ($filas_maquina as $lectura) {
         $html .= '<tr>
             <td>' . date('d/m/Y', strtotime($turno['fecha_reporte'])) . '</td>
-            <td class="text-left">' . $lectura['codigo'] . '-' . $lectura['nombre_producto'] . '</td>
+            <td class="text-left">' . htmlspecialchars($lectura['codigo'] . '-' . $lectura['nombre_producto'], ENT_QUOTES, 'UTF-8') . '</td>
             <td>' . number_format($lectura['lectura_anterior'], 3) . '</td>
             <td>' . number_format($lectura['lectura_actual'], 3) . '</td>
             <td>' . number_format($lectura['galones_vendidos'], 3) . '</td>
             <td>' . number_format($lectura['precio'], 2) . '</td>
             <td>' . number_format($lectura['total'], 2) . '</td>
         </tr>';
-        $total_maq1 += floatval($lectura['total']);
+        $total_maquina += floatval($lectura['total']);
     }
-}
-
-$html .= '
+    $html .= '
         <tr class="total-row">
-            <td colspan="6" class="text-right">TOTAL 1</td>
-            <td>' . number_format($total_maq1, 2) . '</td>
+            <td colspan="6" class="text-right">TOTAL ' . $numero_maquina . '</td>
+            <td>' . number_format($total_maquina, 2) . '</td>
         </tr>
     </tbody>
 </table>
-
-<!-- MÁQUINA 2 -->
-<div class="section-title">MAQUINA 2</div>
-<table>
-    <thead>
-        <tr>
-            <th>FECHA</th>
-            <th>PRODUCTO</th>
-            <th>LECTURA ANTERIOR</th>
-            <th>LECTURA ACTUAL</th>
-            <th>GALONES VENDIDOS</th>
-            <th>PRECIO S/.</th>
-            <th>TOTAL EN SOLES</th>
-        </tr>
-    </thead>
-    <tbody>';
-
-$total_maq2 = 0;
-foreach ($lecturas as $lectura) {
-    if ($lectura['numero_maquina'] == 2) {
-        $html .= '<tr>
-            <td>' . date('d/m/Y', strtotime($turno['fecha_reporte'])) . '</td>
-            <td class="text-left">' . $lectura['codigo'] . '-' . $lectura['nombre_producto'] . '</td>
-            <td>' . number_format($lectura['lectura_anterior'], 3) . '</td>
-            <td>' . number_format($lectura['lectura_actual'], 3) . '</td>
-            <td>' . number_format($lectura['galones_vendidos'], 3) . '</td>
-            <td>' . number_format($lectura['precio'], 2) . '</td>
-            <td>' . number_format($lectura['total'], 2) . '</td>
-        </tr>';
-        $total_maq2 += floatval($lectura['total']);
-    }
+';
 }
 
 $html .= '
-        <tr class="total-row">
-            <td colspan="6" class="text-right">TOTAL 2</td>
-            <td>' . number_format($total_maq2, 2) . '</td>
-        </tr>
-    </tbody>
-</table>
-
 <!-- TOTALES GENERALES -->
-<div class="section-title">TOTALES (1+2)</div>
+<div class="section-title">TOTALES</div>
 <table style="margin-bottom: 5px;">
     <tr class="total-row">
         <td style="width: 70%;" class="text-right">TOTAL S/.</td>

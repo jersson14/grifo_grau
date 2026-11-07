@@ -83,51 +83,8 @@
                         </div>
                         <div class="card-body">
                             
-                            <!-- MÁQUINA 1 -->
-                            <h5 style="background-color:#007bff; color:white; padding:10px; border-radius:5px;">
-                                <i class="fas fa-cogs"></i> MÁQUINA 1
-                            </h5>
-                            <div class="table-responsive">
-                                <table class="table table-sm table-bordered table-hover">
-                                    <thead style="background-color:#007bff; color:white">
-                                        <tr>
-                                            <th>Código</th>
-                                            <th>Producto</th>
-                                            <th>Lectura Anterior</th>
-                                            <th>Lectura Actual</th>
-                                            <th>Galones Vendidos</th>
-                                            <th>Precio S/.</th>
-                                            <th>Total S/.</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="tabla_lecturas_cerrar_maquina_1">
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            <br>
-
-                            <!-- MÁQUINA 2 -->
-                            <h5 style="background-color:#28a745; color:white; padding:10px; border-radius:5px;">
-                                <i class="fas fa-cogs"></i> MÁQUINA 2
-                            </h5>
-                            <div class="table-responsive">
-                                <table class="table table-sm table-bordered table-hover">
-                                    <thead style="background-color:#28a745; color:white">
-                                        <tr>
-                                            <th>Código</th>
-                                            <th>Producto</th>
-                                            <th>Lectura Anterior</th>
-                                            <th>Lectura Actual</th>
-                                            <th>Galones Vendidos</th>
-                                            <th>Precio S/.</th>
-                                            <th>Total S/.</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="tabla_lecturas_cerrar_maquina_2">
-                                    </tbody>
-                                </table>
-                            </div>
+                            <!-- Una sección por máquina, generada desde los surtidores activos -->
+                            <div id="maquinas_lecturas_cerrar"></div>
 
                             <!-- RESUMEN POR COMBUSTIBLE -->
                             <div class="row mt-3">

@@ -79,6 +79,30 @@ function modulo_activo(string $codigo): bool
     return $cache[$codigo];
 }
 
+/**
+ * Corta la petición si el usuario no puede ver este turno: sin la capacidad «ver todos», solo los propios.
+ * $tipo indica qué identificador se recibió: el del turno, una lectura, un pago o un crédito.
+ */
+function exigir_acceso_turno(string $tipo, $id): void
+{
+    $consultas = [
+        'reporte' => 'SELECT id_usuario FROM reportes_turno WHERE id_reporte = ?',
+        'lectura' => 'SELECT rt.id_usuario FROM lecturas_turno x INNER JOIN reportes_turno rt ON x.id_reporte = rt.id_reporte WHERE x.id_lectura = ?',
+        'pago'    => 'SELECT rt.id_usuario FROM pagos_reporte x INNER JOIN reportes_turno rt ON x.id_reporte = rt.id_reporte WHERE x.id_pago_reporte = ?',
+        'credito' => 'SELECT rt.id_usuario FROM ventas_credito x INNER JOIN reportes_turno rt ON x.id_reporte = rt.id_reporte WHERE x.id_credito = ?',
+    ];
+    $c = conexionBD::conexionPDO();
+    $query = $c->prepare($consultas[$tipo]);
+    $query->execute([(int) $id]);
+    $dueno = $query->fetchColumn();
+    if ($dueno === false) {
+        denegar_acceso(404, 'El turno no existe.');
+    }
+    if (!puede('ver_todos') && (int) $dueno !== (int) $_SESSION['S_ID']) {
+        denegar_acceso(403, 'Este turno pertenece a otro usuario.');
+    }
+}
+
 function es_administrador(): bool
 {
     return ($_SESSION['S_ROL'] ?? '') === 'ADMINISTRADOR';

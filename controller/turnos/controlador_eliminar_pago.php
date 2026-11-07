@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../_bootstrap.php';
+exigir_acceso_turno('pago', $_POST['id_pago'] ?? 0);
 require_once '../../model/model_turnos.php';
 
 $MTurnos = new Modelo_Turnos();

@@ -18,6 +18,7 @@
           <li class="nav-item"><a class="nav-link" data-toggle="pill" href="#tab_inicio" role="tab">Página principal</a></li>
           <li class="nav-item"><a class="nav-link" data-toggle="pill" href="#tab_ia" role="tab">Chatbot de IA</a></li>
           <li class="nav-item"><a class="nav-link" data-toggle="pill" href="#tab_integraciones" role="tab">Integraciones</a></li>
+          <li class="nav-item"><a class="nav-link" data-toggle="pill" href="#tab_respaldos" role="tab">Respaldos</a></li>
         </ul>
       </div>
 
@@ -139,6 +140,23 @@
               </div>
               <div class="col-12"><button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Guardar</button></div>
             </form>
+          </div>
+          <div class="tab-pane fade" id="tab_respaldos" role="tabpanel">
+            <p class="text-muted">Una copia contiene toda la base de datos. Descarga copias con frecuencia y guárdalas fuera del servidor: si el hosting falla, las que quedan dentro se pierden con él. Para restaurar, importa el archivo en phpMyAdmin.</p>
+            <div class="d-flex flex-wrap align-items-end mb-3">
+              <button type="button" class="btn btn-success mr-3 mb-2" id="btn_generar_respaldo"><i class="fas fa-database"></i> Generar copia ahora</button>
+              <form class="form_config form-inline mb-2">
+                <label class="mr-2" for="respaldo_conservar">Conservar las últimas</label>
+                <input type="number" min="1" max="365" class="form-control form-control-sm mr-2" style="width:90px" id="respaldo_conservar" name="respaldo_conservar">
+                <button type="submit" class="btn btn-sm btn-primary">Guardar</button>
+              </form>
+            </div>
+            <div class="table-responsive">
+              <table class="table table-sm table-striped">
+                <thead><tr><th>Fecha</th><th>Archivo</th><th>Tamaño</th><th></th></tr></thead>
+                <tbody id="cuerpo_respaldos"></tbody>
+              </table>
+            </div>
           </div>
 
         </div>

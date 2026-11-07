@@ -295,7 +295,7 @@ const espera = ms => new Promise(r => setTimeout(r, ms));
   await abrir(a, 'configuracion/view_configuracion.php');
   await a.waitForSelector('#alerta_stock_bajo');
   await a.click('a[href="#tab_inicio"]'); await espera(400);
-  comprobar('Configuración permite elegir los avisos', (await a.$$('.alerta_opcion')).length === 9);
+  comprobar('Configuración permite elegir los avisos', (await a.$$('.alerta_opcion')).length === 10);
   comprobar('sin errores en caja, avisos y precios', a.errores.length === 0, a.errores.slice(0, 3).join(' | '));
 
   console.log('\n6c2. Facturación electrónica (necesita tests/mock_nubefact.php y NUBEFACT_RUTA en .env)');

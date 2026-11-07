@@ -2,6 +2,7 @@
 require_once 'model_conexion.php';
 require_once 'model_configuracion.php';
 require_once 'model_precios.php';
+require_once 'model_respaldos.php';
 
 /** Avisos de la página principal. Solo se calculan los elegidos en Configuración y los de módulos activos. */
 class Modelo_Alertas extends conexionBD
@@ -24,6 +25,7 @@ class Modelo_Alertas extends conexionBD
                                    "SELECT COUNT(*) FROM arqueos WHERE diferencia <> 0 AND resolucion = 'PENDIENTE'"],
         'comprobantes_problema' => ['facturacion', 'Comprobantes con problemas', 'comprobante(s) electrónico(s) pendiente(s) o rechazado(s)', 'danger', 'facturacion/view_comprobantes.php',
                                    "SELECT COUNT(*) FROM comprobantes WHERE estado IN ('PENDIENTE', 'RECHAZADO')"],
+        'respaldo_antiguo'     => [null, 'Copia de seguridad atrasada', 'semana(s) sin una copia de seguridad', 'warning', 'configuracion/view_configuracion.php', 'respaldo'],
         'precios_programados'  => [null, 'Precios programados', 'cambio(s) de precio programado(s)', 'info', 'productos/view_productos.php',
                                    "SELECT COUNT(*) FROM precios_programados WHERE estado = 'PENDIENTE'"],
     ];
@@ -41,7 +43,12 @@ class Modelo_Alertas extends conexionBD
                 continue;
             }
             try {
-                $cantidad = (int) $c->query($sql)->fetchColumn();
+                if ($sql === 'respaldo') {
+                    $dias = Modelo_Respaldos::Dias_Sin_Respaldo();
+                    $cantidad = $dias === null ? 1 : intdiv($dias, 7);
+                } else {
+                    $cantidad = (int) $c->query($sql)->fetchColumn();
+                }
             } catch (PDOException $e) {
                 error_log("Alerta $clave: " . $e->getMessage());
                 continue;

@@ -1,3 +1,16 @@
+// Pinta una tabla por máquina. filas: { numero_de_maquina: html de sus filas }.
+function Pintar_Maquinas(contenedor, filas, columnas, prefijo) {
+    var colores = ['#28a745', '#17a2b8', '#007bff', '#6f42c1', '#fd7e14', '#20c997'];
+    var html = '';
+    Object.keys(filas).map(Number).sort(function (a, b) { return a - b; }).forEach(function (maquina, i) {
+        var color = colores[i % colores.length];
+        html += '<h5 style="background-color:' + color + '; color:white; padding:10px; border-radius:5px;" class="mt-3"><i class="fas fa-cogs"></i> MÁQUINA ' + maquina + '</h5>';
+        html += '<div class="table-responsive"><table class="table table-sm table-bordered table-hover">';
+        html += '<thead style="background-color:' + color + '; color:white"><tr>' + columnas.map(function (c) { return '<th>' + c + '</th>'; }).join('') + '</tr></thead>';
+        html += '<tbody id="' + prefijo + maquina + '">' + filas[maquina] + '</tbody></table></div>';
+    });
+    $(contenedor).html(html || '<div class="alert alert-warning">No hay surtidores activos.</div>');
+}
 // CARGAR LISTA DE GRIFEROS
 function Cargar_Griferos() {
     $.ajax({
@@ -57,8 +70,7 @@ function Cargar_Lecturas_Iniciales() {
     }).done(function(resp) {
         var data = JSON.parse(resp);
         
-        var html_maquina_1 = '';
-        var html_maquina_2 = '';
+        var filas_maquina = {};
         
         data.forEach(function(item) {
             var fila = '<tr>';
@@ -68,15 +80,11 @@ function Cargar_Lecturas_Iniciales() {
             fila += '<td>S/. ' + parseFloat(item.precio_actual).toFixed(2) + '</td>';
             fila += '</tr>';
             
-            if (item.numero_maquina == 1) {
-                html_maquina_1 += fila;
-            } else {
-                html_maquina_2 += fila;
-            }
+            var maquina = parseInt(item.numero_maquina, 10) || 0;
+            filas_maquina[maquina] = (filas_maquina[maquina] || '') + fila;
         });
         
-        $("#tabla_lecturas_maquina_1").html(html_maquina_1);
-        $("#tabla_lecturas_maquina_2").html(html_maquina_2);
+        Pintar_Maquinas('#maquinas_lecturas', filas_maquina, ['Código', 'Producto', 'Lectura Inicial', 'Precio (S/.)'], 'tabla_lecturas_maquina_');
     });
 }
 
@@ -207,8 +215,7 @@ function Cargar_Lecturas_Turno(id_reporte) {
     }).done(function(resp) {
         var data = JSON.parse(resp);
         
-        var html_maquina_1 = '';
-        var html_maquina_2 = '';
+        var filas_maquina = {};
         
         data.forEach(function(item) {
             // Determinar el producto para los cálculos locales
@@ -238,15 +245,11 @@ function Cargar_Lecturas_Turno(id_reporte) {
             fila += '<td class="total-' + item.id_lectura + '">S/. ' + parseFloat(item.total_soles).toFixed(2) + '</td>';
             fila += '</tr>';
             
-            if (item.numero_maquina == 1) {
-                html_maquina_1 += fila;
-            } else {
-                html_maquina_2 += fila;
-            }
+            var maquina = parseInt(item.numero_maquina, 10) || 0;
+            filas_maquina[maquina] = (filas_maquina[maquina] || '') + fila;
         });
         
-        $("#tabla_lecturas_cerrar_maquina_1").html(html_maquina_1);
-        $("#tabla_lecturas_cerrar_maquina_2").html(html_maquina_2);
+        Pintar_Maquinas('#maquinas_lecturas_cerrar', filas_maquina, ['Código', 'Producto', 'Lectura Anterior', 'Lectura Actual', 'Galones Vendidos', 'Precio S/.', 'Total S/.'], 'tabla_lecturas_cerrar_maquina_');
         
         // Calcular totales iniciales
         Calcular_Totales_Locales();
@@ -1230,8 +1233,7 @@ function Cargar_Lecturas_Para_Registro() {
         var data = JSON.parse(resp);
         lecturas_registro = data;
         
-        var html_maquina_1 = '';
-        var html_maquina_2 = '';
+        var filas_maquina = {};
         
         data.forEach(function(item) {
             // Determinar el producto para los cálculos locales
@@ -1262,15 +1264,11 @@ function Cargar_Lecturas_Para_Registro() {
             fila += '<td class="total-registro-' + item.id_surtidor + '">S/. 0.00</td>';
             fila += '</tr>';
             
-            if (item.numero_maquina == 1) {
-                html_maquina_1 += fila;
-            } else {
-                html_maquina_2 += fila;
-            }
+            var maquina = parseInt(item.numero_maquina, 10) || 0;
+            filas_maquina[maquina] = (filas_maquina[maquina] || '') + fila;
         });
         
-        $("#tabla_lecturas_maquina_1").html(html_maquina_1);
-        $("#tabla_lecturas_maquina_2").html(html_maquina_2);
+        Pintar_Maquinas('#maquinas_lecturas', filas_maquina, ['Código', 'Producto', 'Lectura Inicial', 'Lectura Final', 'Galones Vendidos', 'Precio S/.', 'Total S/.'], 'tabla_lecturas_maquina_');
     });
 }
 

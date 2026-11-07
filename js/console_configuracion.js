@@ -34,6 +34,7 @@ function cargar_configuracion() {
 
   cargar_empresa();
   cargar_consumo_ia();
+  cargar_respaldos();
 }
 
 function estado_secreto(id, configurado) {
@@ -150,3 +151,29 @@ function cargar_consumo_ia() {
     });
   }, 'json');
 }
+
+function cargar_respaldos() {
+  $.post('../controller/respaldos/controlador_listar.php', function (r) {
+    G.tabla('#cuerpo_respaldos', r.data || [], [
+      function (x) { return x.fecha; },
+      function (x) { return x.archivo; },
+      function (x) { return G.num(x.bytes / 1024, 1) + ' KB'; },
+      function (x) {
+        var descargar = $('<a class="btn btn-sm btn-primary mr-1"></a>').attr('href', '../controller/respaldos/controlador_descargar.php?archivo=' + encodeURIComponent(x.archivo)).text('Descargar');
+        return G.grupo(descargar, G.boton('Eliminar', 'btn-outline-danger', function () {
+          Swal.fire({ title: '¿Eliminar esta copia?', text: x.archivo, icon: 'warning', showCancelButton: true, confirmButtonText: 'Eliminar', cancelButtonText: 'Cancelar' }).then(function (c) {
+            if (c.isConfirmed) { G.post('../controller/respaldos/controlador_eliminar.php', { archivo: x.archivo }, cargar_respaldos); }
+          });
+        }));
+      }
+    ], 'Aún no hay copias. Genera la primera.');
+  }, 'json');
+}
+
+$(document).off('click.respaldo').on('click.respaldo', '#btn_generar_respaldo', function () {
+  var boton = $(this).prop('disabled', true);
+  G.post('../controller/respaldos/controlador_generar.php', {}, function (r) {
+    G.ok('Copia generada: ' + G.num(r.bytes / 1024, 1) + ' KB');
+    cargar_respaldos();
+  }).always(function () { boton.prop('disabled', false); });
+});

@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../_bootstrap.php';
+exigir_acceso_turno('reporte', $_POST['id_reporte'] ?? 0);
 require_once '../../model/model_conexion.php';
 
 $c = conexionBD::conexionPDO();

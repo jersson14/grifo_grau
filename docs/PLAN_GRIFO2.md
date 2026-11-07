@@ -21,7 +21,8 @@ Actualizado el 2026-11-06. Todo está en commits locales, sin publicar.
 | Fase 6 | Chatbot funcional probado contra una **API simulada**. Falta: probarlo con una clave real (6.7) y añadir streaming |
 | Fase 4 | Hecho y probado: tanques, kardex, varillaje, compras con cuentas por pagar, ventas individuales, precios (historial y programación) y caja con arqueo y depósitos (4.1 a 4.6). Falta: tienda, flotas, gastos, personal, reportes y cumplimiento sectorial |
 | Fase 5 | Facturación con Nubefact: boletas, facturas, anulaciones, reintentos y bandeja, probados contra un **simulador**. Falta probar en su modo demo y notas de crédito, facturar vales y validar con el contador |
-| Fases 2 y 7 | Sin empezar |
+| Fase 2 | Copias de seguridad desde la interfaz, con restauración probada (2.6). Falta PHP 8.4, compatibilidad y CI |
+| Fases 7 y 8 | Sin empezar. La 8 es la mejora de interfaz, pedida por el dueño el 2026-11-07 |
 
 **Pruebas:** `php tests/smoke.php`, `php tests/inventario.php`, `php tests/caja.php`, `tests/chatbot.php` y `tests/ui.cjs` en Edge real (estos dos, ver su cabecera). `php tests/roles.php` cubre roles, menú y auditoría. `php tests/permisos_grifero.php` lista lo que las pantallas del grifero piden y no se le permite: hay que revisarlo al cambiar permisos.
 
@@ -49,7 +50,7 @@ Las credenciales se pegan siempre en Configuración, nunca en el chat.
 **Pendiente parcial en estas fases:**
 
 - **0.5:** las vistas `turno manual` usan tablas que los modelos no usan, y los controladores `dashboard/*` de `turnos` solo los llama código sin uso. Se conservan hasta confirmar con el esquema real.
-- **1.4:** quien no tiene la capacidad «ver todos» ya solo lista lo suyo, pero aún puede consultar por ID el detalle o PDF de un turno ajeno.
+- **3.6:** el formulario y el PDF del turno admiten cualquier cantidad de máquinas, pero los totales siguen fijos en tres combustibles (diesel, regular y premium), porque `reportes_turno` tiene una columna por cada uno. Un cuarto combustible no sumaría en los totales del turno.
 - **1.8:** las contraseñas ya no pasan por `htmlspecialchars`; el resto de datos, sí.
 - **1.10:** sigue habiendo controladores que muestran `getMessage()`.
 - **Ventas y caja:** las ventas individuales no alteran el cuadre del turno. Se concilian en galones y, en Caja → Medios, en soles contra lo declarado. Falta decidir si deben prellenar los pagos al cerrar.
@@ -190,7 +191,7 @@ Objetivo: cerrar S1 a S8.
 - [ ] **1.1** Revocar el token DNI/RUC y crear uno nuevo fuera del código.
 - [x] **1.2** Rehacer el login: la sesión se crea en el servidor, tras verificar la contraseña, con `session_regenerate_id` y cookies `HttpOnly`, `SameSite` y `Secure`. Respuesta sin hash. Eliminar `controlador_crear_sesion.php`.
 - [x] **1.3** Crear `controller/_bootstrap.php` con `require_auth()` y `require_permiso()`, y aplicarlo a todos los controladores. Una prueba automática falla si alguno queda sin protección.
-- [ ] **1.4** Validar permisos y propiedad de los datos en el servidor: que un grifero solo acceda a lo suyo.
+- [x] **1.4** Validar permisos y propiedad de los datos en el servidor: que un grifero solo acceda a lo suyo.
 - [x] **1.5** CSRF en toda petición que modifique datos, mediante `$.ajaxSetup` para no tocar cada llamada.
 - [x] **1.6** Límite de intentos de login y cierre de sesión por inactividad.
 - [x] **1.7** Subidas seguras: extensión y MIME reales, nombre generado por el servidor, carpeta sin ejecución de PHP.
@@ -209,7 +210,7 @@ Objetivo: cerrar S1 a S8.
 - [ ] **2.3** Migrar a `utf8mb4` y fijar `charset=utf8mb4` en la conexión.
 - [ ] **2.4** Actualizar mPDF y demás dependencias. Servir por Composer lo que hoy está copiado en el repo y localmente lo que depende de CDN.
 - [ ] **2.5** Unit tests del cálculo de turnos y créditos, y CI con GitHub Actions.
-- [ ] **2.6** Copias de seguridad automáticas con restauración probada.
+- [x] **2.6** Copias de seguridad automáticas con restauración probada.
 
 Si XAMPP no ofrece PHP 8.4 al llegar aquí, el desarrollo local pasa a Docker.
 
@@ -227,7 +228,7 @@ Es la base de lo que pediste: que todo se maneje desde el menú.
 - [x] **3.3** Menú dinámico guardado en base de datos: orden, íconos y visibilidad por rol, reemplazando el HTML fijo de `view/index.php`.
 - [x] **3.4** Roles y permisos editables. Además de `ADMINISTRADOR` y `GRIFERO`, añadir `SUPERVISOR` y `CONTADOR`.
 - [ ] **3.5** *(parcial)* Página principal configurable: widgets por rol, ventas del día, stock, créditos vencidos, turnos abiertos y alertas. Se elimina el dashboard oculto y se corrigen los indicadores.
-- [ ] **3.6** Editor de catálogos: productos, surtidores, mangueras, máquinas y tipos de pago. Hoy el sistema asume 12 surtidores en 2 máquinas; debe admitir cualquier cantidad.
+- [ ] **3.6** *(parcial: máquinas dinámicas hechas)* Editor de catálogos: productos, surtidores, mangueras, máquinas y tipos de pago. Hoy el sistema asume 12 surtidores en 2 máquinas; debe admitir cualquier cantidad.
 - [x] **3.7** Bitácora de auditoría consultable: quién, qué, cuándo, antes y después.
 - [ ] **3.8** Notificaciones internas: créditos vencidos, stock bajo y turnos sin validar.
 - [ ] **3.9** Asistente de instalación inicial para un grifo nuevo.
@@ -306,6 +307,20 @@ Permite preguntar en lenguaje natural, por ejemplo: «¿Cuántos galones de Prem
 
 ---
 
+### Fase 8. Interfaz
+
+Pedida por el dueño el 2026-11-07. Las pantallas nuevas usan un estilo propio y las antiguas, otro: unificarlas sin rehacer la lógica.
+
+- [ ] **8.1** Revisión de diseño de todas las pantallas: jerarquía, espaciado, colores y textos coherentes. Hoy conviven estilos en línea, DataTables y tablas simples.
+- [ ] **8.2** Uso en celular y tablet para el grifero: registrar turno y venta con campos grandes, teclado numérico y sin desplazamiento horizontal.
+- [ ] **8.3** Formularios más rápidos: valores por defecto razonables, validación al escribir y mensajes de error junto al campo, no solo en ventanas emergentes.
+- [ ] **8.4** Reemplazar los `alert()` y avisos de DataTables por mensajes integrados, y mostrar estados de carga y de lista vacía.
+- [ ] **8.5** Accesibilidad: etiquetas en todos los campos, contraste suficiente, navegación con teclado y foco visible.
+- [ ] **8.6** Escape de datos al mostrar en las pantallas antiguas (1.8), aprovechando la revisión.
+- [ ] **8.7** Pantalla de inicio de sesión con el logo y nombre de la empresa configurables.
+
+**Listo cuando:** la prueba en navegador recorre todas las pantallas a ancho de celular sin desplazamiento horizontal, y cada formulario se puede completar solo con teclado.
+
 ## 5. Riesgos
 
 | Riesgo | Mitigación |
@@ -336,6 +351,8 @@ Permite preguntar en lenguaje natural, por ejemplo: «¿Cuántos galones de Prem
 | 2026-11-06 | Los precios programados se aplican al usarlos, no con una tarea programada | El hosting compartido puede no tener cron |
 | 2026-11-06 | Se ocultan al grifero los botones de crédito y cliente que no puede usar | Pendiente de que el dueño confirme esos permisos |
 | 2026-11-06 | Los permisos son capacidades definidas en código y asignadas a roles desde la interfaz | Una ruta nueva exige una decisión en el catálogo; los roles se administran sin programar |
+| 2026-11-07 | Se agrega la Fase 8 de interfaz | Pedida por el dueño |
+| 2026-11-07 | Las copias se generan con PHP, sin mysqldump | El hosting compartido suele no ofrecerlo |
 | 2026-11-06 | Facturación con Nubefact, elegida por el dueño | Menor carga técnica que la emisión directa |
 | 2026-11-06 | La venta se guarda antes de emitir y conserva su número al reintentar | Una caída del proveedor no debe perder ventas ni duplicar comprobantes |
 | 2026-11-06 | El rol y el estado del usuario se leen en cada petición | Un cambio o una baja surte efecto de inmediato, a cambio de una consulta más |
