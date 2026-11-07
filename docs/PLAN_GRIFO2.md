@@ -19,7 +19,7 @@ Actualizado el 2026-11-07. Todo está en commits locales, sin publicar.
 | Fases 0 y 1 | Base y seguridad hechas y probadas sobre el **esquema provisional**. Falta contrastar con producción |
 | Fase 3 | Hecho: Configuración, módulos activables, avisos en el Dashboard, menú editable, roles con permisos editables y auditoría. Falta: admitir cualquier cantidad de surtidores en el formulario de turno (3.6), notificaciones (3.8), asistente de instalación (3.9) y widgets por rol |
 | Fase 6 | Chatbot funcional probado contra una **API simulada**. Falta: probarlo con una clave real (6.7) y añadir streaming |
-| Fase 4 | Hecho y probado: tanques, kardex, varillaje, compras con cuentas por pagar, ventas individuales, precios (historial y programación) y caja con arqueo y depósitos (4.1 a 4.6). Tienda, flotas, gastos y personal se hicieron en la fase 9. Falta: reportes y cumplimiento sectorial |
+| Fase 4 | Hecho y probado: tanques, kardex, varillaje, compras con cuentas por pagar, ventas individuales, precios (historial y programación) y caja con arqueo y depósitos (4.1 a 4.6). Tienda, flotas, gastos y personal se hicieron en la fase 9; reportes (4.11) hecho. Falta: cumplimiento sectorial |
 | Fase 5 | Facturación con Nubefact: boletas, facturas, anulaciones, reintentos y bandeja, probados contra un **simulador**. Falta probar en su modo demo y notas de crédito, facturar vales y validar con el contador |
 | Fase 2 | Hecho: PHP 8.4 y MySQL 8.4 en Docker, sin avisos de obsolescencia, mPDF 8.3, CI en GitHub Actions y copias de seguridad (2.6). Todas las pruebas pasan en XAMPP, PHP 8.4 y Docker. Falta PHPStan, `utf8mb4` (depende del esquema de producción) y confirmar el motor de producción (D3) |
 | Fase 8 | Hecha: estilo unificado, celular, errores junto al campo, valores por defecto, contraste AA medido en 15 pantallas y datos mostrados como texto. Pruebas: `tests/ui.cjs` y `tests/contraste.cjs` |
@@ -250,7 +250,7 @@ Reglas legales y tributarias: validar con el contador antes de implementar.
 - [~] **4.8 Flotas y créditos avanzados:** hecho en 9.7 (línea de crédito con aviso en vez de bloqueo, para no detener el turno; placas y conductores; estado de cuenta en PDF). Falta el envío por correo.
 - [~] **4.9 Gastos e ingresos:** gastos hecho como módulo nuevo (9.5). Falta decidir con el esquema real qué hacer con los módulos heredados de gastos e ingresos.
 - [x] **4.10 Personal:** hecho en 9.8. La planilla completa queda fuera del alcance.
-- [ ] **4.11 Reportes:** rentabilidad por producto, ranking de griferos, morosidad, ventas por hora, y exportación real a Excel y PDF.
+- [x] **4.11 Reportes:** Reportes → Análisis y rentabilidad (permiso `reportes_analisis` para supervisor y contador; controladores en `controller/analisis/`, aparte de `controller/reportes/*`, que también concede el tablero al grifero). Rentabilidad por combustible con ingresos según lecturas de turnos cerrados y costo promedio ponderado de las compras de los 90 días previos al fin del periodo (sin compras no se inventa costo), más el margen exacto de la tienda; ranking de griferos con faltantes, sobrantes y turnos cuadrados; morosidad por cliente con antigüedad del vencido (1-30, 31-60, 61-90, más de 90 días) a la fecha; mapa de calor de ventas individuales por día y hora y venta promedio por día y turno. Cada sección se exporta a Excel (CSV) y todo el análisis a PDF. Prueba: `tests/analisis.php`.
 - [ ] **4.12 Cumplimiento sectorial:** el contador o responsable define qué se necesita para Osinergmin (SCOP, precios) y qué reportes debe generar el sistema.
 
 ### Fase 5. Facturación electrónica (opcional)
@@ -383,3 +383,4 @@ Pedida por el dueño el 2026-11-07: interfaz que sorprenda, con Tailwind; págin
 | 2026-11-07 | La clase de conexión pasa a un archivo versionado | `model_conexion.php` está fuera de git y sus mejoras no llegaban a las instalaciones |
 | 2026-11-07 | Personal no es una planilla: el neto del mes es solo referencial | Aportes, gratificaciones y boletas dependen de normas y del contador; el módulo cubre lo que el grifo gestiona a diario |
 | 2026-11-07 | Los faltantes de caja se descuentan desde Personal, no automáticamente | Caja decide si el faltante se descuenta; Personal lo registra con un clic para que el supervisor confirme a quién y cuándo |
+| 2026-11-07 | El margen del combustible se estima con el costo promedio de las compras de 90 días | No hay costo por lote en los tanques; sin compras recientes el producto se muestra sin margen en lugar de suponer un costo |

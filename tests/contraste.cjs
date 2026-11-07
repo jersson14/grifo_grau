@@ -11,7 +11,7 @@ const espera = ms => new Promise(r => setTimeout(r, ms));
 const VISTAS = ['reportes/view_dashboard.php', 'turnos/view_registrar_turno.php', 'turnos/view_historial.php', 'creditos/view_creditos_pendientes.php', 'clientes/view_clientes.php',
   'productos/view_productos.php', 'surtidores/view_surtidores.php', 'usuario/view_usuario.php', 'reportes/view_ventas_por_fecha.php', 'reportes/view_listado_reportes.php',
   'reportes/view_validar_reportes.php', 'usuario/view_mi_perfil.php', 'ventas/view_ventas.php', 'caja/view_caja.php', 'configuracion/view_configuracion.php',
-  'gastos_grifo/view_gastos.php', 'flotas/view_flotas.php', 'tienda/view_tienda.php', 'personal/view_personal.php'];
+  'gastos_grifo/view_gastos.php', 'flotas/view_flotas.php', 'tienda/view_tienda.php', 'personal/view_personal.php', 'reportes/view_analisis.php'];
 
 const medir = () => {
   const lum = c => { const v = c.map(x => { x /= 255; return x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4); }); return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2]; };

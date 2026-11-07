@@ -46,7 +46,7 @@ const espera = ms => new Promise(r => setTimeout(r, ms));
   comprobar('el login por la interfaz entra al panel', a.url().includes('view/index.php'));
   comprobar('el nombre de la sesión aparece', (await a.content()).includes('ADMIN DEMO'));
   for (const v of ['reportes/view_dashboard.php', 'turnos/view_registrar_turno.php', 'turnos/view_historial.php', 'creditos/view_creditos_pendientes.php',
-    'reportes/view_ventas_por_fecha.php', 'reportes/view_listado_reportes.php', 'reportes/view_validar_reportes.php',
+    'reportes/view_ventas_por_fecha.php', 'reportes/view_listado_reportes.php', 'reportes/view_validar_reportes.php', 'reportes/view_analisis.php',
     'clientes/view_clientes.php', 'productos/view_productos.php', 'surtidores/view_surtidores.php', 'usuario/view_usuario.php', 'usuario/view_mi_perfil.php']) {
     a.errores.length = 0;
     await abrir(a, v);

@@ -61,6 +61,8 @@ return [
     'avisos'               => ['Reportes', 'Recibir avisos en el Dashboard', []],
     'reportes_gerenciales' => ['Reportes', 'Ver reportes de ventas y listados', array_merge($turnoLectura, ['view/reportes/view_ventas_por_fecha.php', 'view/reportes/view_listado_reportes.php', 'controller/reportes/*', 'controller/usuario/controlador_listar_griferos.php'])],
 
+    'reportes_analisis'    => ['Reportes', 'Ver el análisis: rentabilidad, ranking de griferos, morosidad y ventas por horario', ['view/reportes/view_analisis.php', 'controller/analisis/*', 'view/MPDF/REPORTE/analisis.php']],
+
     'clientes_gestionar' => ['Clientes', 'Ver, registrar y editar clientes', [
         'view/clientes/view_clientes.php',
         'consulta-dni-ajax.php',
