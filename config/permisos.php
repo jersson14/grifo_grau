@@ -27,6 +27,8 @@ return [
         'view/tienda/*'           => 'tienda',
         'view/flotas/*'           => 'flotas',
         'view/MPDF/REPORTE/estado_cuenta_flota.php' => 'flotas',
+        'controller/personal/*'   => 'personal',
+        'view/personal/*'         => 'personal',
     ],
 
     'publico' => [

@@ -134,6 +134,8 @@ return [
     'productos_gestionar'  => ['Catálogos', 'Gestionar combustibles y precios', ['view/productos/view_productos.php', 'controller/productos/*']],
     'surtidores_gestionar' => ['Catálogos', 'Gestionar surtidores', ['view/surtidores/view_surtidores.php', 'controller/surtidores/*', 'controller/productos/controlador_productos_activos.php']],
 
+    'personal_gestionar' => ['Administración', 'Gestionar el personal: fichas, horario, asistencia, adelantos y descuentos', ['view/personal/*', 'controller/personal/*']],
+
     'pagina_publica_gestionar' => ['Administración', 'Gestionar la página pública y las solicitudes de flota', ['view/publico/*', 'controller/publico/*']],
 
     'usuarios_gestionar' => ['Administración', 'Gestionar usuarios (nunca administradores)', [

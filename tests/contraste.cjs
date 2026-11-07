@@ -10,7 +10,8 @@ const BASE = process.env.GRIFO_BASE || 'http://localhost/grifo_grau';
 const espera = ms => new Promise(r => setTimeout(r, ms));
 const VISTAS = ['reportes/view_dashboard.php', 'turnos/view_registrar_turno.php', 'turnos/view_historial.php', 'creditos/view_creditos_pendientes.php', 'clientes/view_clientes.php',
   'productos/view_productos.php', 'surtidores/view_surtidores.php', 'usuario/view_usuario.php', 'reportes/view_ventas_por_fecha.php', 'reportes/view_listado_reportes.php',
-  'reportes/view_validar_reportes.php', 'usuario/view_mi_perfil.php', 'ventas/view_ventas.php', 'caja/view_caja.php', 'configuracion/view_configuracion.php'];
+  'reportes/view_validar_reportes.php', 'usuario/view_mi_perfil.php', 'ventas/view_ventas.php', 'caja/view_caja.php', 'configuracion/view_configuracion.php',
+  'gastos_grifo/view_gastos.php', 'flotas/view_flotas.php', 'tienda/view_tienda.php', 'personal/view_personal.php'];
 
 const medir = () => {
   const lum = c => { const v = c.map(x => { x /= 255; return x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4); }); return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2]; };
@@ -51,7 +52,7 @@ const medir = () => {
   await p.setViewport({ width: 1366, height: 850 });
   const dialogos = [];
   p.on('dialog', async d => { dialogos.push(d.message().slice(0, 80)); await d.dismiss(); });
-  await p.goto(BASE + '/', { waitUntil: 'networkidle2' });
+  await p.goto(BASE + '/login.php', { waitUntil: 'networkidle2' });
   await p.type('#txt_usuario', 'admin'); await p.type('#txt_contra', 'admin123');
   await p.evaluate(() => Iniciar_Sesion());
   await p.waitForFunction(() => location.href.includes('view/index.php'), { timeout: 15000 });
