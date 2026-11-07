@@ -54,6 +54,20 @@ if (window.Chart && Chart.defaults && Chart.defaults.font) { Chart.defaults.font
         });
       });
       if (tieneCampos) { tabla.classList.add('tabla-apilable'); }
+
+      // Botones de acción solo con icono: estilo neutro y un nombre que se lee ("Editar · CLIENTE DEMO").
+      $(tabla).find('tbody td .btn-sm').each(function () {
+        if (this.classList.contains('g-accion') || texto(this) !== '') { return; }
+        this.classList.add('g-accion');
+        var titulo = this.getAttribute('title') || this.getAttribute('data-original-title');
+        if (titulo && !this.hasAttribute('aria-label')) {
+          var datos = $(this).closest('tr').children('td').map(function () { return texto(this); }).get().filter(function (t) { return t && !/^\d+$/.test(t); });
+          // Un primer dato corto ("Máquina 1") no distingue la fila: se le suma el siguiente ("Máquina 1 · BS1").
+          var fila = datos[0] && datos[0].length < 12 && datos[1] && datos[1] !== datos[0] ? datos[0] + ' · ' + datos[1] : datos[0];
+          this.setAttribute('aria-label', titulo + (fila ? ' · ' + fila : ''));
+        }
+        $(this).find('i').attr('aria-hidden', 'true');
+      });
     });
   }
 

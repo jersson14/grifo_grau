@@ -129,6 +129,18 @@ h5[style*="background-color"], .titulo-seccion { background: theme('colors.zinc.
 .table td { border-color: theme('colors.zinc.200'); }
 .table-striped tbody tr:nth-of-type(odd) { background: theme('colors.zinc.50'); }
 .table-hover tbody tr:hover { background: theme('colors.zinc.100'); }
+/* Tablas antiguas con bordes en todas las celdas: solo la línea entre filas, como el resto del panel. */
+.table-bordered, .table-bordered td, .table-bordered th { border-left: 0 !important; border-right: 0 !important; }
+.table-bordered { border-top: 0; border-bottom: 1px solid theme('colors.zinc.200'); }
+/* Botones de acción solo con icono dentro de una tabla: neutros, con el icono del color de su intención.
+   La acción se lee por el icono y su nombre accesible; el color sólido de cada botón competía con los datos. */
+.table td .btn-sm.g-accion { background: #fff !important; border: 1px solid theme('colors.zinc.200') !important; color: theme('colors.zinc.700') !important; box-shadow: none; }
+.table td .btn-sm.g-accion:hover { background: theme('colors.zinc.100') !important; border-color: theme('colors.zinc.300') !important; }
+.table td .btn-sm.g-accion:focus-visible { outline: 2px solid theme('colors.blue.600'); outline-offset: 1px; }
+.table td .btn-sm.g-accion.btn-danger { color: theme('colors.red.600') !important; }
+.table td .btn-sm.g-accion.btn-danger:hover { background: theme('colors.red.50') !important; border-color: theme('colors.red.200') !important; }
+.table td .btn-sm.g-accion.btn-success { color: theme('colors.green.700') !important; }
+.table td:has(> .g-accion) { white-space: nowrap; }
 .page-item.active .page-link { background: theme('colors.zinc.900'); border-color: theme('colors.zinc.900'); color: #fff; }
 .page-link { color: theme('colors.zinc.700'); border-color: theme('colors.zinc.200'); }
 

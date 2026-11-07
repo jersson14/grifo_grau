@@ -52,6 +52,10 @@ const espera = ms => new Promise(r => setTimeout(r, ms));
     await abrir(a, v);
     comprobar('abre ' + v + ' sin errores', a.errores.length === 0, a.errores.slice(0, 3).join(' | '));
   }
+  await abrir(a, 'clientes/view_clientes.php');
+  await a.waitForFunction(() => document.querySelectorAll('#tabla_cliente tbody tr .btn').length > 0 || document.querySelectorAll('table tbody .btn-sm').length > 0, { timeout: 10000 }).catch(() => {});
+  await espera(400);
+  comprobar('los botones de solo icono tienen un nombre que se lee', await a.evaluate(() => { const b = [...document.querySelectorAll('table tbody .g-accion')]; return b.length > 0 && b.every(x => /\S · \S/.test(x.getAttribute('aria-label') || '')); }));
 
   console.log('\n2. Configuración y módulos');
   a.errores.length = 0;
