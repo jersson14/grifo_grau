@@ -128,6 +128,9 @@ return [
 
     'gastos_gestionar' => ['Caja', 'Registrar y anular gastos del grifo', ['view/gastos_grifo/*', 'controller/gastos_grifo/*']],
 
+    'tienda_vender' => ['Ventas', 'Vender en la tienda', ['view/tienda/view_tienda.php', 'controller/tienda/controlador_datos.php', 'controller/tienda/controlador_vender.php', 'controller/tienda/controlador_ventas.php']],
+    'tienda_gestionar' => ['Ventas', 'Gestionar la tienda: productos, stock y anulaciones', ['view/tienda/*', 'controller/tienda/*']],
+
     'productos_gestionar'  => ['Catálogos', 'Gestionar combustibles y precios', ['view/productos/view_productos.php', 'controller/productos/*']],
     'surtidores_gestionar' => ['Catálogos', 'Gestionar surtidores', ['view/surtidores/view_surtidores.php', 'controller/surtidores/*', 'controller/productos/controlador_productos_activos.php']],
 

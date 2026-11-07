@@ -23,6 +23,8 @@ return [
         'controller/gastos_grifo/*' => 'gastos',
         'view/gastos_grifo/*'      => 'gastos',
         'controller/flotas/*'     => 'flotas',
+        'controller/tienda/*'     => 'tienda',
+        'view/tienda/*'           => 'tienda',
         'view/flotas/*'           => 'flotas',
         'view/MPDF/REPORTE/estado_cuenta_flota.php' => 'flotas',
     ],

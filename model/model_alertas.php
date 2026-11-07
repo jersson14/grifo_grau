@@ -28,6 +28,10 @@ class Modelo_Alertas extends conexionBD
         'respaldo_antiguo'     => [null, 'Copia de seguridad atrasada', 'semana(s) sin una copia de seguridad', 'warning', 'configuracion/view_configuracion.php', 'respaldo'],
         'precios_programados'  => [null, 'Precios programados', 'cambio(s) de precio programado(s)', 'info', 'productos/view_productos.php',
                                    "SELECT COUNT(*) FROM precios_programados WHERE estado = 'PENDIENTE'"],
+        'tienda_stock_bajo'    => ['tienda', 'Tienda: stock bajo', 'producto(s) de la tienda con stock bajo', 'warning', 'tienda/view_tienda.php',
+                                   "SELECT COUNT(*) FROM tienda_productos WHERE activo = 1 AND stock_minimo > 0 AND stock <= stock_minimo"],
+        'flotas_sobre_limite'  => ['flotas', 'Flotas sobre su límite', 'flota(s) con deuda sobre su límite de crédito', 'danger', 'flotas/view_flotas.php',
+                                   "SELECT COUNT(*) FROM flotas f WHERE f.limite_credito IS NOT NULL AND (SELECT COALESCE(SUM(v.saldo_pendiente), 0) FROM ventas_credito v WHERE v.id_cliente = f.id_cliente AND v.estado = 'PENDIENTE') > f.limite_credito"],
     ];
 
     public function Listar(): array
