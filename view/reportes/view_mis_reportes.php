@@ -398,7 +398,7 @@ $(document).ready(function() {
     var hace_mes = new Date();
     hace_mes.setMonth(hace_mes.getMonth() - 1);
     
-    $("#filtro_fecha_inicio_mis").val(hace_mes.toISOString().split('T')[0]);
-    $("#filtro_fecha_fin_mis").val(hoy.toISOString().split('T')[0]);
+    $("#filtro_fecha_inicio_mis").val(Fecha_ISO_Local(hace_mes));
+    $("#filtro_fecha_fin_mis").val(Fecha_ISO_Local(hoy));
 });
 </script>

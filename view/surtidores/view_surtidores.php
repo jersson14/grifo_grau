@@ -26,8 +26,7 @@
                 <label>Filtrar por Máquina:</label>
                 <select class="form-control" id="filtro_maquina" onchange="Filtrar_Por_Maquina()">
                     <option value="">Todas las Máquinas</option>
-                    <option value="1">Máquina 1</option>
-                    <option value="2">Máquina 2</option>
+                    <?php require_once __DIR__ . '/../../model/model_conexion.php'; foreach (conexionBD::conexionPDO()->query('SELECT DISTINCT numero_maquina FROM surtidores ORDER BY numero_maquina')->fetchAll(PDO::FETCH_COLUMN) as $maquina) { $maquina = (int) $maquina; ?><option value="<?php echo $maquina; ?>">Máquina <?php echo $maquina; ?></option><?php } ?>
                 </select>
             </div>
             <div class="col-md-3">

@@ -102,9 +102,11 @@ function Cargar_Grafico_Ventas_Semana() {
                 scales: {
                     y: {
                         beginAtZero: true,
+                        suggestedMax: 100,
                         ticks: {
+                            precision: 0,
                             callback: function(value) {
-                                return 'S/. ' + value.toFixed(0);
+                                return 'S/. ' + Number(value).toLocaleString('es-PE');
                             }
                         }
                     }
@@ -180,9 +182,11 @@ function Cargar_Grafico_Combustibles() {
                 scales: {
                     y: {
                         beginAtZero: true,
+                        suggestedMax: 100,
                         ticks: {
+                            precision: 0,
                             callback: function(value) {
-                                return 'S/. ' + value.toFixed(0);
+                                return 'S/. ' + Number(value).toLocaleString('es-PE');
                             }
                         }
                     }
@@ -281,9 +285,11 @@ function Cargar_Grafico_Turnos() {
                 scales: {
                     y: {
                         beginAtZero: true,
+                        suggestedMax: 100,
                         ticks: {
+                            precision: 0,
                             callback: function(value) {
-                                return 'S/. ' + value.toFixed(0);
+                                return 'S/. ' + Number(value).toLocaleString('es-PE');
                             }
                         }
                     }
@@ -304,7 +310,7 @@ function Cargar_Desempeno_Griferos() {
         
         data.forEach(function(item) {
             html += '<tr>';
-            html += '<td>' + item.grifero_nombre + '</td>';
+            html += '<td>' + Texto_Seguro(item.grifero_nombre) + '</td>';
             html += '<td>' + item.total_turnos + '</td>';
             html += '<td>S/. ' + parseFloat(item.total_ventas).toFixed(2) + '</td>';
             html += '<td>S/. ' + parseFloat(item.promedio_ventas).toFixed(2) + '</td>';

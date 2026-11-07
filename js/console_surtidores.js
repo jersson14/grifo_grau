@@ -107,7 +107,7 @@ function Cargar_Productos_Select() {
         var data = JSON.parse(resp);
         var opciones = '<option value="">-- Seleccione --</option>';
         data.forEach(function(producto) {
-            opciones += '<option value="' + producto.id_producto + '">' + producto.nombre + ' (' + producto.tipo + ')</option>';
+            opciones += '<option value="' + producto.id_producto + '">' + Texto_Seguro(producto.nombre) + ' (' + producto.tipo + ')</option>';
         });
         $("#txt_producto").html(opciones);
         $("#txt_producto_editar").html(opciones);
@@ -126,7 +126,7 @@ function Cargar_Vista_Maquinas() {
             var badge_estado = item.estado == 'ACTIVO' ? 'success' : (item.estado == 'INACTIVO' ? 'danger' : 'warning');
             html += '<tr>';
             html += '<td><strong>' + item.codigo + '</strong></td>';
-            html += '<td>' + item.producto_nombre + '</td>';
+            html += '<td>' + Texto_Seguro(item.producto_nombre) + '</td>';
             html += '<td>' + parseFloat(item.lectura_actual).toFixed(3) + '</td>';
             html += '<td><span class="badge badge-' + badge_estado + '">' + item.estado + '</span></td>';
             html += '</tr>';
@@ -145,7 +145,7 @@ function Cargar_Vista_Maquinas() {
             var badge_estado = item.estado == 'ACTIVO' ? 'success' : (item.estado == 'INACTIVO' ? 'danger' : 'warning');
             html += '<tr>';
             html += '<td><strong>' + item.codigo + '</strong></td>';
-            html += '<td>' + item.producto_nombre + '</td>';
+            html += '<td>' + Texto_Seguro(item.producto_nombre) + '</td>';
             html += '<td>' + parseFloat(item.lectura_actual).toFixed(3) + '</td>';
             html += '<td><span class="badge badge-' + badge_estado + '">' + item.estado + '</span></td>';
             html += '</tr>';

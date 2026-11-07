@@ -27,6 +27,104 @@ input:focus-visible, select:focus-visible, textarea:focus-visible, summary:focus
   box-shadow: 0 0 0 .2rem rgba(2, 102, 200, .22);
 }
 
+/*
+ * Unificación de las pantallas antiguas con las nuevas. Esas pantallas pintaban cada encabezado con un
+ * color distinto mediante estilos en línea; aquí se llevan a un solo lenguaje: tarjeta blanca con franja
+ * azul, encabezado de tabla neutro y color solo para acciones y estados, con contraste suficiente.
+ */
+.card-header[style*="background"],
+.card:not(.card-outline).card-primary > .card-header,
+.card:not(.card-outline).card-success > .card-header,
+.card:not(.card-outline).card-warning > .card-header,
+.card:not(.card-outline).card-danger > .card-header,
+.card:not(.card-outline).card-info > .card-header,
+.card:not(.card-outline).card-secondary > .card-header,
+.card:not(.card-outline).card-dark > .card-header {
+  background: #fff !important;
+  color: var(--g-texto) !important;
+  border-bottom: 1px solid var(--g-borde);
+}
+.card:has(> .card-header[style*="background"]),
+.card:not(.card-outline):is(.card-primary, .card-success, .card-warning, .card-danger, .card-info, .card-secondary, .card-dark) {
+  border-top: 3px solid var(--g-azul);
+}
+.card-header[style*="background"] .card-title,
+.card-header[style*="background"] [style*="color"],
+.card:not(.card-outline):is(.card-primary, .card-success, .card-warning, .card-danger, .card-info, .card-secondary, .card-dark) > .card-header .card-title {
+  color: var(--g-texto) !important;
+  font-weight: 600;
+}
+.card-header[style*="background"] .btn-tool,
+.card:not(.card-outline):is(.card-primary, .card-success, .card-warning, .card-danger, .card-info, .card-secondary, .card-dark) > .card-header .btn-tool { color: var(--g-texto-suave) !important; }
+.card-title i, .titulo-seccion i { color: var(--g-azul); margin-right: .25rem; }
+
+.table thead[style*="background"], .table thead th, table.dataTable thead th {
+  background: #eef3f8 !important;
+  color: var(--g-texto) !important;
+  border-bottom: 1px solid var(--g-borde) !important;
+  font-weight: 600;
+}
+
+h5[style*="background-color"], .titulo-seccion {
+  background: var(--g-azul-tenue) !important;
+  color: var(--g-azul) !important;
+  font-size: 1rem;
+  font-weight: 700;
+  padding: .6rem .85rem !important;
+  border-radius: .4rem;
+  margin-bottom: .75rem;
+}
+
+/* Colores de acción y estado con contraste AA sobre texto blanco */
+.btn-primary { background-color: var(--g-azul-claro); border-color: var(--g-azul-claro); }
+.btn-primary:hover, .btn-primary:focus { background-color: #0a4f92; border-color: #0a4f92; }
+.btn-success { background-color: #1e7b34; border-color: #1e7b34; }
+.btn-success:hover, .btn-success:focus { background-color: #176429; border-color: #176429; }
+.btn-info { background-color: #0f6e7d; border-color: #0f6e7d; }
+.btn-info:hover, .btn-info:focus { background-color: #0b5560; border-color: #0b5560; }
+.btn-danger { background-color: #b42318; border-color: #b42318; }
+.btn-danger:hover, .btn-danger:focus { background-color: #912018; border-color: #912018; }
+.btn-secondary { background-color: #56606b; border-color: #56606b; }
+.btn[style*="background-color"] { background-color: #fff !important; color: var(--g-azul) !important; border: 1px solid var(--g-azul-claro) !important; }
+.btn[style*="background-color"]:hover { background-color: var(--g-azul-tenue) !important; }
+
+.bg-success, .badge-success { background-color: #1e7b34 !important; color: #fff !important; }
+.bg-info, .badge-info { background-color: #0f6e7d !important; color: #fff !important; }
+.bg-danger, .badge-danger { background-color: #b42318 !important; color: #fff !important; }
+.bg-secondary, .badge-secondary { background-color: #56606b !important; color: #fff !important; }
+.bg-warning, .badge-warning { background-color: #f2b705 !important; color: #1c2733 !important; }
+.small-box.bg-warning .small-box-footer, .small-box.bg-warning .inner { color: #1c2733 !important; }
+
+/* Enlaces, pestañas y ruta de navegación con contraste suficiente */
+a, .btn-link, .nav-tabs .nav-link, .page-link { color: var(--g-azul-claro); }
+a:hover, .btn-link:hover { color: var(--g-azul); }
+.nav-tabs .nav-link.active { color: var(--g-texto); font-weight: 600; }
+.breadcrumb-item.active, .breadcrumb-item + .breadcrumb-item::before { color: var(--g-texto-suave); }
+.text-muted { color: var(--g-texto-suave) !important; }
+.select2-container--default .select2-selection--single .select2-selection__placeholder,
+.form-control::placeholder { color: #6b7480; opacity: 1; }
+.bg-primary, .badge-primary { background-color: var(--g-azul-claro) !important; color: #fff !important; }
+
+/* Filas destacadas con color en línea: fondo neutro; el color queda para el estado (faltante, sobrante) */
+tr[style*="background-color"], tr[style*="background-color"] td { background: var(--g-azul-tenue) !important; color: var(--g-texto) !important; }
+.text-success { color: #1e7b34 !important; }
+.text-danger { color: #b42318 !important; }
+.text-warning { color: #8a5a00 !important; }
+.text-info { color: #0f6e7d !important; }
+
+/* Cajas pintadas con estilos en línea: se llevan a la paleta con contraste */
+.info-box[style*="background"], .small-box[style*="background"] { background: var(--g-azul-claro) !important; color: #fff !important; }
+.info-box[style*="#e57373"], .info-box[style*="#dc3545"], .small-box[style*="#e57373"], .small-box[style*="#dc3545"] { background: #b42318 !important; }
+.info-box[style*="#28a745"], .small-box[style*="#28a745"] { background: #1e7b34 !important; }
+.info-box[style*="#ffc107"], .info-box[style*="#FFA500"], .small-box[style*="#ffc107"], .small-box[style*="#FFA500"] { background: #f2b705 !important; color: #1c2733 !important; }
+
+/* Avisos: fondo claro y texto oscuro en vez de bloques de color con texto blanco */
+.alert-info { background: #e6f3f8; color: #0b4a5a; border-color: #b9dde9; }
+.alert-success { background: #e8f5ec; color: #14532d; border-color: #bfe3ca; }
+.alert-warning { background: #fff6dd; color: #6b4a00; border-color: #f3dc9a; }
+.alert-danger { background: #fdecea; color: #7a1d14; border-color: #f4c3bd; }
+.alert a, .alert .alert-link { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+
 /* Cifras alineadas en tablas y tarjetas */
 td, .info-box-number, .small-box h3, .table th { font-variant-numeric: tabular-nums; }
 

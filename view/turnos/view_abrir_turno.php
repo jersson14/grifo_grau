@@ -110,7 +110,7 @@ $(document).ready(function() {
     Cargar_Griferos(); // Cargar lista de griferos
     
     // Establecer fecha actual
-    var hoy = new Date().toISOString().split('T')[0];
+    var hoy = Fecha_ISO_Local(new Date());
     $('#txt_fecha_turno').val(hoy);
     
     // Establecer horas por defecto según el turno

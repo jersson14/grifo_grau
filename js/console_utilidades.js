@@ -1,3 +1,18 @@
+/**
+ * Convierte un dato en texto seguro para insertarlo en HTML. Muchos datos antiguos se guardaron ya
+ * escapados (&amp;), así que primero se decodifican para no mostrarlos dos veces escapados. Un
+ * textarea no crea elementos al decodificar, de modo que el dato nunca se interpreta como HTML.
+ */
+var Texto_Seguro = (function () {
+  var decodificador = document.createElement('textarea');
+  var mapa = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+  return function (valor) {
+    if (valor === null || valor === undefined) { return ''; }
+    decodificador.innerHTML = String(valor);
+    return decodificador.value.replace(/[&<>"']/g, function (c) { return mapa[c]; });
+  };
+})();
+
 // Mejoras comunes para todas las pantallas, también las antiguas, sin tocar cada una:
 // etiquetas accesibles y tarjetas en celular para tablas de captura, errores junto al campo
 // y avisos de DataTables integrados en lugar de alert().
@@ -84,6 +99,10 @@
 
   // DataTables avisa de sus errores con alert(): se registran y se muestra un aviso discreto.
   if ($.fn.dataTable) {
+    // Toda columna sin presentación propia muestra su dato como texto, no como HTML.
+    $.extend(true, $.fn.dataTable.defaults, {
+      columnDefs: [{ targets: '_all', render: function (dato, tipo) { return (tipo === 'display' && typeof dato === 'string') ? Texto_Seguro(dato) : dato; } }]
+    });
     $.fn.dataTable.ext.errMode = 'none';
     $(document).on('error.dt', function (e, ajustes, codigo, mensaje) {
       console.error('DataTables:', mensaje);
@@ -93,6 +112,11 @@
     });
   }
 })();
+
+// Fecha AAAA-MM-DD en la hora local. toISOString() usa UTC: desde las 19:00 en Lima daría el día siguiente.
+function Fecha_ISO_Local(fecha) {
+  return new Date(fecha.getTime() - fecha.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+}
 
 // Una fecha sin hora ('2026-11-06') se interpretaría en UTC y en Lima se mostraría el día anterior.
 function Fecha_Local(valor) {

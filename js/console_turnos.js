@@ -1,12 +1,10 @@
 // Pinta una tabla por máquina. filas: { numero_de_maquina: html de sus filas }.
 function Pintar_Maquinas(contenedor, filas, columnas, prefijo) {
-    var colores = ['#28a745', '#17a2b8', '#007bff', '#6f42c1', '#fd7e14', '#20c997'];
     var html = '';
-    Object.keys(filas).map(Number).sort(function (a, b) { return a - b; }).forEach(function (maquina, i) {
-        var color = colores[i % colores.length];
-        html += '<h5 style="background-color:' + color + '; color:white; padding:10px; border-radius:5px;" class="mt-3"><i class="fas fa-cogs"></i> MÁQUINA ' + maquina + '</h5>';
+    Object.keys(filas).map(Number).sort(function (a, b) { return a - b; }).forEach(function (maquina) {
+        html += '<h5 class="titulo-seccion mt-3"><i class="fas fa-cogs" aria-hidden="true"></i> MÁQUINA ' + maquina + '</h5>';
         html += '<div class="table-responsive"><table class="table table-sm table-bordered table-hover">';
-        html += '<thead style="background-color:' + color + '; color:white"><tr>' + columnas.map(function (c) { return '<th>' + c + '</th>'; }).join('') + '</tr></thead>';
+        html += '<thead><tr>' + columnas.map(function (c) { return '<th>' + c + '</th>'; }).join('') + '</tr></thead>';
         html += '<tbody id="' + prefijo + maquina + '">' + filas[maquina] + '</tbody></table></div>';
     });
     $(contenedor).html(html || '<div class="alert alert-warning">No hay surtidores activos.</div>');
@@ -21,7 +19,7 @@ function Cargar_Griferos() {
         var opciones = '<option value="">-- Seleccione Grifero --</option>';
         
         data.forEach(function(item) {
-            opciones += '<option value="' + item.id_usuario + '">' + item.nombre_completo + '</option>';
+            opciones += '<option value="' + item.id_usuario + '">' + Texto_Seguro(item.nombre_completo) + '</option>';
         });
         
         $("#txt_grifero").html(opciones);
@@ -75,7 +73,7 @@ function Cargar_Lecturas_Iniciales() {
         data.forEach(function(item) {
             var fila = '<tr>';
             fila += '<td><strong>' + item.codigo + '</strong></td>';
-            fila += '<td>' + item.producto_nombre + '</td>';
+            fila += '<td>' + Texto_Seguro(item.producto_nombre) + '</td>';
             fila += '<td><strong>' + parseFloat(item.lectura_actual).toFixed(3) + '</strong></td>';
             fila += '<td>S/. ' + parseFloat(item.precio_actual).toFixed(2) + '</td>';
             fila += '</tr>';
@@ -228,7 +226,7 @@ function Cargar_Lecturas_Turno(id_reporte) {
 
             var fila = '<tr>';
             fila += '<td><strong>' + item.codigo + '</strong></td>';
-            fila += '<td>' + item.producto_nombre + '</td>';
+            fila += '<td>' + Texto_Seguro(item.producto_nombre) + '</td>';
             fila += '<td>' + parseFloat(item.lectura_anterior).toFixed(3) + '</td>';
             
             // Input con clase 'input-lectura' y data attributes para cálculo local
@@ -496,7 +494,7 @@ function Cargar_Tipos_Pago() {
         var data = JSON.parse(resp);
         var opciones = '<option value="">-- Seleccione --</option>';
         data.forEach(function(item) {
-            opciones += '<option value="' + item.id_tipo_pago + '" data-requiere="' + item.requiere_codigo + '">' + item.nombre + '</option>';
+            opciones += '<option value="' + item.id_tipo_pago + '" data-requiere="' + item.requiere_codigo + '">' + Texto_Seguro(item.nombre) + '</option>';
         });
         $("#txt_tipo_pago").html(opciones);
     });
@@ -642,7 +640,7 @@ function Agregar_Fila_Pago(datos = null) {
         var opciones = '<option value="">-- Seleccione --</option>';
         tipos.forEach(function(tipo) {
             var selected = (datos && datos.id_tipo_pago == tipo.id_tipo_pago) ? 'selected' : '';
-            opciones += '<option value="' + tipo.id_tipo_pago + '" ' + selected + '>' + tipo.nombre + '</option>';
+            opciones += '<option value="' + tipo.id_tipo_pago + '" ' + selected + '>' + Texto_Seguro(tipo.nombre) + '</option>';
         });
         
         var fila = '<tr id="' + fila_id + '" data-id-pago="' + (datos ? datos.id_pago_reporte : '0') + '">';
@@ -782,7 +780,7 @@ function Agregar_Fila_Credito(datos = null) {
         var opciones = '<option value="">-- Seleccione --</option>';
         clientes.forEach(function(cliente) {
             var selected = (datos && datos.id_cliente == cliente.id_cliente) ? 'selected' : '';
-            opciones += '<option value="' + cliente.id_cliente + '" ' + selected + '>' + cliente.nombre_completo + '</option>';
+            opciones += '<option value="' + cliente.id_cliente + '" ' + selected + '>' + Texto_Seguro(cliente.nombre_completo) + '</option>';
         });
         
         var fila = '<tr id="' + fila_id + '" data-id-credito="' + (datos ? datos.id_credito : '0') + '" data-numero-fila="' + numero_fila + '">';
@@ -1246,7 +1244,7 @@ function Cargar_Lecturas_Para_Registro() {
 
             var fila = '<tr>';
             fila += '<td><strong>' + item.codigo + '</strong></td>';
-            fila += '<td>' + item.producto_nombre + '</td>';
+            fila += '<td>' + Texto_Seguro(item.producto_nombre) + '</td>';
             fila += '<td><input type="number" step="0.001" class="form-control form-control-sm lectura-inicial-input" ' + 
                     'data-id-surtidor="' + item.id_surtidor + '" ' +
                     'value="' + parseFloat(item.lectura_actual).toFixed(3) + '" readonly style="background-color:#f0f0f0"></td>';
@@ -1389,7 +1387,7 @@ function Agregar_Fila_Pago_Registro() {
         var tipos = JSON.parse(resp);
         var opciones = '<option value="">-- Seleccione --</option>';
         tipos.forEach(function(tipo) {
-            opciones += '<option value="' + tipo.id_tipo_pago + '">' + tipo.nombre + '</option>';
+            opciones += '<option value="' + tipo.id_tipo_pago + '">' + Texto_Seguro(tipo.nombre) + '</option>';
         });
         
         var fila = '<tr id="' + fila_id + '">';
@@ -1423,7 +1421,7 @@ function Agregar_Fila_Credito_Registro() {
         var clientes = JSON.parse(resp);
         var opciones = '<option value="">-- Seleccione --</option>';
         clientes.forEach(function(cliente) {
-            opciones += '<option value="' + cliente.id_cliente + '">' + cliente.nombre_completo + '</option>';
+            opciones += '<option value="' + cliente.id_cliente + '">' + Texto_Seguro(cliente.nombre_completo) + '</option>';
         });
         
         var fila = '<tr id="' + fila_id + '">';

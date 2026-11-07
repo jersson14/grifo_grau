@@ -242,8 +242,8 @@ $(document).ready(function() {
     var hace_mes = new Date();
     hace_mes.setMonth(hace_mes.getMonth() - 1);
     
-    $("#filtro_fecha_inicio_ventas").val(hace_mes.toISOString().split('T')[0]);
-    $("#filtro_fecha_fin_ventas").val(hoy.toISOString().split('T')[0]);
+    $("#filtro_fecha_inicio_ventas").val(Fecha_ISO_Local(hace_mes));
+    $("#filtro_fecha_fin_ventas").val(Fecha_ISO_Local(hoy));
     
     // Cargar griferos
     Cargar_Griferos_Filtro();
@@ -259,7 +259,7 @@ function Cargar_Griferos_Filtro() {
         var opciones = '<option value="">Todos los Griferos</option>';
         
         data.forEach(function(item) {
-            opciones += '<option value="' + item.id_usuario + '">' + item.nombre_completo + '</option>';
+            opciones += '<option value="' + item.id_usuario + '">' + Texto_Seguro(item.nombre_completo) + '</option>';
         });
         
         $("#filtro_grifero_ventas").html(opciones);
@@ -469,7 +469,7 @@ function Actualizar_Tabla_Griferos(por_grifero) {
     
     por_grifero.forEach(function(item) {
         html += '<tr>';
-        html += '<td>' + item.grifero_nombre + '</td>';
+        html += '<td>' + Texto_Seguro(item.grifero_nombre) + '</td>';
         html += '<td>' + item.total_turnos + '</td>';
         html += '<td>' + parseFloat(item.total_galones).toFixed(3) + ' gal</td>';
         html += '<td>S/. ' + parseFloat(item.total_ventas).toFixed(2) + '</td>';

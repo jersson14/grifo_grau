@@ -448,15 +448,31 @@ const espera = ms => new Promise(r => setTimeout(r, ms));
     }
     await abrir(m, 'turnos/view_registrar_turno.php');
     await m.waitForFunction(() => document.querySelectorAll('.lectura-final-input').length > 0, { timeout: 15000 });
+    await m.emulateTimezone('America/Lima');
+    comprobar('a las 21:30 en Lima la fecha local sigue siendo la del día', await m.evaluate(() => Fecha_ISO_Local(new Date('2026-11-07T21:30:00-05:00')) === '2026-11-07'));
+    const pasos1 = await m.evaluate(() => ({ tipo: document.getElementById('txt_tipo_turno').value, inicio: document.getElementById('txt_hora_inicio').value, fin: document.getElementById('txt_hora_fin').value }));
+    comprobar('el tipo de turno y sus horas vienen propuestos', (pasos1.tipo === 'DIA' && pasos1.inicio === '07:00' && pasos1.fin === '19:00') || (pasos1.tipo === 'NOCHE' && pasos1.inicio === '19:00' && pasos1.fin === '07:00'), JSON.stringify(pasos1));
+    await m.evaluate(() => { const h = document.getElementById('txt_hora_inicio'); h.value = '06:30'; h.dispatchEvent(new Event('input', { bubbles: true })); const t = document.getElementById('txt_tipo_turno'); t.value = t.value === 'DIA' ? 'NOCHE' : 'DIA'; t.dispatchEvent(new Event('change', { bubbles: true })); });
+    comprobar('cambiar el tipo no pisa una hora escrita a mano', await m.evaluate(() => document.getElementById('txt_hora_inicio').value === '06:30'));
     comprobar('las lecturas se muestran como tarjetas', await m.evaluate(() => getComputedStyle(document.querySelector('#maquinas_lecturas tbody tr')).display === 'block' && document.querySelector('#maquinas_lecturas table').classList.contains('tabla-apilable')));
     await abrir(m, 'ventas/view_ventas.php');
     await m.waitForFunction(() => document.querySelectorAll('#venta_surtidor option').length > 1, { timeout: 15000 });
+    comprobar('la venta propone efectivo como medio de pago', await m.evaluate(() => document.querySelector('#venta_pago option:checked').textContent === 'EFECTIVO'));
     await m.click('#form_venta button[type=submit]');
     await espera(400);
     comprobar('un formulario incompleto marca los errores junto a cada campo', await m.evaluate(() => document.querySelectorAll('.campo-error').length >= 2 && document.activeElement && document.activeElement.classList.contains('is-invalid')));
     await m.select('#venta_surtidor', await m.$eval('#venta_surtidor', s => s.options[1].value));
     comprobar('corregir un campo quita su error', await m.evaluate(() => !document.getElementById('venta_surtidor').classList.contains('is-invalid')));
     await pantalla(m, '21_celular_errores');
+
+    // Un nombre con HTML se guarda y luego se muestra en varias pantallas antiguas: nunca debe ejecutarse.
+    await m.evaluate(() => $.post('../controller/clientes/controlador_registrar_cliente.php', { nombre: '<img src=x onerror="window.__xss=1">XSS', dni: '88888888', telefono: '', direccion: '' }));
+    for (const v of ['clientes/view_clientes.php', 'creditos/view_creditos_pendientes.php', 'turnos/view_registrar_turno.php']) {
+      await abrir(m, v);
+      await espera(600);
+      if (v.includes('registrar')) { await m.evaluate(() => window.Agregar_Fila_Credito_Registro && Agregar_Fila_Credito_Registro()); await espera(500); }
+      comprobar(v + ': un nombre con HTML no se ejecuta', await m.evaluate(() => window.__xss !== 1));
+    }
     await ctx.close();
   }
 

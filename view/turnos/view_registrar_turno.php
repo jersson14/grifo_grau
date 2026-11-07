@@ -321,25 +321,47 @@ $(document).ready(function() {
     Cargar_Lecturas_Para_Registro();
     Cargar_Griferos();
     
-    // Establecer fecha actual
-    var hoy = new Date().toISOString().split('T')[0];
-    $('#txt_fecha_turno').val(hoy);
-    
-    // Establecer horas por defecto según el turno
-    $('#txt_tipo_turno').change(function() {
-        if ($(this).val() == 'DIA') {
-            $('#txt_hora_inicio').val('07:00');
-            $('#txt_hora_fin').val('19:00');
-        } else if ($(this).val() == 'NOCHE') {
-            $('#txt_hora_inicio').val('19:00');
-            $('#txt_hora_fin').val('07:00');
-        }
-    });
-    
+    // Fecha local de hoy: toISOString() usa UTC y desde las 19:00 en Lima daría la fecha de mañana.
+    $('#txt_fecha_turno').val(G.hoy());
+
+    // Las horas por defecto según el tipo de turno se ponen al final de esta vista.
+
     // Agregar 3 filas iniciales de pagos y créditos
     for (var i = 0; i < 3; i++) {
         Agregar_Fila_Pago_Registro();
         Agregar_Fila_Credito_Registro();
     }
 });
+</script>
+<script>
+// Valores por defecto: el tipo de turno según la hora actual y sus horas al elegirlo.
+// Las horas se rellenan solo si están vacías o las puso el sistema, nunca sobre lo escrito a mano.
+(function () {
+  var HORAS = { DIA: ['07:00', '19:00'], NOCHE: ['19:00', '07:00'] };
+  var tipo = document.getElementById('txt_tipo_turno');
+  var inicio = document.getElementById('txt_hora_inicio');
+  var fin = document.getElementById('txt_hora_fin');
+  if (!tipo || !inicio || !fin) { return; }
+
+  function poner_horas() {
+    var horas = HORAS[tipo.value];
+    if (!horas) { return; }
+    [[inicio, horas[0]], [fin, horas[1]]].forEach(function (par) {
+      if (!par[0].value || par[0].dataset.automatico === '1') {
+        par[0].value = par[1];
+        par[0].dataset.automatico = '1';
+      }
+    });
+  }
+  [inicio, fin].forEach(function (campo) {
+    campo.addEventListener('input', function () { campo.dataset.automatico = '0'; });
+  });
+  tipo.addEventListener('change', poner_horas);
+
+  if (!tipo.value) {
+    var hora = new Date().getHours();
+    tipo.value = (hora >= 7 && hora < 19) ? 'DIA' : 'NOCHE';
+  }
+  poner_horas();
+})();
 </script>

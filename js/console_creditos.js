@@ -532,7 +532,7 @@ function Cargar_Tipos_Pago_Credito() {
         var data = JSON.parse(resp);
         var opciones = '<option value="">-- Seleccione --</option>';
         data.forEach(function(item) {
-            opciones += '<option value="' + item.id_tipo_pago + '" data-requiere="' + item.requiere_codigo + '">' + item.nombre + '</option>';
+            opciones += '<option value="' + item.id_tipo_pago + '" data-requiere="' + item.requiere_codigo + '">' + Texto_Seguro(item.nombre) + '</option>';
         });
         $("#txt_tipo_pago_credito").html(opciones);
     });
@@ -1007,7 +1007,7 @@ function Cargar_Top_Deudores() {
         data.forEach(function(item) {
             html += '<tr>';
             html += '<td>' + contador + '</td>';
-            html += '<td>' + item.nombre_completo + '</td>';
+            html += '<td>' + Texto_Seguro(item.nombre_completo) + '</td>';
             html += '<td>' + (item.dni_ruc ? item.dni_ruc : '-') + '</td>';
             html += '<td>' + (item.telefono ? item.telefono : '-') + '</td>';
             html += '<td>' + item.total_creditos + '</td>';
@@ -1042,7 +1042,7 @@ function Cargar_Clientes_Filtro() {
         var data = JSON.parse(resp);
         var opciones = '<option value="">Todos los clientes</option>';
         data.forEach(function(item) {
-            opciones += '<option value="' + item.id_cliente + '">' + item.nombre_completo + '</option>';
+            opciones += '<option value="' + item.id_cliente + '">' + Texto_Seguro(item.nombre_completo) + '</option>';
         });
         $("#filtro_cliente").html(opciones);
         
@@ -1136,7 +1136,7 @@ function Agregar_Fila_Credito_Manual(datos = null) {
         var opciones = '<option value="">-- Seleccione --</option>';
         clientes.forEach(function(cliente) {
             var selected = (datos && datos.id_cliente == cliente.id_cliente) ? 'selected' : '';
-            opciones += '<option value="' + cliente.id_cliente + '" ' + selected + '>' + cliente.nombre_completo + '</option>';
+            opciones += '<option value="' + cliente.id_cliente + '" ' + selected + '>' + Texto_Seguro(cliente.nombre_completo) + '</option>';
         });
         
         var fila = '<tr id="' + fila_id + '">';

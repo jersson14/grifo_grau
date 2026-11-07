@@ -14,6 +14,9 @@ function iniciar_ventas(esAdmin) {
       return 'M' + s.numero_maquina + ' ' + s.codigo + ' · ' + s.producto + ' (' + G.soles(s.precio_actual) + ')';
     }, 'Seleccione');
     G.opciones('#venta_pago', r.tipos_pago, 'id_tipo_pago', function (t) { return t.nombre; });
+    // Efectivo es el medio más común y no exige código de operación.
+    var efectivo = r.tipos_pago.filter(function (t) { return t.nombre === 'EFECTIVO'; })[0];
+    if (efectivo) { $('#venta_pago').val(efectivo.id_tipo_pago); }
     G.opciones('#venta_cliente', r.clientes, 'id_cliente', function (c) { return c.nombre_completo + (c.dni_ruc ? ' · ' + c.dni_ruc : ''); }, 'Sin cliente');
     actualizar_pago();
   });

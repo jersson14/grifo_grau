@@ -19,8 +19,6 @@ $capacidades = capacidades_sesion();
   <link rel="stylesheet" href="../plantilla/dist/css/adminlte.min.css">
   <link href="../utilitario/DataTables/datatables.min.css" type="text/css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-  <!-- Colores Suaves - Mejora Visual -->
-  <link rel="stylesheet" href="../css/colores-suaves.css">
   <link rel="stylesheet" href="../css/grifo.css?rev=<?php echo filemtime(__DIR__ . '/../css/grifo.css'); ?>">
 </head>
 

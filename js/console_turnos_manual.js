@@ -85,7 +85,7 @@ function Generar_Fila_Lectura(item, fecha) {
     
     var fila = '<tr>';
     fila += '<td>' + fecha + '</td>';
-    fila += '<td>' + item.producto_nombre + '</td>';
+    fila += '<td>' + Texto_Seguro(item.producto_nombre) + '</td>';
     fila += '<td>' + lectura_anterior.toFixed(3) + '</td>';
     fila += '<td><input type="number" step="0.001" class="lectura-actual" ' +
             'data-id="' + item.id_lectura + '" ' +
@@ -224,7 +224,7 @@ function Cargar_Clientes_Para_Creditos() {
         // Crear datalist para autocompletar
         var datalist = '<datalist id="lista_clientes">';
         datos_clientes.forEach(function(cliente) {
-            datalist += '<option value="' + cliente.nombre_completo + '" data-id="' + cliente.id_cliente + '">';
+            datalist += '<option value="' + Texto_Seguro(cliente.nombre_completo) + '" data-id="' + cliente.id_cliente + '">';
         });
         datalist += '</datalist>';
         

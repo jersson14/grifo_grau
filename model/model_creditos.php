@@ -199,12 +199,12 @@ class Modelo_Creditos extends conexionBD {
         $c = conexionBD::conexionPDO();
         $sql = "SELECT 
                     COUNT(*) as total_creditos,
-                    SUM(monto) as monto_total,
-                    SUM(saldo_pendiente) as saldo_pendiente,
-                    SUM(monto - saldo_pendiente) as monto_pagado,
-                    SUM(CASE WHEN estado = 'PENDIENTE' THEN 1 ELSE 0 END) as creditos_pendientes,
-                    SUM(CASE WHEN estado = 'PAGADO' THEN 1 ELSE 0 END) as creditos_pagados,
-                    SUM(CASE WHEN estado = 'PENDIENTE' AND fecha_vencimiento < CURDATE() THEN 1 ELSE 0 END) as creditos_vencidos
+                    COALESCE(SUM(monto), 0) as monto_total,
+                    COALESCE(SUM(saldo_pendiente), 0) as saldo_pendiente,
+                    COALESCE(SUM(monto - saldo_pendiente), 0) as monto_pagado,
+                    COALESCE(SUM(CASE WHEN estado = 'PENDIENTE' THEN 1 ELSE 0 END), 0) as creditos_pendientes,
+                    COALESCE(SUM(CASE WHEN estado = 'PAGADO' THEN 1 ELSE 0 END), 0) as creditos_pagados,
+                    COALESCE(SUM(CASE WHEN estado = 'PENDIENTE' AND fecha_vencimiento < CURDATE() THEN 1 ELSE 0 END), 0) as creditos_vencidos
                 FROM ventas_credito";
         $query = $c->prepare($sql);
         $query->execute();
