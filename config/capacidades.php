@@ -123,6 +123,8 @@ return [
 
     'comprobantes_gestionar' => ['Ventas', 'Gestionar comprobantes electrónicos', ['view/facturacion/*', 'controller/facturacion/*']],
 
+    'gastos_gestionar' => ['Caja', 'Registrar y anular gastos del grifo', ['view/gastos_grifo/*', 'controller/gastos_grifo/*']],
+
     'productos_gestionar'  => ['Catálogos', 'Gestionar combustibles y precios', ['view/productos/view_productos.php', 'controller/productos/*']],
     'surtidores_gestionar' => ['Catálogos', 'Gestionar surtidores', ['view/surtidores/view_surtidores.php', 'controller/surtidores/*', 'controller/productos/controlador_productos_activos.php']],
 

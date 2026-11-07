@@ -20,6 +20,8 @@ return [
         'view/caja/*'             => 'caja',
         'controller/facturacion/*' => 'facturacion',
         'view/facturacion/*'      => 'facturacion',
+        'controller/gastos_grifo/*' => 'gastos',
+        'view/gastos_grifo/*'      => 'gastos',
     ],
 
     'publico' => [

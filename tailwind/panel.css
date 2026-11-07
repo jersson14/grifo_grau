@@ -108,7 +108,7 @@ h5[style*="background-color"], .titulo-seccion { background: theme('colors.zinc.
   box-shadow: 0 1px 2px rgba(0, 0, 0, .05);
 }
 .small-box h3, .info-box-number, .g-cifra { font-size: 1.5rem; font-weight: 600; letter-spacing: -.015em; color: theme('colors.zinc.950') !important; }
-.small-box p, .info-box-text { color: theme('colors.zinc.600') !important; font-weight: 500; font-size: .875rem; text-transform: none; }
+.small-box p, .info-box-text { color: theme('colors.zinc.600') !important; font-weight: 500; font-size: .875rem; text-transform: none; white-space: normal; }
 .small-box .icon > i { color: theme('colors.zinc.200'); }
 .small-box .small-box-footer { background: theme('colors.zinc.50') !important; color: theme('colors.zinc.700') !important; border-radius: 0 0 12px 12px; }
 .info-box .info-box-icon { background: theme('colors.zinc.100') !important; color: theme('colors.zinc.700') !important; border-radius: 8px; }

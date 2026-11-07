@@ -165,7 +165,7 @@ comprobar('el administrador ve todas sus secciones', strpos($panel, 'MENÚ PRINC
 comprobar('los módulos apagados no aparecen', strpos($panel, 'ventas/view_ventas') === false);
 $panelG = $grifero->pedir('view/index.php')['cuerpo'];
 comprobar('el grifero conserva su menú', strpos($panelG, 'turnos/view_registrar_turno') !== false && strpos($panelG, 'reportes/view_mis_reportes') !== false && strpos($panelG, 'creditos/view_creditos_pendientes') !== false && strpos($panelG, 'administracion/') === false);
-comprobar('un grupo de un solo enlace se aplana', substr_count($panelG, 'has-treeview') === 0, (string) substr_count($panelG, 'has-treeview'));
+comprobar('un grupo de un solo enlace se aplana', substr_count($panelG, 'class="nav-item has-treeview"') === 0, (string) substr_count($panelG, 'class="nav-item has-treeview"'));
 comprobar('«Mis Reportes» no aparece al administrador', strpos($panel, 'reportes/view_mis_reportes') === false);
 
 $r = $admin->pedir(ADM . 'guardar_menu.php', ['id_item' => 201, 'titulo' => '<script>x</script>Socios', 'icono' => 'fas fa-users', 'visible' => 1, 'roles' => '[]']);

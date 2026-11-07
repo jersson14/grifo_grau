@@ -23,10 +23,10 @@ Actualizado el 2026-11-07. Todo está en commits locales, sin publicar.
 | Fase 5 | Facturación con Nubefact: boletas, facturas, anulaciones, reintentos y bandeja, probados contra un **simulador**. Falta probar en su modo demo y notas de crédito, facturar vales y validar con el contador |
 | Fase 2 | Hecho: PHP 8.4 y MySQL 8.4 en Docker, sin avisos de obsolescencia, mPDF 8.3, CI en GitHub Actions y copias de seguridad (2.6). Todas las pruebas pasan en XAMPP, PHP 8.4 y Docker. Falta PHPStan, `utf8mb4` (depende del esquema de producción) y confirmar el motor de producción (D3) |
 | Fase 8 | Hecha: estilo unificado, celular, errores junto al campo, valores por defecto, contraste AA medido en 15 pantallas y datos mostrados como texto. Pruebas: `tests/ui.cjs` y `tests/contraste.cjs` |
-| Fase 9 | En curso: página pública con Tailwind (precios en vivo, servicios, promociones, solicitudes de flota) y su administración, hechas y probadas. Falta: el resto de pantallas del panel y los módulos de gastos, tienda, flotas y personal |
+| Fase 9 | En curso: página pública con Tailwind (precios en vivo, servicios, promociones, solicitudes de flota) y su administración, hechas y probadas. Gastos hecho (9.5). Falta: el resto de pantallas del panel y los módulos de tienda, flotas y personal |
 | Fase 7 | Sin empezar |
 
-**Pruebas:** `php tests/smoke.php`, `php tests/inventario.php`, `php tests/caja.php`, `tests/chatbot.php` y `tests/ui.cjs` en Edge real (estos dos, ver su cabecera). `php tests/roles.php` cubre roles, menú y auditoría. `php tests/permisos_grifero.php` lista lo que las pantallas del grifero piden y no se le permite: hay que revisarlo al cambiar permisos.
+**Pruebas:** `php tests/smoke.php`, `php tests/inventario.php`, `php tests/caja.php`, `tests/chatbot.php` y `tests/ui.cjs` en Edge real (estos dos, ver su cabecera). `php tests/roles.php` cubre roles, menú y auditoría; `php tests/gastos.php`, el módulo de gastos. `php tests/permisos_grifero.php` lista lo que las pantallas del grifero piden y no se le permite: hay que revisarlo al cambiar permisos.
 
 ### Para el final: configuración a cargo del dueño
 
@@ -248,7 +248,7 @@ Reglas legales y tributarias: validar con el contador antes de implementar.
 - [x] **4.6 Ventas individuales:** registro de cada venta con surtidor, cliente y placa, conciliado con las lecturas del turno. **Es requisito de la facturación.**
 - [ ] **4.7 Tienda y lubricantes:** productos no combustibles con stock.
 - [ ] **4.8 Flotas y créditos avanzados:** línea de crédito con bloqueo, placas y conductores autorizados, estado de cuenta en PDF y envío por correo.
-- [ ] **4.9 Gastos e ingresos:** integrar al menú los módulos existentes y añadir categorías.
+- [~] **4.9 Gastos e ingresos:** gastos hecho como módulo nuevo (9.5). Falta decidir con el esquema real qué hacer con los módulos heredados de gastos e ingresos.
 - [ ] **4.10 Personal:** horarios, asistencia y descuentos por faltantes. La planilla completa queda fuera del alcance.
 - [ ] **4.11 Reportes:** rentabilidad por producto, ranking de griferos, morosidad, ventas por hora, y exportación real a Excel y PDF.
 - [ ] **4.12 Cumplimiento sectorial:** el contador o responsable define qué se necesita para Osinergmin (SCOP, precios) y qué reportes debe generar el sistema.
@@ -332,7 +332,7 @@ Pedida por el dueño el 2026-11-07: interfaz que sorprenda, con Tailwind; págin
 - [x] **9.2** Página pública (`publico/landing.php`): precios en vivo desde Productos con sello si cambiaron hoy, servicios, promociones vigentes, solicitud de crédito para flotas y cómo llegar. Módulo `pagina_publica` apagado por defecto: entonces la dirección del sistema muestra el acceso. El acceso pasa a `login.php`.
 - [x] **9.3** Administración en Configuración → Página pública: datos con validación, servicios con icono y orden, promociones con vigencia, bandeja de solicitudes de flota con estado y nota. Permiso `pagina_publica_gestionar`. Prueba: `tests/pagina_publica.php`.
 - [~] **9.4** Panel con el mismo estilo. Hecho: armazón (cabecera y barra lateral claras, pantalla actual marcada), paleta y letra en todas las pantallas antiguas mediante `tailwind/panel.css`, acceso (`login.php`), tablero con indicadores y gráficos, y registrar turno con pasos numerados, tarjetas de surtidor compactas y barra de cuadre fija (de unos 9 100 px a 6 100 px de alto en celular). Contraste AA: 0 fallas en 15 pantallas. Falta: ventas, cerrar turno y el resto de pantallas con su propia composición.
-- [ ] **9.5** Gastos del grifo: categorías, registro diario y comparación con las ventas.
+- [x] **9.5** Gastos del grifo (módulo `gastos`, apagado por defecto; permiso `gastos_gestionar` para supervisor y contador): categorías editables, registro con medio de pago y comprobante, anulación con motivo y auditoría, listado por fechas y categoría, exportación a Excel (CSV protegido contra fórmulas) y resumen del periodo: ventas de los turnos, compras de combustible, gastos (incluidos los «otros gastos» declarados en cada turno) y resultado. Tablas propias (`gastos_grifo`, `categorias_gasto`): el módulo heredado de gastos queda intacto hasta contrastar con producción. Prueba: `tests/gastos.php`.
 - [ ] **9.6** Tienda / market: productos no combustibles, stock y venta rápida.
 - [ ] **9.7** Flotas y vales: empresas con varias placas, límite de crédito, consumo por placa y estado de cuenta mensual. Recibe las solicitudes de 9.3.
 - [ ] **9.8** Personal: datos, turnos asignados, asistencia y adelantos.

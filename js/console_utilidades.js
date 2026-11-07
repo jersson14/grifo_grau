@@ -188,8 +188,9 @@ var G = {
   },
   inicioMes: function () { return G.hoy().slice(0, 8) + '01'; },
 
+  // Devuelve la promesa del aviso, para actuar cuando se cierre (por ejemplo, devolver el foco).
   ok: function (mensaje) {
-    Swal.fire({ icon: 'success', title: mensaje, timer: 1300, showConfirmButton: false });
+    return Swal.fire({ icon: 'success', title: mensaje, timer: 1300, showConfirmButton: false });
   },
 
   opciones: function (selector, filas, valor, texto, vacio) {

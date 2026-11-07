@@ -57,7 +57,7 @@ const espera = ms => new Promise(r => setTimeout(r, ms));
   a.errores.length = 0;
   await abrir(a, 'configuracion/view_configuracion.php');
   await a.waitForSelector('#modulo_inventario');
-  comprobar('lista los módulos', (await a.$$('#lista_modulos input')).length === 6);
+  comprobar('lista los módulos', (await a.$$('#lista_modulos input')).length === 7);
   comprobar('carga los valores', await a.$eval('#igv_porcentaje', e => e.value) === '18');
   await a.click('a[href="#tab_operacion"]'); await espera(400);
   await a.evaluate(() => { document.getElementById('credito_dias').value = '45'; });
