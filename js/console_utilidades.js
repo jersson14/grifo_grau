@@ -13,6 +13,9 @@ var Texto_Seguro = (function () {
   };
 })();
 
+// Gráficos con la letra y el gris de texto del panel.
+if (window.Chart && Chart.defaults && Chart.defaults.font) { Chart.defaults.font.family = "'Barlow Semi Condensed', sans-serif"; Chart.defaults.font.size = 14; Chart.defaults.color = "#4a525c"; }
+
 // Mejoras comunes para todas las pantallas, también las antiguas, sin tocar cada una:
 // etiquetas accesibles y tarjetas en celular para tablas de captura, errores junto al campo
 // y avisos de DataTables integrados en lugar de alert().

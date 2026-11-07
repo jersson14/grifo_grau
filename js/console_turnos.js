@@ -3,7 +3,8 @@ function Pintar_Maquinas(contenedor, filas, columnas, prefijo) {
     var html = '';
     Object.keys(filas).map(Number).sort(function (a, b) { return a - b; }).forEach(function (maquina) {
         html += '<h5 class="titulo-seccion mt-3"><i class="fas fa-cogs" aria-hidden="true"></i> MÁQUINA ' + maquina + '</h5>';
-        html += '<div class="table-responsive"><table class="table table-sm table-bordered table-hover">';
+        // Con lecturas completas (7 columnas) la tabla se compacta en el celular: ver .tabla-surtidores en panel.css.
+        html += '<div class="table-responsive"><table class="table table-sm table-bordered table-hover' + (columnas.length === 7 ? ' tabla-surtidores' : '') + '">';
         html += '<thead><tr>' + columnas.map(function (c) { return '<th>' + c + '</th>'; }).join('') + '</tr></thead>';
         html += '<tbody id="' + prefijo + maquina + '">' + filas[maquina] + '</tbody></table></div>';
     });
@@ -247,7 +248,7 @@ function Cargar_Lecturas_Turno(id_reporte) {
             filas_maquina[maquina] = (filas_maquina[maquina] || '') + fila;
         });
         
-        Pintar_Maquinas('#maquinas_lecturas_cerrar', filas_maquina, ['Código', 'Producto', 'Lectura Anterior', 'Lectura Actual', 'Galones Vendidos', 'Precio S/.', 'Total S/.'], 'tabla_lecturas_cerrar_maquina_');
+        Pintar_Maquinas('#maquinas_lecturas_cerrar', filas_maquina, ['Código', 'Producto', 'Lectura anterior', 'Lectura actual', 'Galones', 'Precio', 'Total'], 'tabla_lecturas_cerrar_maquina_');
         
         // Calcular totales iniciales
         Calcular_Totales_Locales();
@@ -1266,7 +1267,7 @@ function Cargar_Lecturas_Para_Registro() {
             filas_maquina[maquina] = (filas_maquina[maquina] || '') + fila;
         });
         
-        Pintar_Maquinas('#maquinas_lecturas', filas_maquina, ['Código', 'Producto', 'Lectura Inicial', 'Lectura Final', 'Galones Vendidos', 'Precio S/.', 'Total S/.'], 'tabla_lecturas_maquina_');
+        Pintar_Maquinas('#maquinas_lecturas', filas_maquina, ['Código', 'Producto', 'Lectura inicial', 'Lectura final', 'Galones', 'Precio', 'Total'], 'tabla_lecturas_maquina_');
     });
 }
 

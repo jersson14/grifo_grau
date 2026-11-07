@@ -8,19 +8,13 @@ require_once dirname(__DIR__) . '/config/env.php';
 date_default_timezone_set('America/Lima');
 
 class conexionBD {
-    /** Conexión reutilizada durante la petición. */
-    private static ?PDO $compartida = null;
-
     /**
-     * Devuelve la conexión de esta petición. Antes se abría una por cada llamada: una sola
-     * pantalla abría varias y, con tráfico, se agotaban las conexiones o los puertos.
-     * Si la compartida está dentro de una transacción se abre otra, como antes, para que
-     * una operación independiente no quede dentro de la transacción de otra.
+     * Abre una conexión nueva en cada llamada, como siempre lo hizo el sistema.
+     * No se reutiliza una sola por petición: muchos modelos llaman procedimientos almacenados
+     * que dejan resultados pendientes, y la siguiente consulta en la misma conexión fallaría
+     * («Cannot execute queries while there are pending result sets»).
      */
     public static function conexionPDO() {
-        if (self::$compartida !== null && !self::$compartida->inTransaction()) {
-            return self::$compartida;
-        }
         try {
             $dsn = sprintf(
                 'mysql:host=%s;port=%s;dbname=%s;charset=utf8mb4',
@@ -31,9 +25,6 @@ class conexionBD {
             $pdo = new PDO($dsn, env('DB_USER', 'root'), env('DB_PASS', ''));
             $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             $pdo->exec("SET time_zone = '-05:00'");
-            if (self::$compartida === null) {
-                self::$compartida = $pdo;
-            }
             return $pdo;
         } catch (PDOException $e) {
             error_log('Fallo la conexion a la base de datos: ' . $e->getMessage());

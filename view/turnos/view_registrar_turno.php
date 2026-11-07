@@ -29,7 +29,7 @@
                 <div class="col-md-12">
                     <div class="card card-primary">
                         <div class="card-header">
-                            <h3 class="card-title"><i class="fas fa-info-circle"></i> <strong>PASO 1:</strong> INFORMACIÓN DEL TURNO</h3>
+                            <h3 class="card-title g-titulo-paso"><span class="g-paso" aria-hidden="true">1</span> <span class="sr-only">Paso 1: </span>Información del turno</h3>
                         </div>
                         <div class="card-body">
                             <div class="row">
@@ -74,7 +74,7 @@
                 <div class="col-md-12">
                     <div class="card card-success">
                         <div class="card-header" data-card-widget="collapse">
-                            <h3 class="card-title"><i class="fas fa-gas-pump"></i> <strong>PASO 2:</strong> LECTURAS DE SURTIDORES</h3>
+                            <h3 class="card-title g-titulo-paso"><span class="g-paso" aria-hidden="true">2</span> <span class="sr-only">Paso 2: </span>Lecturas de surtidores</h3>
                             <div class="card-tools">
                                 <button type="button" class="btn btn-tool" data-card-widget="collapse">
                                     <i class="fas fa-minus"></i>
@@ -140,7 +140,7 @@
                 <div class="col-md-12">
                     <div class="card card-warning">
                         <div class="card-header" data-card-widget="collapse">
-                            <h3 class="card-title"><i class="fas fa-money-bill-wave"></i> <strong>PASO 3:</strong> MÉTODOS DE PAGO (Opcional)</h3>
+                            <h3 class="card-title g-titulo-paso"><span class="g-paso" aria-hidden="true">3</span> <span class="sr-only">Paso 3: </span>Métodos de pago <small>(opcional)</small></h3>
                             <div class="card-tools">
                                 <button type="button" class="btn btn-tool" data-card-widget="collapse">
                                     <i class="fas fa-minus"></i>
@@ -180,7 +180,7 @@
                 <div class="col-md-12">
                     <div class="card card-danger">
                         <div class="card-header" data-card-widget="collapse">
-                            <h3 class="card-title"><i class="fas fa-credit-card"></i> <strong>PASO 4:</strong> VENTAS A CRÉDITO (Opcional)</h3>
+                            <h3 class="card-title g-titulo-paso"><span class="g-paso" aria-hidden="true">4</span> <span class="sr-only">Paso 4: </span>Ventas a crédito <small>(opcional)</small></h3>
                             <div class="card-tools">
                                 <button type="button" class="btn btn-tool" data-card-widget="collapse">
                                     <i class="fas fa-minus"></i>
@@ -221,7 +221,7 @@
                 <div class="col-md-12">
                     <div class="card card-secondary">
                         <div class="card-header" data-card-widget="collapse">
-                            <h3 class="card-title"><i class="fas fa-calculator"></i> <strong>PASO 5:</strong> OTROS CONCEPTOS Y CUADRE DE CAJA</h3>
+                            <h3 class="card-title g-titulo-paso"><span class="g-paso" aria-hidden="true">5</span> <span class="sr-only">Paso 5: </span>Otros conceptos y cuadre de caja</h3>
                             <div class="card-tools">
                                 <button type="button" class="btn btn-tool" data-card-widget="collapse">
                                     <i class="fas fa-minus"></i>
@@ -301,15 +301,19 @@
                 </div>
             </div>
 
-            <!-- BOTÓN REGISTRAR TURNO -->
-            <div class="row">
-                <div class="col-md-12 text-center mb-4">
-                    <button class="btn btn-success btn-lg" onclick="Registrar_Turno_Completo()" style="font-size:20px; padding:15px 50px; box-shadow: 0 4px 6px rgba(0,0,0,0.2);">
-                        <i class="fas fa-save"></i> REGISTRAR TURNO
-                    </button>
-                    <br><br>
-                    <small class="text-muted">Al registrar el turno se guardarán todos los datos y se actualizarán las lecturas de los surtidores</small>
+            <p class="text-muted text-center small mb-3">Al registrar el turno se guardan todos los datos y se actualizan las lecturas de los surtidores.</p>
+
+            <!-- Barra de cuadre: siempre a la vista mientras se llena el turno -->
+            <div class="g-barra-cuadre" role="region" aria-label="Cuadre del turno">
+                <div class="g-barra-dato">
+                    <span class="g-barra-etiqueta">Total ventas</span>
+                    <span class="g-cifra" id="barra_total">S/ 0.00</span>
                 </div>
+                <div class="g-barra-dato">
+                    <span class="g-barra-etiqueta">Cuadre</span>
+                    <span class="g-estado-cuadre" id="barra_estado" data-estado="vacio" aria-live="polite">Faltan lecturas</span>
+                </div>
+                <button type="button" class="btn btn-primary btn-lg g-barra-boton" onclick="Registrar_Turno_Completo()"><i class="fas fa-save" aria-hidden="true"></i> Registrar turno</button>
             </div>
         </div>
     </div>
@@ -327,11 +331,44 @@ $(document).ready(function() {
     // Las horas por defecto según el tipo de turno se ponen al final de esta vista.
 
     // Agregar 3 filas iniciales de pagos y créditos
-    for (var i = 0; i < 3; i++) {
-        Agregar_Fila_Pago_Registro();
-        Agregar_Fila_Credito_Registro();
-    }
+    // Una fila vacía de cada una: se agregan más con su botón.
+    Agregar_Fila_Pago_Registro();
+    Agregar_Fila_Credito_Registro();
 });
+</script>
+<script>
+// La barra repite el total y el cuadre que calcula la pantalla, con una forma distinta para cada estado.
+(function () {
+  var total = document.getElementById('cuadre_total_ventas');
+  var faltante = document.getElementById('cuadre_faltante');
+  var barraTotal = document.getElementById('barra_total');
+  var barraEstado = document.getElementById('barra_estado');
+  if (!total || !faltante || !barraTotal || !barraEstado) { return; }
+  function icono(nombre) { var i = document.createElement('i'); i.className = 'fas fa-' + nombre; i.setAttribute('aria-hidden', 'true'); return i; }
+  function reflejar() {
+    var monto = total.textContent.replace('S/.', 'S/').trim();
+    barraTotal.textContent = monto;
+    var texto = faltante.textContent;
+    var cifra = (texto.match(/\d[\d.,]*/) || ['0'])[0];
+    barraEstado.textContent = '';
+    if (!(parseFloat(monto.replace(/[^\d.]/g, '')) > 0)) {
+      barraEstado.dataset.estado = 'vacio';
+      barraEstado.textContent = 'Faltan lecturas';
+    } else if (texto.indexOf('FALTANTE') !== -1) {
+      barraEstado.dataset.estado = 'falta';
+      barraEstado.append(icono('arrow-down'), ' Falta S/ ' + cifra);
+    } else if (texto.indexOf('SOBRANTE') !== -1) {
+      barraEstado.dataset.estado = 'sobra';
+      barraEstado.append(icono('plus'), ' Sobra S/ ' + cifra);
+    } else {
+      barraEstado.dataset.estado = 'cuadra';
+      barraEstado.append(icono('check'), ' Cuadra');
+    }
+  }
+  var observador = new MutationObserver(reflejar);
+  [total, faltante].forEach(function (nodo) { observador.observe(nodo, { childList: true, characterData: true, subtree: true }); });
+  reflejar();
+})();
 </script>
 <script>
 // Valores por defecto: el tipo de turno según la hora actual y sus horas al elegirlo.

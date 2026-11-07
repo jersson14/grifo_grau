@@ -27,33 +27,42 @@ $e = fn($texto) => htmlspecialchars((string) $texto, ENT_QUOTES, 'UTF-8');
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#023D77">
+  <meta name="theme-color" content="#071d34">
   <title>Iniciar sesión · <?php echo $e($empresa['nombre']); ?></title>
   <link rel="icon" href="<?php echo $e($empresa['logo']); ?>">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,600,700&display=swap">
+  <link rel="preload" href="fuentes/big-shoulders-display.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="plantilla/plugins/fontawesome-free/css/all.min.css">
   <style>
+    /* Acceso en el mundo «Carrocería y cinta reflectiva» (ver DESIGN.md). */
+    @font-face { font-family: 'Big Shoulders Display'; src: url('fuentes/big-shoulders-display.woff2') format('woff2'); font-weight: 100 900; font-display: swap; }
+    @font-face { font-family: 'Barlow Semi Condensed'; src: url('fuentes/barlow-semi-condensed-400.woff2') format('woff2'); font-weight: 400; font-display: swap; }
+    @font-face { font-family: 'Barlow Semi Condensed'; src: url('fuentes/barlow-semi-condensed-600.woff2') format('woff2'); font-weight: 600; font-display: swap; }
+    @font-face { font-family: 'Barlow Semi Condensed'; src: url('fuentes/barlow-semi-condensed-700.woff2') format('woff2'); font-weight: 700; font-display: swap; }
     :root {
-      --azul: #023D77;
-      --azul-claro: #0266C8;
-      --azul-tenue: #e8f0fa;
-      --texto: #1c2733;
-      --texto-suave: #4f5d6b;
-      --borde: #c9d3de;
-      --fondo: #eef2f6;
-      --superficie: #ffffff;
-      --foco: #2f7de1;
+      --cabina: #0b2a4a;
+      --cabina-profunda: #071d34;
+      --cabina-clara: #123a63;
+      --cabina-linea: #2b5582;
+      --hueso: #f4f1ea;
+      --hueso-oscuro: #e4ded1;
+      --reflectivo: #d7261e;
+      --reflectivo-tinta: #a8170f;
+      --cromo: #c9ced4;
+      --tinta: #0d1117;
+      --texto-suave: #4a525c;
+      --borde: #b9b1a1;
     }
     * { box-sizing: border-box; }
     html, body { height: 100%; }
     body {
       margin: 0;
-      font-family: "Source Sans Pro", system-ui, -apple-system, "Segoe UI", sans-serif;
-      font-size: 16px;
-      color: var(--texto);
-      background: var(--fondo);
+      font-family: "Barlow Semi Condensed", system-ui, sans-serif;
+      font-size: 17px;
+      color: var(--tinta);
+      background: var(--cabina-profunda);
+      caret-color: var(--cabina);
     }
-    ::selection { background: #cfe0f5; color: var(--azul); }
+    ::selection { background: var(--cabina); color: var(--hueso); }
 
     .acceso {
       min-height: 100%;
@@ -61,55 +70,73 @@ $e = fn($texto) => htmlspecialchars((string) $texto, ENT_QUOTES, 'UTF-8');
       grid-template-columns: 1fr;
       place-items: center;
       padding: 24px 16px;
+      border-top: 8px solid transparent;
+      border-image: repeating-linear-gradient(-45deg, var(--reflectivo) 0 14px, #fff 14px 28px) 8;
     }
     .acceso-tarjeta {
       width: 100%;
       max-width: 880px;
       display: grid;
       grid-template-columns: 1fr;
-      background: var(--superficie);
-      border-radius: 14px;
+      background: var(--hueso);
+      border-radius: 6px;
       overflow: hidden;
-      box-shadow: 0 18px 40px -18px rgba(2, 37, 74, .35), 0 2px 6px rgba(2, 37, 74, .08);
+      border: 2px solid var(--cabina-linea);
     }
 
     .acceso-marca {
-      background: var(--azul);
-      color: #fff;
-      padding: 28px 24px;
+      position: relative;
+      background: var(--cabina);
+      color: var(--hueso);
+      padding: 28px 24px 34px;
       display: flex;
       align-items: center;
       gap: 16px;
     }
+    .acceso-marca::after {
+      content: '';
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      height: 8px;
+      background: repeating-linear-gradient(-45deg, var(--reflectivo) 0 10px, #fff 10px 20px);
+    }
     .acceso-marca img {
-      width: 112px;
+      width: 104px;
       height: auto;
-      border-radius: 8px;
+      border-radius: 6px;
       flex: none;
     }
     .acceso-marca h1 {
       margin: 0;
-      font-size: 1.375rem;
-      line-height: 1.2;
-      font-weight: 700;
+      font-family: "Big Shoulders Display", sans-serif;
+      font-weight: 900;
+      font-size: 2rem;
+      line-height: .95;
+      letter-spacing: .01em;
+      text-transform: uppercase;
       text-wrap: balance;
+      text-shadow: 0.06em 0.06em 0 var(--reflectivo), 0.09em 0.1em 0 var(--cabina-profunda);
     }
     .acceso-marca p {
-      margin: 6px 0 0;
-      color: #c6d8ee;
-      font-size: .95rem;
+      margin: 8px 0 0;
+      color: var(--cromo);
+      font-size: 1rem;
     }
 
     .acceso-form { padding: 28px 24px 32px; }
     .acceso-form h2 {
       margin: 0 0 24px;
-      font-size: 1.5rem;
-      font-weight: 700;
+      font-family: "Big Shoulders Display", sans-serif;
+      font-weight: 800;
+      font-size: 2.25rem;
+      line-height: 1;
+      text-transform: uppercase;
+      color: var(--cabina);
     }
     .campo { margin-bottom: 18px; }
     .campo label {
       display: block;
-      font-weight: 600;
+      font-weight: 700;
       margin-bottom: 6px;
     }
     .control {
@@ -118,19 +145,19 @@ $e = fn($texto) => htmlspecialchars((string) $texto, ENT_QUOTES, 'UTF-8');
     }
     .control input {
       width: 100%;
-      min-height: 48px;
+      min-height: 50px;
       padding: 10px 14px;
       font: inherit;
-      color: var(--texto);
+      color: var(--tinta);
       background: #fff;
-      border: 1px solid var(--borde);
-      border-radius: 8px;
+      border: 2px solid var(--borde);
+      border-radius: 4px;
       transition: border-color .15s ease, box-shadow .15s ease;
     }
     .control input:focus {
       outline: none;
-      border-color: var(--azul-claro);
-      box-shadow: 0 0 0 3px rgba(2, 102, 200, .22);
+      border-color: var(--cabina-clara);
+      box-shadow: 0 0 0 3px rgba(18, 58, 99, .28);
     }
     .control input.con-boton { padding-right: 52px; }
     .ver-clave {
@@ -140,14 +167,14 @@ $e = fn($texto) => htmlspecialchars((string) $texto, ENT_QUOTES, 'UTF-8');
       bottom: 2px;
       width: 46px;
       border: 0;
-      border-radius: 6px;
+      border-radius: 3px;
       background: transparent;
       color: var(--texto-suave);
       cursor: pointer;
     }
-    .ver-clave:hover { color: var(--azul); background: var(--azul-tenue); }
-    .ver-clave:focus-visible, .entrar:focus-visible, .recordar input:focus-visible {
-      outline: 3px solid var(--foco);
+    .ver-clave:hover { color: var(--cabina); background: var(--hueso-oscuro); }
+    .ver-clave:focus-visible, .entrar:focus-visible, .recordar input:focus-visible, .volver:focus-visible {
+      outline: 3px solid var(--cabina-clara);
       outline-offset: 2px;
     }
 
@@ -158,30 +185,33 @@ $e = fn($texto) => htmlspecialchars((string) $texto, ENT_QUOTES, 'UTF-8');
       min-height: 44px;
       margin: 4px 0 20px;
       color: var(--texto-suave);
+      font-weight: 600;
       cursor: pointer;
     }
-    .recordar input { width: 20px; height: 20px; accent-color: var(--azul); margin: 0; }
+    .recordar input { width: 20px; height: 20px; accent-color: var(--cabina); margin: 0; }
 
     .entrar {
       width: 100%;
-      min-height: 50px;
+      min-height: 52px;
       border: 0;
-      border-radius: 8px;
-      background: var(--azul);
-      color: #fff;
+      border-radius: 5px;
+      background: var(--cabina);
+      color: var(--hueso);
       font: inherit;
       font-weight: 700;
-      font-size: 1.05rem;
+      font-size: 1.125rem;
       cursor: pointer;
       transition: background-color .15s ease;
     }
-    .entrar:hover { background: #0a4f92; }
-    .entrar:active { background: #01305e; }
+    .entrar:hover { background: var(--cabina-profunda); }
+    .entrar:active { background: #04121f; }
     .entrar i { margin-right: 8px; }
 
+    .volver { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; margin-top: 4px; color: var(--cabina-clara); font-weight: 600; }
+    .volver:hover { color: var(--cabina); }
     .acceso-pie {
       margin: 24px 0 0;
-      font-size: .875rem;
+      font-size: .9375rem;
       color: var(--texto-suave);
     }
 
@@ -191,10 +221,11 @@ $e = fn($texto) => htmlspecialchars((string) $texto, ENT_QUOTES, 'UTF-8');
         flex-direction: column;
         justify-content: center;
         text-align: center;
-        padding: 40px 32px;
+        padding: 40px 32px 48px;
       }
-      .acceso-marca img { width: 200px; }
-      .acceso-marca h1 { font-size: 1.75rem; }
+      .acceso-marca::after { left: auto; top: 0; bottom: 0; right: 0; width: 8px; height: auto; }
+      .acceso-marca img { width: 184px; }
+      .acceso-marca h1 { font-size: 2.75rem; }
       .acceso-form { padding: 48px 48px; align-self: center; }
     }
 
@@ -244,6 +275,7 @@ $e = fn($texto) => htmlspecialchars((string) $texto, ENT_QUOTES, 'UTF-8');
         </button>
 
         <p class="acceso-pie">&copy; <?php echo date('Y') . ' ' . $e($empresa['nombre']); ?></p>
+        <?php if (modulo_activo('pagina_publica')): ?><a class="volver" href="index.php"><i class="fas fa-arrow-left" aria-hidden="true"></i> Volver a la página del grifo</a><?php endif; ?>
       </form>
     </div>
   </main>

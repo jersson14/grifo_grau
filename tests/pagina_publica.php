@@ -80,6 +80,9 @@ try {
     $modulo(1);
     $r = $visita->pedir('index.php');
     comprobar('con el módulo activo muestra la página pública', strpos($r['cuerpo'], 'id="form_flota"') !== false && strpos($r['cuerpo'], 'txt_usuario') === false);
+    $acceso = $visita->pedir('login.php')['cuerpo'];
+    comprobar('el acceso se genera completo, con sus scripts', strpos($acceso, '</html>') !== false && strpos($acceso, 'Iniciar_Sesion') !== false);
+    comprobar('con la página activa, el acceso ofrece volver a ella', strpos($acceso, 'class="volver"') !== false);
     comprobar('la página enlaza el acceso del personal', strpos($r['cuerpo'], 'href="login.php"') !== false);
     $r = $admin->pedir('index.php');
     comprobar('con sesión abierta lleva al panel', $r['codigo'] === 302 && strpos($r['destino'], 'view/index.php') !== false);

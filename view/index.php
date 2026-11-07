@@ -11,83 +11,76 @@ $capacidades = capacidades_sesion();
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#023D77">
+  <meta name="theme-color" content="#071d34">
   <title>Sistema de Gestión - Grifo</title>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <link rel="preload" href="../fuentes/barlow-semi-condensed-400.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../fuentes/big-shoulders-display.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="../plantilla/plugins/fontawesome-free/css/all.min.css">
   <link rel="shortcut icon" href="../img/grau.png" type="image/jpg">
   <link rel="stylesheet" href="../plantilla/dist/css/adminlte.min.css">
   <link href="../utilitario/DataTables/datatables.min.css" type="text/css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="../css/grifo.css?rev=<?php echo filemtime(__DIR__ . '/../css/grifo.css'); ?>">
+  <link rel="stylesheet" href="../css/panel.css?rev=<?php echo filemtime(__DIR__ . '/../css/panel.css'); ?>">
 </head>
 
 <body class="hold-transition sidebar-mini">
   <div class="wrapper">
     <!-- Navbar -->
-    <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+    <nav class="main-header navbar navbar-expand g-cabecera">
       <ul class="navbar-nav">
         <li class="nav-item">
-          <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
+          <a class="nav-link" data-widget="pushmenu" href="#" role="button" aria-label="Mostrar u ocultar el menú"><i class="fas fa-bars" aria-hidden="true"></i></a>
         </li>
       </ul>
       <ul class="navbar-nav ml-auto">
         <li class="nav-item dropdown">
-          <a class="nav-link" data-toggle="dropdown" href="#">
-            <img src="../<?php echo $_SESSION['S_FOTO']; ?>" class="img-circle elevation-1" width="15" height="18">
-            <b>Usuario: <?php echo $_SESSION['S_COMPLETOS'] ?></b>
-            <i class="fas fa-caret-down"></i>
+          <a class="nav-link g-usuario" data-toggle="dropdown" href="#" aria-haspopup="true" aria-expanded="false">
+            <img src="../<?php echo htmlspecialchars((string) $_SESSION['S_FOTO'], ENT_QUOTES, 'UTF-8'); ?>" class="img-circle" width="32" height="32" alt="">
+            <span class="g-usuario-nombre"><?php echo htmlspecialchars((string) $_SESSION['S_COMPLETOS'], ENT_QUOTES, 'UTF-8'); ?></span>
+            <i class="fas fa-caret-down" aria-hidden="true"></i>
           </a>
-          <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
-            <a href="#" onclick="cargar_contenido('contenido_principal','usuario/view_mi_perfil.php')" class="dropdown-item">
-              <i class="fas fa-user-circle mr-2"></i><b>Mi Perfil</b>
-            </a>
+          <div class="dropdown-menu dropdown-menu-right">
+            <a href="#" onclick="cargar_contenido('contenido_principal','usuario/view_mi_perfil.php')" class="dropdown-item"><i class="fas fa-user-circle mr-2" aria-hidden="true"></i>Mi perfil</a>
             <div class="dropdown-divider"></div>
-            <a href="../controller/usuario/controlador_cerrar_sesion.php" class="dropdown-item">
-              <i class="fas fa-power-off mr-2"></i><u><b>Cerrar Sesión</b></u>
-            </a>
-            <div class="dropdown-divider"></div>
+            <a href="../controller/usuario/controlador_cerrar_sesion.php" class="dropdown-item"><i class="fas fa-power-off mr-2" aria-hidden="true"></i>Cerrar sesión</a>
           </div>
         </li>
       </ul>
     </nav>
 
     <!-- Main Sidebar -->
-    <aside class="main-sidebar sidebar-dark-primary elevation-4">
+    <aside class="main-sidebar sidebar-dark-primary">
       <a href="#"  onclick="cargar_contenido('contenido_principal',<?php echo htmlspecialchars(json_encode($vista_inicio), ENT_QUOTES, 'UTF-8'); ?>)" class="brand-link">
         <img src="../<?php echo htmlspecialchars($_SESSION['S_FOTO_EMPRESA'] ?: 'img/grau.png', ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars((string) $_SESSION['S_RAZON'], ENT_QUOTES, 'UTF-8'); ?>" width="100%" height="auto">
       </a>
 
       <div class="sidebar">
-        <div class="user-panel mt-1 pb-3 mb-3 d-flex">
-          <div class="image">
-            <img src="../<?php echo $_SESSION['S_FOTO']; ?>" class="img-circle elevation-2" style="max-width: 100%;height: auto;">
-          </div>
-          <div class="info">
-            <a style="text-align:center;" href="#" class="d-block"><i class="fa fa-circle text-success fa-0x"></i> ¡Hola!<br> <b style="color:white"><?php echo $_SESSION['S_NOMBRE']; ?></b></a>
-            <a style="text-align:center;margin:5px;color:white;font-size:15px" href="#" class="d-block">&nbsp;&nbsp;<b style="text-align:center"><i class="fa fa-user text-success fa-0x"></i><em> ROL: <?php echo $_SESSION['S_ROL']; ?></em></b></a>
+        <div class="user-panel g-ficha-usuario">
+          <img src="../<?php echo htmlspecialchars((string) $_SESSION['S_FOTO'], ENT_QUOTES, 'UTF-8'); ?>" class="img-circle" width="40" height="40" alt="">
+          <div>
+            <span class="g-ficha-nombre"><?php echo htmlspecialchars((string) $_SESSION['S_NOMBRE'], ENT_QUOTES, 'UTF-8'); ?></span>
+            <span class="g-ficha-rol"><?php echo htmlspecialchars((string) $_SESSION['S_ROL'], ENT_QUOTES, 'UTF-8'); ?></span>
           </div>
         </div>
 
         <nav class="mt-1">
           <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
             <?php foreach ($menu_sesion as $seccion_menu) { ?>
-              <li class="header text-center" style="color:#FFFFFF; background-color:#023D77; border-radius: 10px;">
-                <b><?php echo htmlspecialchars($seccion_menu['titulo'], ENT_QUOTES, 'UTF-8'); ?></b>
-              </li>
+              <li class="nav-header g-seccion"><?php echo htmlspecialchars($seccion_menu['titulo'], ENT_QUOTES, 'UTF-8'); ?></li>
               <?php foreach ($seccion_menu['items'] as $item_menu) { ?>
                 <?php if ($item_menu['hijos']) { ?>
                   <li class="nav-item has-treeview">
                     <a href="#" class="nav-link">
                       <i class="nav-icon <?php echo htmlspecialchars((string) $item_menu['icono'], ENT_QUOTES, 'UTF-8'); ?>"></i>
-                      <p style="color:white"><?php echo htmlspecialchars($item_menu['titulo'], ENT_QUOTES, 'UTF-8'); ?> <i class="right fas fa-angle-left"></i></p>
+                      <p><?php echo htmlspecialchars($item_menu['titulo'], ENT_QUOTES, 'UTF-8'); ?> <i class="right fas fa-angle-left"></i></p>
                     </a>
                     <ul class="nav nav-treeview">
                       <?php foreach ($item_menu['hijos'] as $hijo_menu) { ?>
                         <li class="nav-item">
                           <a href="#" onclick="cargar_contenido('contenido_principal',<?php echo htmlspecialchars(json_encode($hijo_menu['vista'], JSON_UNESCAPED_SLASHES), ENT_QUOTES, 'UTF-8'); ?>)" class="nav-link">
                             <i class="nav-icon <?php echo htmlspecialchars((string) $hijo_menu['icono'], ENT_QUOTES, 'UTF-8'); ?>"></i>
-                            <p style="color:white"><?php echo htmlspecialchars($hijo_menu['titulo'], ENT_QUOTES, 'UTF-8'); ?></p>
+                            <p><?php echo htmlspecialchars($hijo_menu['titulo'], ENT_QUOTES, 'UTF-8'); ?></p>
                           </a>
                         </li>
                       <?php } ?>
@@ -97,7 +90,7 @@ $capacidades = capacidades_sesion();
                   <li class="nav-item">
                     <a href="#" onclick="cargar_contenido('contenido_principal',<?php echo htmlspecialchars(json_encode($item_menu['vista'], JSON_UNESCAPED_SLASHES), ENT_QUOTES, 'UTF-8'); ?>)" class="nav-link">
                       <i class="nav-icon <?php echo htmlspecialchars((string) $item_menu['icono'], ENT_QUOTES, 'UTF-8'); ?>"></i>
-                      <p style="color:white"><?php echo htmlspecialchars($item_menu['titulo'], ENT_QUOTES, 'UTF-8'); ?></p>
+                      <p><?php echo htmlspecialchars($item_menu['titulo'], ENT_QUOTES, 'UTF-8'); ?></p>
                     </a>
                   </li>
                 <?php } ?>
@@ -194,6 +187,11 @@ $capacidades = capacidades_sesion();
   <script>
     function cargar_contenido(id, vista) {
       $("#" + id).load(vista);
+      if (id !== 'contenido_principal') { return; }
+      // El menú marca la pantalla abierta: las pantallas se cargan sin recargar la página.
+      var enlaces = $('.nav-sidebar .nav-link').removeClass('g-actual').removeAttr('aria-current');
+      enlaces.filter(function () { return (this.getAttribute('onclick') || '').indexOf('"' + vista + '"') !== -1; })
+        .addClass('g-actual').attr('aria-current', 'page');
     }
 
     var idioma_espanol = {
@@ -222,15 +220,3 @@ $capacidades = capacidades_sesion();
   </script>
 </body>
 </html>
-
-<style>
-  .main-sidebar {
-    background: linear-gradient(135deg, #023D77, #0266C8) !important;
-    color: white !important;
-  }
-
-  .sidebar-dark-primary {
-    background: linear-gradient(135deg, #023D77, #0266C8) !important;
-    color: white !important;
-  }
-</style>

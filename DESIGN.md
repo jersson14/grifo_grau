@@ -136,7 +136,7 @@ El sistema habla el idioma de quien maneja: cada superficie es la carrocería pi
 
 La densidad es baja y la escala alta en la página pública (modo Persuade): cifras gigantes, titulares que ocupan el ancho, una acción por bloque. El estado se dice con forma antes que con color: cinta continua es vigente, cinta cortada es pendiente o por terminar, cinta tachada es inactiva.
 
-El mundo se extenderá al panel de operación (registro de turnos y ventas en celular, pantallas de administración), hoy en AdminLTE 3 + Bootstrap 4, que se migrará pantalla por pantalla con Tailwind prefijado conviviendo con Bootstrap. El panel hereda la paleta, las dos familias tipográficas y el lenguaje de materiales (esmalte, placa, cinta, plancha superpuesta) con la contención del modo Operate: rótulo pintado y cifras gigantes solo donde un dato manda, texto de trabajo para todo lo demás. Sus componentes propios aún no existen y no se definen aquí; se documentarán cuando se construyan.
+El mundo se extenderá al panel de operación (registro de turnos y ventas en celular, pantallas de administración), hoy en AdminLTE 3 + Bootstrap 4, que se migrará pantalla por pantalla con Tailwind prefijado conviviendo con Bootstrap. El panel hereda la paleta, las dos familias tipográficas y el lenguaje de materiales (esmalte, placa, cinta, plancha superpuesta) con la contención del modo Operate: rótulo pintado y cifras gigantes solo donde un dato manda, texto de trabajo para todo lo demás. Sus componentes construidos están en «Panel de operación»; los que falten se documentan al construirlos.
 
 **Key Characteristics:**
 - Esmalte azul de cabina como fondo dominante; hueso como letra y como cara clara.
@@ -257,6 +257,21 @@ Cada cifra del precio es una tira vertical que rueda hasta su valor (1.25s cubic
 ### Franjas de titular
 Filete pintado de 18px bajo los títulos de sección sobre cabina: hueso, rojo y filete de cabina de 4px cada uno, hasta 20rem de ancho.
 
+### Panel de operación
+
+Construido en `tailwind/panel.css` (compilado a `css/panel.css`, prefijo `tw-`, sin reinicio de estilos, por encima de AdminLTE y `css/grifo.css`). Contención Operate: el contenido va sobre blanco hueso y el rótulo pintado se reserva a títulos de pantalla y cifras que mandan.
+
+- **Cabecera:** esmalte cabina profunda con un borde inferior de cinta reflectiva de 6px; usuario con foto y nombre en hueso.
+- **Menú lateral:** esmalte cabina; secciones como etiquetas cromo en mayúsculas espaciadas; la pantalla abierta se marca como placa hueso con texto tinta e icono rojo (`.g-actual`, con `aria-current="page"`).
+- **Título de pantalla:** Big Shoulders 800 en mayúsculas, 2.25rem (1.85rem en celular), icono en cabina.
+- **Tarjetas:** blancas, borde 1px `#d8d1c2`, radio 6px, sin sombra; las tarjetas con color heredado llevan una franja superior de 4px en cabina.
+- **Indicadores (`info-box`, `small-box`):** cara blanca, cifra en Big Shoulders 800 a 2.25rem, etiqueta en mayúsculas gris; el color de estado queda solo en el cuadro del icono.
+- **Número de paso (`.g-paso`):** placa cabina de 2.25rem con el número pintado en hueso; título del paso en letra de trabajo.
+- **Barra de cuadre (`.g-barra-cuadre`):** fija al pie en formularios largos; esmalte cabina profunda con borde superior de cinta. Total en cifra pintada; el estado tiene forma propia: *cuadra* placa hueso con visto, *sobra* verde `#1f6b3a` con signo más, *falta* rojo reflectivo tinta con flecha abajo, *vacío* texto cromo. La acción principal de la barra es una placa hueso.
+- **Tarjeta de surtidor en celular (`.tabla-surtidores`):** cuadrícula de seis columnas: código pintado y producto arriba, lecturas inicial y final lado a lado, galones, precio y total en una fila.
+- **Botones:** primario y guardar en cabina; peligro en reflectivo tinta; aviso en amarillo de seguridad con texto tinta; radio 5px.
+- **Gráficos:** un color fijo por combustible (Diesel cabina, Regular reflectivo, Premium ámbar `#c99400`) y la letra de trabajo.
+- **Verde de estado (`correcto`, `#1f6b3a`):** existe solo en el panel, para estados correctos (sobrante, activo); la página pública no lo usa.
 ## Do's and Don'ts
 
 ### Do:
@@ -275,4 +290,4 @@ Filete pintado de 18px bajo los títulos de sección sobre cabina: hueso, rojo y
 - **Don't** pintar placas en cromo brillante ni mover la plancha de montaje al pasar: solo se mueve la cara.
 - **Don't** confundir foco y error en un campo: foco es contorno cabina clara, error es borde rojo esmalte de 3px.
 - **Don't** colgar pestañas laterales para pasos numerados; los pasos van en la ficha técnica pintada.
-- **Don't** inventar componentes del panel en este archivo antes de que existan en el código.
+- **Don't** documentar componentes del panel antes de que existan en el código.

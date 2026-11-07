@@ -69,7 +69,7 @@ js/             jQuery AJAX layer (console_*.js files, one per module)
 ```php
 $pdo = conexionBD::conexionPDO();  // returns PDO instance
 ```
-- One connection is reused per request. If it is inside a transaction, a new one is opened, so independent writes never join someone else's transaction
+- Every call opens its own connection. Do not share one per request: stored procedures leave pending result sets and the next query on that connection fails (error 2014)
 - Connection values come from `.env` or real environment variables (which win), charset `utf8mb4`
 - `controlador_guardar_turno_manual.php` and `controlador_cerrar_turno_manual.php` open their own mysqli connection and use tables the models don't (plan task 0.5)
 - Timezone forced to `America/Lima` (UTC-5) on every connection
