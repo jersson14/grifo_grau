@@ -105,7 +105,7 @@ $e = fn($texto) => htmlspecialchars((string) $texto, ENT_QUOTES, 'UTF-8');
       font-weight: 600;
       letter-spacing: -.02em;
     }
-    .acceso-form h2 + * { margin-top: 20px; }
+    .acceso-desc + * { margin-top: 24px; }
     .campo { margin-bottom: 16px; }
     .campo label {
       display: block;
@@ -138,7 +138,7 @@ $e = fn($texto) => htmlspecialchars((string) $texto, ENT_QUOTES, 'UTF-8');
       right: 1px; top: 1px; bottom: 1px;
       width: 44px;
       border: 0;
-      border-radius: 5px;
+      border-radius: 6px;
       background: transparent;
       color: var(--suave);
       cursor: pointer;
@@ -181,6 +181,40 @@ $e = fn($texto) => htmlspecialchars((string) $texto, ENT_QUOTES, 'UTF-8');
       font-size: 13px;
       color: var(--suave);
     }
+    /* Pantalla dividida: foto de la estación a un lado y el formulario al otro. */
+    .acceso { padding: 0; grid-template-columns: 1fr; place-items: stretch; }
+    .acceso-imagen {
+      position: relative;
+      min-height: 200px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 20px;
+      color: #fff;
+      background: #09090b url('img/acceso.jpg') center 55% / cover no-repeat;
+    }
+    .acceso-imagen::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(9, 9, 11, .55) 0%, rgba(9, 9, 11, .15) 45%, rgba(9, 9, 11, .75) 100%);
+    }
+    .acceso-imagen > * { position: relative; }
+    .acceso-imagen-marca { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 15px; }
+    .acceso-imagen-marca img { width: 32px; height: 32px; object-fit: contain; border-radius: 6px; background: #fff; }
+    .acceso-imagen-frase { margin: 0; max-width: 28ch; font-size: 18px; font-weight: 500; line-height: 1.4; letter-spacing: -.01em; }
+    .acceso-lado { display: grid; place-items: center; padding: 32px 16px 40px; }
+    .acceso-lado .acceso-tarjeta { border: 0; box-shadow: none; background: transparent; max-width: 380px; }
+    .acceso-lado .acceso-marca { display: none; }
+    .acceso-lado .acceso-form { padding: 0; }
+    .acceso-desc { margin: 0; font-size: 14px; color: var(--suave); }
+    body { background: #fff; }
+    @media (min-width: 900px) {
+      .acceso { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); min-height: 100vh; }
+      .acceso-imagen { min-height: 100vh; padding: 40px; }
+      .acceso-imagen-frase { font-size: 24px; }
+      .acceso-lado { padding: 48px; }
+    }
     @media (prefers-reduced-motion: reduce) {
       * { transition: none !important; }
     }
@@ -188,6 +222,14 @@ $e = fn($texto) => htmlspecialchars((string) $texto, ENT_QUOTES, 'UTF-8');
 </head>
 <body>
   <main class="acceso">
+    <aside class="acceso-imagen" aria-hidden="true">
+      <div class="acceso-imagen-marca">
+        <img src="<?php echo $e($empresa['logo']); ?>" alt="">
+        <span><?php echo $e($empresa['nombre']); ?></span>
+      </div>
+      <p class="acceso-imagen-frase">Turnos, ventas, créditos y caja del grifo en un solo lugar.</p>
+    </aside>
+    <div class="acceso-lado">
     <div class="acceso-tarjeta">
       <section class="acceso-marca" aria-label="Empresa">
         <img src="<?php echo $e($empresa['logo']); ?>" alt="Logo de <?php echo $e($empresa['nombre']); ?>">
@@ -199,6 +241,7 @@ $e = fn($texto) => htmlspecialchars((string) $texto, ENT_QUOTES, 'UTF-8');
 
       <form class="acceso-form" id="form_acceso" autocomplete="on">
         <h2>Iniciar sesión</h2>
+        <p class="acceso-desc">Ingresa con tu usuario y contraseña.</p>
 
         <div class="campo">
           <label for="txt_usuario">Usuario</label>
@@ -229,6 +272,7 @@ $e = fn($texto) => htmlspecialchars((string) $texto, ENT_QUOTES, 'UTF-8');
         <p class="acceso-pie">&copy; <?php echo date('Y') . ' ' . $e($empresa['nombre']); ?></p>
         <?php if (modulo_activo('pagina_publica')): ?><a class="volver" href="index.php"><i class="fas fa-arrow-left" aria-hidden="true"></i> Volver a la página del grifo</a><?php endif; ?>
       </form>
+    </div>
     </div>
   </main>
 

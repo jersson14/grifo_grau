@@ -55,10 +55,14 @@ a:hover, .btn-link:hover { color: theme('colors.blue.800'); }
 .sidebar-dark-primary .nav-sidebar > .nav-item.menu-open > .nav-link { background: theme('colors.zinc.100'); color: theme('colors.zinc.950'); }
 .sidebar-dark-primary .nav-sidebar > .nav-item > .nav-link.active,
 .sidebar-dark-primary .nav-treeview > .nav-item > .nav-link.active,
-.sidebar-dark-primary .nav-sidebar .nav-link.g-actual { background: theme('colors.zinc.100'); color: theme('colors.zinc.950'); font-weight: 600; box-shadow: none; }
-.sidebar-dark-primary .nav-sidebar .nav-link.g-actual .nav-icon { color: theme('colors.blue.600'); }
+.sidebar-dark-primary .nav-sidebar .nav-link.g-actual, .sidebar-dark-primary .nav-sidebar .nav-link.g-actual:hover { background: theme('colors.blue.600'); color: #fff; font-weight: 600; box-shadow: 0 1px 2px rgba(37, 99, 235, .3); }
+.sidebar-dark-primary .nav-sidebar .nav-link.g-actual .nav-icon, .sidebar-dark-primary .nav-sidebar .nav-link.g-actual p { color: #fff; }
+/* El grupo que contiene la pantalla abierta queda desplegado y resaltado. */
+.sidebar-dark-primary .nav-sidebar .nav-link.g-actual-padre { color: theme('colors.zinc.950'); font-weight: 600; }
+.sidebar-dark-primary .nav-sidebar .nav-link.g-actual-padre .nav-icon { color: theme('colors.blue.600'); }
 .nav-sidebar .nav-link > p > .right { color: theme('colors.zinc.400'); }
-.nav-sidebar .nav-treeview { padding-left: .5rem; }
+.nav-sidebar .nav-treeview { padding-left: .75rem; }
+.sidebar-dark-primary .nav-treeview > .nav-item > .nav-link { width: auto !important; }
 
 /* ---------- Encabezado de cada pantalla ---------- */
 .content-header h1 { font-size: 1.5rem; font-weight: 600; letter-spacing: -.015em; line-height: 1.25; color: theme('colors.zinc.950'); }

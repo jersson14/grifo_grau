@@ -188,9 +188,15 @@ $capacidades = capacidades_sesion();
       $("#" + id).load(vista);
       if (id !== 'contenido_principal') { return; }
       // El menú marca la pantalla abierta: las pantallas se cargan sin recargar la página.
-      var enlaces = $('.nav-sidebar .nav-link').removeClass('g-actual').removeAttr('aria-current');
-      enlaces.filter(function () { return (this.getAttribute('onclick') || '').indexOf('"' + vista + '"') !== -1; })
+      var enlaces = $('.nav-sidebar .nav-link').removeClass('g-actual g-actual-padre').removeAttr('aria-current');
+      var actual = enlaces.filter(function () { return (this.getAttribute('onclick') || '').indexOf('"' + vista + '"') !== -1; })
         .addClass('g-actual').attr('aria-current', 'page');
+      // Si la pantalla está dentro de un grupo, el grupo se abre para que se vea cuál está seleccionada.
+      var grupo = actual.closest('.has-treeview');
+      if (grupo.length) {
+        grupo.children('.nav-link').addClass('g-actual-padre');
+        if (!grupo.hasClass('menu-open')) { grupo.addClass('menu-open').children('.nav-treeview').show(); }
+      }
     }
 
     var idioma_espanol = {

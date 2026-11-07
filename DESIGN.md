@@ -325,7 +325,7 @@ Neutros zinc de Tailwind con un único acento azul y tres tonos de estado (rojo,
 - **Casi negro hover** (primario-hover): hover y pulsado del primario; fondo del botón primario del acceso al pasar.
 
 ### Secondary
-- **Azul** (acento): anillo y borde de foco, icono de la pantalla activa en el menú, botón informativo, iconos de SweetAlert info y pregunta, serie Diesel en gráficos.
+- **Azul** (acento): anillo y borde de foco, fondo de la pantalla activa en el menú e icono del grupo que la contiene, botón informativo, iconos de SweetAlert info y pregunta, serie Diesel en gráficos.
 - **Azul texto** (acento-texto): enlaces, texto informativo, icono de las tarjetas de servicio y de indicadores informativos; hover del botón informativo.
 - **Azul profundo** (acento-profundo): hover de enlaces, texto de avisos informativos.
 - **Azul tenue / borde / selección** (acento-tenue, acento-borde, acento-seleccion): fondo y borde de avisos e insignias informativas; selección de texto.
@@ -338,7 +338,7 @@ Neutros zinc de Tailwind con un único acento azul y tres tonos de estado (rojo,
 ### Neutral
 - **Blanco** (fondo): tarjetas, cabecera, menú lateral, campos, ventanas, barra de cuadre, fondo de la página pública.
 - **Zinc 50** (fondo-sutil): fondo del área de contenido del panel y del acceso, encabezados de tabla, bandas alternas de la página pública (al 60%).
-- **Zinc 100** (superficie-tenue): hover de menú, pestañas y botones contorno; ítem activo del menú; campos de solo lectura; cuadro de icono neutro.
+- **Zinc 100** (superficie-tenue): hover de menú, pestañas y botones contorno; campos de solo lectura; cuadro de icono neutro.
 - **Zinc 200** (borde): todo borde y divisor.
 - **Zinc 300** (borde-campo): borde de los campos.
 - **Zinc 400 / 500** (icono-tenue, texto-apagado): flechas del menú, iconos de menú y de títulos, etiquetas de sección, texto pequeño apagado.
@@ -437,8 +437,9 @@ Sobrios y previsibles; el color comunica la intención.
 
 ### Navigation
 - **Cabecera del panel:** blanca de 3.5rem con borde inferior; enlaces zinc-700 de 44px con hover zinc-100; usuario con avatar redondo y nombre 500 a .875rem. Menú desplegable blanco de 8px de radio con ítems de 6px.
-- **Menú lateral:** blanco con borde derecho; ficha de usuario arriba (nombre 600 .875rem, rol .75rem zinc-500); títulos de sección .75rem 500 zinc-500 en minúscula normal; ítems zinc-700 500 .875rem, radio 6px, hover zinc-100. La pantalla abierta lleva fondo zinc-100, texto casi negro 600, icono azul y `aria-current="page"`.
+- **Menú lateral:** blanco con borde derecho; ficha de usuario arriba (nombre 600 .875rem, rol .75rem zinc-500); títulos de sección .75rem 500 zinc-500 en minúscula normal; ítems zinc-700 500 .875rem, radio 6px, hover zinc-100. La pantalla abierta lleva fondo azul sólido (blue-600) con texto e icono blancos, peso 600 y `aria-current="page"`; si está dentro de un grupo, el grupo se despliega solo y su título queda en 600 con icono azul.
 - **Pestañas:** subrayadas. Texto zinc-600 500 .875rem, 44px de alto, borde inferior de 2px; hover zinc-300, activa casi negra.
+- **Acceso:** pantalla dividida. En escritorio (desde 900px), mitad izquierda con la foto `img/acceso.jpg` (Markus Spiske, Licencia Unsplash) a sangre, velo oscuro vertical para leer el logo, el nombre y la frase en blanco; mitad derecha blanca con el formulario sin tarjeta, de 380px. En celular la foto es una franja superior de 200px.
 - **Cabecera pública:** blanca y fija de 64px con borde inferior, enlaces fantasma de 36px visibles desde 768px y botón contorno «Ingresar».
 
 ### Indicadores
