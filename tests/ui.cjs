@@ -4,14 +4,14 @@
 const path = require('path');
 const puppeteer = require(path.join(process.argv[2], 'node_modules', 'puppeteer-core'));
 const SALIDA = process.argv[3] || require('os').tmpdir();
-const BASE = 'http://localhost/grifo_grau';
+const BASE = process.env.GRIFO_BASE || 'http://localhost/grifo_grau';
 
 let fallos = 0, total = 0;
 const comprobar = (n, ok, d = '') => { total++; if (!ok) fallos++; console.log((ok ? '  ok    ' : '  FALLA ') + n + (ok || !d ? '' : ' -> ' + d)); };
 const espera = ms => new Promise(r => setTimeout(r, ms));
 
 (async () => {
-  const navegador = await puppeteer.launch({ executablePath: 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', headless: 'new', args: ['--window-size=1366,850'] });
+  const navegador = await puppeteer.launch({ executablePath: process.env.NAVEGADOR || 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', headless: 'new', args: ['--window-size=1366,850'] });
 
   async function sesion(usuario, clave) {
     const ctx = await navegador.createBrowserContext();

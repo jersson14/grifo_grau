@@ -6,7 +6,7 @@ const fs = require('fs');
 const puppeteer = require(path.join(process.argv[2], 'node_modules', 'puppeteer-core'));
 const SALIDA = process.argv[3] || require('os').tmpdir();
 fs.mkdirSync(SALIDA, { recursive: true });
-const BASE = 'http://localhost/grifo_grau';
+const BASE = process.env.GRIFO_BASE || 'http://localhost/grifo_grau';
 const espera = ms => new Promise(r => setTimeout(r, ms));
 const VISTAS = ['reportes/view_dashboard.php', 'turnos/view_registrar_turno.php', 'turnos/view_historial.php', 'creditos/view_creditos_pendientes.php', 'clientes/view_clientes.php',
   'productos/view_productos.php', 'surtidores/view_surtidores.php', 'usuario/view_usuario.php', 'reportes/view_ventas_por_fecha.php', 'reportes/view_listado_reportes.php',
@@ -46,7 +46,7 @@ const medir = () => {
 };
 
 (async () => {
-  const nav = await puppeteer.launch({ executablePath: 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', headless: 'new', protocolTimeout: 60000 });
+  const nav = await puppeteer.launch({ executablePath: process.env.NAVEGADOR || 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', headless: 'new', protocolTimeout: 60000 });
   const p = await (await nav.createBrowserContext()).newPage();
   await p.setViewport({ width: 1366, height: 850 });
   const dialogos = [];

@@ -9,7 +9,7 @@ if (PHP_SAPI !== 'cli') {
     exit;
 }
 
-$base   = rtrim($argv[1] ?? 'http://localhost/grifo_grau', '/');
+$base   = rtrim($argv[1] ?? (getenv('GRIFO_BASE') ?: 'http://localhost/grifo_grau'), '/');
 $raiz   = dirname(__DIR__);
 $fallos = 0;
 $total  = 0;
@@ -203,7 +203,8 @@ $r = $admin->pedir('controller/turnos/controlador_validar_reporte.php', ['id_rep
 comprobar('el administrador valida el turno', trim($r['cuerpo']) === '1', $r['cuerpo']);
 
 $r = $admin->pedir('view/MPDF/REPORTE/reporte_turno.php?id=' . $idReporte);
-comprobar('el PDF del turno se genera', $r['codigo'] === 200 && strncmp($r['cuerpo'], '%PDF', 4) === 0, substr($r['cuerpo'], 0, 200));
+// Un aviso de PHP impreso antes del PDF lo corrompería: el archivo debe empezar en %PDF- y tener contenido.
+comprobar('el PDF del turno se genera', $r['codigo'] === 200 && strncmp($r['cuerpo'], '%PDF-', 5) === 0 && strlen($r['cuerpo']) > 5000, substr($r['cuerpo'], 0, 200));
 
 echo "\n7. Crédito y pagos\n";
 $idCredito = (int) $pdo->query("SELECT id_credito FROM ventas_credito WHERE id_reporte = $idReporte")->fetchColumn();

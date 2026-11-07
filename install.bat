@@ -34,20 +34,22 @@ if %errorlevel% neq 0 (
 echo [OK] Docker está corriendo
 echo.
 
-REM Detener contenedores existentes
+REM Detener contenedores existentes (los datos se conservan)
 echo Deteniendo contenedores existentes...
-docker-compose down >nul 2>&1
+docker compose down >nul 2>&1
 
-REM Construir e iniciar contenedores
+REM Construir e iniciar. El contenedor web espera a la base y aplica las migraciones;
+REM una base vacía recibe datos de demostración.
 echo.
 echo Construyendo e iniciando contenedores...
 echo Esto puede tardar varios minutos la primera vez...
 echo.
-docker-compose up -d --build
+docker compose up -d --build
 
 if %errorlevel% neq 0 (
     echo.
     echo [ERROR] Hubo un problema al iniciar los contenedores.
+    echo Si un puerto está ocupado, por ejemplo el 8080:  set GRIFO_PUERTO_WEB=8090  y vuelva a ejecutar.
     echo.
     pause
     exit /b 1
@@ -58,21 +60,19 @@ echo ========================================
 echo   INSTALACIÓN COMPLETADA
 echo ========================================
 echo.
-echo El sistema está corriendo en:
+echo El sistema (PHP 8.4 y MySQL 8.4) está en:
 echo.
 echo   - Aplicación Web:  http://localhost:8080
-echo   - phpMyAdmin:      http://localhost:8081
+echo   - phpMyAdmin:      http://localhost:8081  (solo desde este equipo)
 echo.
-echo Credenciales de Base de Datos:
-echo   - Usuario: root
-echo   - Contraseña: rootpassword
-echo   - Base de datos: grifo_grau
+echo Base de datos:
+echo   - Base: grifo_grau   Usuario: grifo_user   Contraseña: grifo_pass
 echo.
-echo Usuarios del Sistema:
+echo Usuarios del sistema (datos de demostración):
 echo   - Admin:    admin / admin123
 echo   - Grifero:  grifero1 / grifero123
 echo.
-echo Para detener el sistema ejecuta: docker-compose down
-echo Para ver logs ejecuta: docker-compose logs -f
+echo Para detener el sistema ejecute: stop.bat
+echo Para ver el avance de la instalación: docker compose logs -f web
 echo.
 pause

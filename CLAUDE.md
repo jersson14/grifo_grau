@@ -17,7 +17,8 @@ Rules for this work:
 - Don't copy the DNI/RUC API token into docs, commits or chat. It is gone from the code but remains in git history until revoked (task 1.1).
 - Every database change is a numbered migration in `database/migrations/`, applied with `php database/migrate.php`.
 - Every controller and view starts with `require_once __DIR__ . '/../_bootstrap.php';` (adjust the path). Access is deny-by-default: a route not listed in `config/capacidades.php` or `config/permisos.php` is `ADMINISTRADOR` only. Add new routes to a capability and check `puede()` instead of comparing role names. It also enforces CSRF on POST, and `$.ajaxSetup` in `view/index.php` sends the token.
-- Run `php tests/smoke.php` after changing auth, shifts or credits, and `php tests/roles.php` after changing permissions. It needs the demo data on a local database.
+- Run `php tests/smoke.php` after changing auth, shifts or credits, and `php tests/roles.php` after changing permissions. It needs the demo data on a local database. Tests read `GRIFO_BASE` (base URL) and the `DB_*` variables from the environment, so the same suites run against XAMPP, `php -S ... tests/router.php` or Docker. `.github/workflows/pruebas.yml` runs them on PHP 8.2 and 8.4 against MySQL 8.4.
+- Target is PHP 8.4 and MySQL 8.4 in strict mode. Local XAMPP (PHP 8.2, MariaDB 10.4) runs a lax `sql_mode` that hides errors such as an empty string in an integer column: run the suites against Docker before trusting a database change.
 - Never leave `ANTHROPIC_BASE_URL` or `NUBEFACT_RUTA` in `.env` outside tests: requests would go to the mock.
 - Invoicing depends on Nubefact only through `model/facturacion/proveedor_nubefact.php`. A sale is saved before its document is sent, and a retry keeps the same number.
 - Configurable behavior belongs in the database and the admin UI, not in code.
@@ -27,9 +28,11 @@ Rules for this work:
 
 **Docker (recommended):**
 ```bat
-install.bat     # builds and starts containers (web + MySQL 8.0 + phpMyAdmin)
-stop.bat        # stops containers
+install.bat         # builds and starts containers (PHP 8.4 + MySQL 8.4 + phpMyAdmin)
+stop.bat            # stops containers, keeps data
+reset-database.bat  # deletes the Docker database and reinstalls it
 ```
+The web container waits for the database, creates `.env` and `model/model_conexion.php` if missing and runs `php database/migrate.php` on every start (`GRIFO_DEMO=1` adds demo data to an empty database). The app uses user `grifo_user`, not root. Ports can be changed with `GRIFO_PUERTO_WEB`, `GRIFO_PUERTO_PMA` and `GRIFO_PUERTO_DB`.
 
 **Manual (XAMPP):**
 - Place project under `htdocs/grifo_grau`
@@ -62,11 +65,12 @@ js/             jQuery AJAX layer (console_*.js files, one per module)
 
 ## Database Connection
 
-All models extend `conexionBD` from `model/model_conexion.php`:
+`conexionBD` lives in `model/conexion_bd.php`; the gitignored `model/model_conexion.php` only requires it:
 ```php
 $pdo = conexionBD::conexionPDO();  // returns PDO instance
 ```
-- Connection values come from `.env`, charset `utf8mb4`
+- One connection is reused per request. If it is inside a transaction, a new one is opened, so independent writes never join someone else's transaction
+- Connection values come from `.env` or real environment variables (which win), charset `utf8mb4`
 - `controlador_guardar_turno_manual.php` and `controlador_cerrar_turno_manual.php` open their own mysqli connection and use tables the models don't (plan task 0.5)
 - Timezone forced to `America/Lima` (UTC-5) on every connection
 

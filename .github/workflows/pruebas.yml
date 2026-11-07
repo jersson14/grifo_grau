@@ -1,0 +1,97 @@
+# Pruebas automáticas en cada envío: revisión de sintaxis y pruebas HTTP contra MySQL 8.4
+# (modo estricto) con PHP 8.2 y 8.4. La prueba de interfaz en navegador se corre en local.
+name: Pruebas
+
+on:
+  push:
+    branches: [grifo2, main]
+  pull_request:
+
+jobs:
+  pruebas:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.2', '8.4']
+
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: raiz
+          MYSQL_DATABASE: grifo_ci
+          TZ: America/Lima
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -praiz"
+          --health-interval=5s --health-timeout=5s --health-retries=30
+
+    env:
+      DB_HOST: 127.0.0.1
+      DB_PORT: '3306'
+      DB_NAME: grifo_ci
+      DB_USER: root
+      DB_PASS: raiz
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: pdo_mysql, mysqli, curl, mbstring, gd, zip, openssl
+          ini-values: date.timezone=America/Lima, error_reporting=-1, display_errors=Off, log_errors=On, error_log=/tmp/php_errores.log
+          coverage: none
+
+      - name: Sintaxis y avisos de obsolescencia
+        run: |
+          errores=0
+          for f in $(find . -name '*.php' -not -path './vendor/*' -not -path './view/MPDF/vendor/*' -not -path './plantilla/*' -not -path './utilitario/*'); do
+            salida=$(php -d error_reporting=-1 -d display_errors=1 -l "$f" 2>&1)
+            if ! echo "$salida" | grep -q '^No syntax errors' || echo "$salida" | grep -q 'Deprecated'; then
+              echo "$salida"; errores=1
+            fi
+          done
+          exit $errores
+
+      - name: Preparar configuración y base de datos
+        run: |
+          cp model/model_conexion.example.php model/model_conexion.php
+          sed "s/^APP_KEY=.*/APP_KEY=$(php -r 'echo bin2hex(random_bytes(32));')/" .env.example > .env
+          php database/migrate.php --demo
+
+      - name: Iniciar el sistema y los simuladores
+        run: |
+          mkdir -p /tmp/mock_nubefact
+          PHP_CLI_SERVER_WORKERS=4 php -S 127.0.0.1:8000 -t "$(dirname "$GITHUB_WORKSPACE")" tests/router.php > /tmp/servidor.log 2>&1 &
+          MOCK_DIR=/tmp/mock_nubefact php -S 127.0.0.1:8767 tests/mock_nubefact.php > /dev/null 2>&1 &
+          MOCK_LOG=/tmp/mock_anthropic.log php -S 127.0.0.1:8765 tests/mock_anthropic.php > /dev/null 2>&1 &
+          printf '\nNUBEFACT_RUTA=http://127.0.0.1:8767/api\nANTHROPIC_BASE_URL=http://127.0.0.1:8765\n' >> .env
+          sleep 2
+          curl -sf -o /dev/null "http://127.0.0.1:8000/${{ github.event.repository.name }}/"
+
+      - name: Pruebas
+        env:
+          GRIFO_BASE: http://127.0.0.1:8000/${{ github.event.repository.name }}
+        run: |
+          set -o pipefail
+          fallo=0
+          php tests/smoke.php      | tee -a /tmp/resultados.txt || fallo=1
+          php tests/roles.php      | tee -a /tmp/resultados.txt || fallo=1
+          php tests/inventario.php | tee -a /tmp/resultados.txt || fallo=1
+          php tests/caja.php       | tee -a /tmp/resultados.txt || fallo=1
+          php tests/respaldos.php mysql | tee -a /tmp/resultados.txt || fallo=1
+          php tests/facturacion.php /tmp/mock_nubefact | tee -a /tmp/resultados.txt || fallo=1
+          php tests/chatbot.php /tmp/mock_anthropic.log | tee -a /tmp/resultados.txt || fallo=1
+          if grep -q 'FALLA' /tmp/resultados.txt; then fallo=1; fi
+          exit $fallo
+
+      - name: Errores de PHP registrados
+        if: always()
+        run: |
+          tail -50 /tmp/servidor.log 2>/dev/null || true
+          # El sistema también registra mensajes informativos; solo fallan los errores y avisos de PHP.
+          if grep -E 'PHP (Fatal|Parse|Warning|Notice|Deprecated)' /tmp/php_errores.log 2>/dev/null; then
+            echo "Hay errores o avisos de PHP"; exit 1
+          fi

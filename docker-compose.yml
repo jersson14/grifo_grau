@@ -1,53 +1,61 @@
-version: '3.8'
-
+# Entorno local con Docker. Las contraseñas de aquí son solo para este entorno: en un servidor
+# real se cambian, y los puertos de la base y de phpMyAdmin solo escuchan en este equipo.
+# Si un puerto está ocupado: set GRIFO_PUERTO_WEB=8090 (también GRIFO_PUERTO_PMA y GRIFO_PUERTO_DB).
 services:
   web:
     build: .
     container_name: grifo_grau_web
     restart: unless-stopped
     ports:
-      - "8080:80"
+      - "${GRIFO_PUERTO_WEB:-8080}:80"
     volumes:
       - .:/var/www/html
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     networks:
       - grifo_network
     environment:
-      - DB_HOST=db
-      - DB_PORT=3306
-      - DB_NAME=grifo_grau
-      - DB_USER=root
-      - DB_PASS=rootpassword
+      DB_HOST: db
+      DB_PORT: "3306"
+      DB_NAME: grifo_grau
+      DB_USER: grifo_user
+      DB_PASS: grifo_pass
+      GRIFO_DEMO: "1"
 
   db:
-    image: mysql:8.0
+    image: mysql:8.4
     container_name: grifo_grau_db
     restart: unless-stopped
+    # Las rutinas del esquema se crean con el usuario de la aplicación, que no es SUPER.
+    command: ["--log-bin-trust-function-creators=1", "--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"]
     ports:
-      - "3306:3306"
+      - "127.0.0.1:${GRIFO_PUERTO_DB:-3306}:3306"
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
       MYSQL_DATABASE: grifo_grau
       MYSQL_USER: grifo_user
       MYSQL_PASSWORD: grifo_pass
+      TZ: America/Lima
     volumes:
       - db_data:/var/lib/mysql
-      - ./database:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-prootpassword"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
     networks:
       - grifo_network
 
   phpmyadmin:
-    image: phpmyadmin:latest
+    image: phpmyadmin:5.2
     container_name: grifo_grau_phpmyadmin
     restart: unless-stopped
     ports:
-      - "8081:80"
+      - "127.0.0.1:${GRIFO_PUERTO_PMA:-8081}:80"
     environment:
       PMA_HOST: db
       PMA_PORT: 3306
-      PMA_USER: root
-      PMA_PASSWORD: rootpassword
     depends_on:
       - db
     networks:

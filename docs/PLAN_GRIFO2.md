@@ -6,13 +6,13 @@ Evolucionar el sistema actual a un sistema completo de gestión de grifo, admini
 - **Base de datos local:** `grifo2` en MariaDB de XAMPP, puerto 3307, `utf8mb4` (hoy vacía)
 - **Auditoría:** 2026-11-06, sobre el commit `53d3c12`
 
-Marca cada tarea al terminarla: `[ ]` pendiente, `[x]` hecha. Registra las decisiones en la sección final.
+Marca cada tarea al terminarla: `[ ]` pendiente, `[x]` hecha, `[~]` a medias (se indica qué falta). Registra las decisiones en la sección final.
 
 ---
 
 ## 0. Estado actual
 
-Actualizado el 2026-11-06. Todo está en commits locales, sin publicar.
+Actualizado el 2026-11-07. Todo está en commits locales, sin publicar.
 
 | Área | Estado |
 |---|---|
@@ -21,7 +21,7 @@ Actualizado el 2026-11-06. Todo está en commits locales, sin publicar.
 | Fase 6 | Chatbot funcional probado contra una **API simulada**. Falta: probarlo con una clave real (6.7) y añadir streaming |
 | Fase 4 | Hecho y probado: tanques, kardex, varillaje, compras con cuentas por pagar, ventas individuales, precios (historial y programación) y caja con arqueo y depósitos (4.1 a 4.6). Falta: tienda, flotas, gastos, personal, reportes y cumplimiento sectorial |
 | Fase 5 | Facturación con Nubefact: boletas, facturas, anulaciones, reintentos y bandeja, probados contra un **simulador**. Falta probar en su modo demo y notas de crédito, facturar vales y validar con el contador |
-| Fase 2 | Copias de seguridad desde la interfaz, con restauración probada (2.6). Falta PHP 8.4, compatibilidad y CI |
+| Fase 2 | Hecho: PHP 8.4 y MySQL 8.4 en Docker, sin avisos de obsolescencia, mPDF 8.3, una conexión por petición, CI en GitHub Actions y copias de seguridad (2.6). Todas las pruebas pasan en XAMPP, PHP 8.4 y Docker. Falta PHPStan, `utf8mb4` (depende del esquema de producción) y confirmar el motor de producción (D3) |
 | Fase 8 | Hecha: estilo unificado, celular, errores junto al campo, valores por defecto, contraste AA medido en 15 pantallas y datos mostrados como texto. Pruebas: `tests/ui.cjs` y `tests/contraste.cjs` |
 | Fase 7 | Sin empezar |
 
@@ -127,10 +127,10 @@ Se confirmaron leyendo el código, sin explotarlos. Producción tiene estos fall
 
 | Componente | Actual | Estado | Objetivo propuesto |
 |---|---|---|---|
-| PHP en Docker | 8.1 | Sin soporte desde el 31-12-2025 | 8.4 |
+| PHP en Docker | 8.4.x (antes 8.1) | Con soporte | 8.4 |
 | PHP en XAMPP | 8.2.12 | Parches de seguridad hasta el 31-12-2026 | 8.4 |
 | MariaDB en XAMPP | 10.4.32 | Sin soporte | 11.4 LTS |
-| MySQL en Docker | 8.0 | Sin soporte desde abril de 2026, y distinto al motor de XAMPP | Un solo motor en todos los entornos, según D3 |
+| MySQL en Docker | 8.4 LTS (antes 8.0) | Con soporte; modo estricto, a diferencia de XAMPP | Un solo motor en todos los entornos, según D3 |
 | AdminLTE / jQuery | 3.2.0 / 3.6.0 | Funcionan | Mantener y actualizar jQuery a la última 3.x |
 
 Comprobar estas fechas de soporte al iniciar la Fase 2.
@@ -206,11 +206,12 @@ Objetivo: cerrar S1 a S8.
 
 ### Fase 2. Plataforma
 
-- [ ] **2.1** Docker con PHP 8.4 y el motor de base de datos elegido en D3.
-- [ ] **2.2** Analizar la compatibilidad (PHPStan y PHPCompatibility) y corregirla, incluidos los métodos estáticos mal usados como `conexionBD::cerrar_conexion()` y el código inalcanzable tras `return`.
+- [x] **2.1** Docker con PHP 8.4 y MySQL 8.4 LTS. El contenedor espera a la base, aplica las migraciones y usa un usuario sin privilegios de administrador; la imagen no incluye `.env`, copias ni historial. Si D3 revela MariaDB en producción, basta cambiar la imagen `db`.
+- [~] **2.2** Hecho: revisión de sintaxis con PHP 8.4.27 de los 282 archivos propios y de las librerías, sin avisos; las pruebas corren con todos los avisos activos. `conexionBD::cerrar_conexion()` ahora es estático. Con MySQL en modo estricto apareció un fallo que MariaDB local ocultaba (registrar cliente sin `id_usuario`), corregido tomando el usuario de la sesión. Falta: PHPStan (su descarga requiere aprobación del dueño) y quitar el código inalcanzable tras `return`.
 - [ ] **2.3** Migrar a `utf8mb4` y fijar `charset=utf8mb4` en la conexión.
-- [ ] **2.4** Actualizar mPDF y demás dependencias. Servir por Composer lo que hoy está copiado en el repo y localmente lo que depende de CDN.
-- [ ] **2.5** Unit tests del cálculo de turnos y créditos, y CI con GitHub Actions.
+- [~] **2.4** mPDF 8.1.5 → 8.3.1 y fpdi 2.3.7 → 2.6.9 (la versión anterior daba avisos en PHP 8.4); el PDF del turno se revisó a la vista. Falta servir localmente lo que depende de CDN y actualizar jQuery.
+- [~] **2.5** CI en `.github/workflows/pruebas.yml`: sintaxis y pruebas HTTP con PHP 8.2 y 8.4 contra MySQL 8.4, con simuladores. Sus pasos se reprodujeron en un contenedor Linux; en GitHub correrá al publicar la rama. Las pruebas aceptan `GRIFO_BASE` y `DB_*`, y `tests/router.php` permite servir el sistema con `php -S`. Falta: pruebas unitarias del cálculo de turnos y créditos.
+- [x] **2.7** Una conexión a la base por petición (`model/conexion_bd.php`, versionado). Antes cada llamada abría otra: en las pruebas se agotaron los puertos de Windows. Dentro de una transacción se abre otra, como antes.
 - [x] **2.6** Copias de seguridad automáticas con restauración probada.
 
 Si XAMPP no ofrece PHP 8.4 al llegar aquí, el desarrollo local pasa a Docker.
@@ -359,3 +360,6 @@ Pedida por el dueño el 2026-11-07. Las pantallas nuevas usan un estilo propio y
 | 2026-11-06 | Facturación con Nubefact, elegida por el dueño | Menor carga técnica que la emisión directa |
 | 2026-11-06 | La venta se guarda antes de emitir y conserva su número al reintentar | Una caída del proveedor no debe perder ventas ni duplicar comprobantes |
 | 2026-11-06 | El rol y el estado del usuario se leen en cada petición | Un cambio o una baja surte efecto de inmediato, a cambio de una consulta más |
+| 2026-11-07 | Docker con PHP 8.4 y MySQL 8.4 LTS | Ambos con soporte; el modo estricto de MySQL descubre errores que MariaDB local oculta |
+| 2026-11-07 | Una conexión por petición, nueva solo dentro de una transacción | Menos conexiones sin cambiar el comportamiento de las transacciones |
+| 2026-11-07 | La clase de conexión pasa a un archivo versionado | `model_conexion.php` está fuera de git y sus mejoras no llegaban a las instalaciones |

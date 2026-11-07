@@ -11,7 +11,7 @@ if (PHP_SAPI !== 'cli') {
 }
 
 $registro = $argv[1];
-$base = 'http://localhost/grifo_grau';
+$base = rtrim(getenv('GRIFO_BASE') ?: 'http://localhost/grifo_grau', '/');
 $fallos = 0; $total = 0;
 
 function comprobar(string $nombre, bool $ok, string $detalle = ''): void

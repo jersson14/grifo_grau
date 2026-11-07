@@ -10,7 +10,7 @@ if (PHP_SAPI !== 'cli') {
 }
 
 $mysql = $argv[1] ?? 'C:/xampp/mysql/bin/mysql.exe';
-$base = 'http://localhost/grifo_grau';
+$base = rtrim(getenv('GRIFO_BASE') ?: 'http://localhost/grifo_grau', '/');
 $fallos = 0; $total = 0;
 
 function comprobar(string $nombre, bool $ok, string $detalle = ''): void
@@ -111,26 +111,33 @@ $tmp = tempnam(sys_get_temp_dir(), 'sql');
 file_put_contents($tmp, $sql);
 $pdo->exec('DROP DATABASE IF EXISTS grifo2_prueba_restauracion');
 $pdo->exec('CREATE DATABASE grifo2_prueba_restauracion CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci');
-$salida = shell_exec('"' . $mysql . '" -u root -P 3307 -h 127.0.0.1 grifo2_prueba_restauracion < "' . $tmp . '" 2>&1');
+// Mismo servidor y usuario que la aplicación; la contraseña va por MYSQL_PWD para no aparecer en la línea de comandos.
+putenv('MYSQL_PWD=' . env('DB_PASS', ''));
+$salida = shell_exec('"' . $mysql . '" -u ' . escapeshellarg(env('DB_USER', 'root')) . ' -P ' . (int) env('DB_PORT', '3307')
+    . ' -h ' . escapeshellarg(env('DB_HOST', '127.0.0.1')) . ' grifo2_prueba_restauracion < "' . $tmp . '" 2>&1');
+putenv('MYSQL_PWD');
+// Algunos clientes mysql imprimen avisos informativos (contraseña por entorno, SSL): no son errores de la importación.
+$salida = preg_replace('/^.*\bwarning\b.*$\R?/mi', '', (string) $salida);
 unlink($tmp);
 comprobar('mysql la importa sin errores', trim((string) $salida) === '', (string) $salida);
 
+$original = env("DB_NAME");
 $distintas = [];
 foreach ($pdo->query("SHOW FULL TABLES WHERE Table_type = 'BASE TABLE'")->fetchAll(PDO::FETCH_COLUMN) as $tabla) {
     if ($tabla === 'auditoria') {
         // Generar y descargar la copia se registran después de hacerla: se comparan las filas que ya existían.
         $maximo = (int) $pdo->query('SELECT COALESCE(MAX(id_auditoria), 0) FROM grifo2_prueba_restauracion.auditoria')->fetchColumn();
         $huella = fn($db) => $pdo->query("SELECT COUNT(*), COALESCE(SUM(CRC32(CONCAT_WS('|', id_auditoria, usuario, accion, detalle, creado_en))), 0) FROM $db.auditoria WHERE id_auditoria <= $maximo")->fetch(PDO::FETCH_NUM);
-        if ($huella('grifo2') !== $huella('grifo2_prueba_restauracion')) { $distintas[] = $tabla; }
+        if ($huella($original) !== $huella('grifo2_prueba_restauracion')) { $distintas[] = $tabla; }
         continue;
     }
-    $a = $pdo->query("CHECKSUM TABLE grifo2.`$tabla`")->fetch(PDO::FETCH_NUM)[1];
+    $a = $pdo->query("CHECKSUM TABLE `$original`.`$tabla`")->fetch(PDO::FETCH_NUM)[1];
     $b = $pdo->query("CHECKSUM TABLE grifo2_prueba_restauracion.`$tabla`")->fetch(PDO::FETCH_NUM)[1];
     if ($a !== $b) { $distintas[] = $tabla; }
 }
 comprobar('todas las tablas son idénticas a la original', !$distintas, implode(', ', $distintas));
 $procs = fn($db) => (int) $pdo->query("SELECT COUNT(*) FROM information_schema.ROUTINES WHERE ROUTINE_SCHEMA = '$db'")->fetchColumn();
-comprobar('restaura los procedimientos', $procs('grifo2') === $procs('grifo2_prueba_restauracion') && $procs('grifo2') > 0);
+comprobar('restaura los procedimientos', $procs($original) === $procs('grifo2_prueba_restauracion') && $procs($original) > 0);
 $hash = $pdo->query("SELECT usu_contrasenia FROM grifo2_prueba_restauracion.usuario WHERE usu_usuario = 'admin'")->fetchColumn();
 comprobar('las contraseñas siguen funcionando', password_verify('admin123', (string) $hash));
 $pdo->exec('DROP DATABASE grifo2_prueba_restauracion');

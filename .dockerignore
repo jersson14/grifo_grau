@@ -1,7 +1,15 @@
-vendor/
-node_modules/
+# Nada de secretos, copias de seguridad ni historial dentro de la imagen.
+.git
+.github
 .env
+model/model_conexion.php
+respaldos/*
+!respaldos/.htaccess
+docs
+tests
+*.bat
+incocat.sql
+node_modules/
 .DS_Store
 *.log
 database/*.sql
-!database/init.sql
