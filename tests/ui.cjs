@@ -476,6 +476,15 @@ const espera = ms => new Promise(r => setTimeout(r, ms));
     await ctx.close();
   }
 
+  console.log('\n6g. Menú: la pantalla abierta se ve seleccionada tras el clic');
+  {
+    // Con el foco en el enlace, AdminLTE pintaba texto blanco sobre fondo casi blanco.
+    const enlace = await a.evaluateHandle(() => [...document.querySelectorAll('.nav-sidebar .nav-link')].find(x => x.innerText.trim() === 'Clientes'));
+    await enlace.asElement().click(); await espera(700);
+    const sel = await a.evaluate(() => { const x = document.querySelector('.nav-sidebar .nav-link.g-actual'); const s = x && getComputedStyle(x); return x ? [x.innerText.trim(), s.backgroundColor, s.color] : null; });
+    comprobar('la opción del menú queda azul con texto blanco aunque tenga el foco', !!sel && sel[0] === 'Clientes' && sel[1] === 'rgb(37, 99, 235)' && sel[2] === 'rgb(255, 255, 255)', JSON.stringify(sel));
+  }
+
   console.log('\n7. Sesión vencida y cierre');
   await a.evaluate(() => { window.__marca = 1; });
   await g.goto(BASE + '/controller/usuario/controlador_cerrar_sesion.php', { waitUntil: 'networkidle2' });
