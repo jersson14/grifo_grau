@@ -92,8 +92,8 @@ Follow the existing pattern exactly:
 
 ## Public page and Tailwind
 
-- `publico/landing.php` is the public page, content edited in Configuración → Página pública (`model/model_pagina_publica.php`). Visual world: PRODUCT.md and `.impeccable/surfaces/index-php.md`.
-- Tailwind 3.4 is a dev-only tool: `npm install` then `npm run css` rebuilds `css/publico.css`, which is committed. The hosting never runs Node. Rebuild after changing classes in `publico/` or `js/publico.js`.
+- `publico/landing.php` is the public page, content edited in Configuración → Página pública (`model/model_pagina_publica.php`). Style: conventional shadcn/ui (Inter, zinc, blue accent), chosen by the owner; see DESIGN.md. The panel uses the same style through `tailwind/panel.css` (prefix `tw-`, no preflight) over AdminLTE.
+- Tailwind 3.4 is a dev-only tool: `npm install` then `npm run css` rebuilds `css/publico.css` and `css/panel.css`, both committed. The hosting never runs Node. Rebuild after changing classes in `publico/` or `js/publico.js`.
 - The public fleet form (`publico/solicitud_flota.php`) is a public route: it checks the module, its own CSRF token, a honeypot and a per-IP limit itself.
 
 ## PDF & Excel Export

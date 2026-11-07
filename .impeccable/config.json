@@ -1,0 +1,14 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "overused-font",
+        "value": "inter",
+        "createdAt": "2026-11-07T19:15:24.888Z",
+        "reason": "user confirmed: el dueño eligió la opción «Panel moderno tipo shadcn», descrita con letra Inter, al pedir un sistema de aspecto convencional (2026-11-07)"
+      }
+    ]
+  }
+}

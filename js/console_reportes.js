@@ -68,22 +68,22 @@ function Cargar_Grafico_Ventas_Semana() {
                     {
                         label: 'Diesel',
                         data: diesel,
-                        borderColor: '#0b2a4a',
-                        backgroundColor: 'rgba(11, 42, 74, 0.1)',
+                        borderColor: '#2563eb',
+                        backgroundColor: 'rgba(37, 99, 235, 0.1)',
                         tension: 0.4
                     },
                     {
                         label: 'Regular',
                         data: regular,
-                        borderColor: '#d7261e',
-                        backgroundColor: 'rgba(215, 38, 30, 0.1)',
+                        borderColor: '#059669',
+                        backgroundColor: 'rgba(5, 150, 105, 0.1)',
                         tension: 0.4
                     },
                     {
                         label: 'Premium',
                         data: premium,
-                        borderColor: '#c99400',
-                        backgroundColor: 'rgba(201, 148, 0, 0.12)',
+                        borderColor: '#f59e0b',
+                        backgroundColor: 'rgba(245, 158, 11, 0.12)',
                         tension: 0.4
                     }
                 ]
@@ -159,14 +159,14 @@ function Cargar_Grafico_Combustibles() {
                         parseFloat(data.total_premium)
                     ],
                     backgroundColor: [
-                        'rgba(11, 42, 74, 0.9)',
-                        'rgba(215, 38, 30, 0.9)',
-                        'rgba(201, 148, 0, 0.9)'
+                        'rgba(37, 99, 235, 0.85)',
+                        'rgba(5, 150, 105, 0.85)',
+                        'rgba(245, 158, 11, 0.85)'
                     ],
                     borderColor: [
-                        '#0b2a4a',
-                        '#d7261e',
-                        '#c99400'
+                        '#2563eb',
+                        '#059669',
+                        '#f59e0b'
                     ],
                     borderWidth: 2
                 }]
@@ -218,11 +218,11 @@ function Cargar_Grafico_Metodos_Pago() {
                         parseFloat(data.total_credito)
                     ],
                     backgroundColor: [
-                        '#0b2a4a',
-                        '#d7261e',
-                        '#5b8fc4',
-                        '#8b939c',
-                        'rgba(201, 148, 0, 0.9)'
+                        '#2563eb',
+                        '#059669',
+                        '#7c3aed',
+                        '#71717a',
+                        'rgba(245, 158, 11, 0.85)'
                     ]
                 }]
             },
@@ -266,15 +266,15 @@ function Cargar_Grafico_Turnos() {
                     {
                         label: 'Total Ventas',
                         data: ventas,
-                        backgroundColor: 'rgba(215, 38, 30, 0.9)',
-                        borderColor: '#d7261e',
+                        backgroundColor: 'rgba(5, 150, 105, 0.85)',
+                        borderColor: '#059669',
                         borderWidth: 2
                     },
                     {
                         label: 'Promedio',
                         data: promedios,
-                        backgroundColor: 'rgba(201, 148, 0, 0.9)',
-                        borderColor: '#c99400',
+                        backgroundColor: 'rgba(245, 158, 11, 0.85)',
+                        borderColor: '#f59e0b',
                         borderWidth: 2
                     }
                 ]

@@ -1,6 +1,6 @@
 /**
- * Tailwind del panel. Convive con AdminLTE/Bootstrap: sin reinicio de estilos y con prefijo `tw-`.
- * Compilar con `npm run css`; el resultado (css/panel.css) se versiona.
+ * Tailwind del panel (estilo shadcn/ui). Convive con AdminLTE/Bootstrap: sin reinicio de estilos y con prefijo `tw-`.
+ * Compilar con `npm run css`; css/panel.css se versiona.
  */
 module.exports = {
   prefix: 'tw-',
@@ -8,11 +8,7 @@ module.exports = {
   content: ['./view/**/*.php', './js/console_*.js'],
   theme: {
     extend: {
-      colors: require('./colores'),
-      fontFamily: {
-        rotulo: ['"Big Shoulders Display"', 'Barlow Semi Condensed', 'sans-serif'],
-        sans: ['"Barlow Semi Condensed"', 'system-ui', 'sans-serif'],
-      },
+      fontFamily: { sans: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'sans-serif'] },
     },
   },
   plugins: [],

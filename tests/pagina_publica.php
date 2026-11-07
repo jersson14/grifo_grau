@@ -95,10 +95,10 @@ try {
     comprobar('muestra el precio vigente de Productos', strpos($r['cuerpo'], 'data-valor="13.45"') !== false);
     // El cambio se mide desde el primer precio del día, aunque haya habido varios cambios hoy.
     $inicioDia = (float) $pdo->query('SELECT precio_anterior FROM precios_historial WHERE id_producto = 2 AND creado_en >= CURDATE() ORDER BY id_historial LIMIT 1')->fetchColumn();
-    $esperado = 'sello-sube mt-3" aria-hidden="true"><i class="fas fa-arrow-up"></i>Subió ' . number_format(13.45 - $inicioDia, 2);
+    $esperado = 'insignia-sube"><i class="fas fa-arrow-up" aria-hidden="true"></i>Subió ' . number_format(13.45 - $inicioDia, 2);
     comprobar('marca el cambio del día con su monto', strpos($r['cuerpo'], $esperado) !== false, $esperado);
     $pdo->exec("UPDATE pagina_publica SET valor = '0' WHERE clave = 'mostrar_precios'");
-    comprobar('los precios se pueden ocultar', strpos($visita->pedir('index.php')['cuerpo'], 'class="lodera"') === false);
+    comprobar('los precios se pueden ocultar', strpos($visita->pedir('index.php')['cuerpo'], 'precio-combustible') === false);
     $pdo->exec("UPDATE pagina_publica SET valor = '1' WHERE clave = 'mostrar_precios'");
 
     echo "\n3. Datos de la página\n";

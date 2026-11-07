@@ -23,7 +23,7 @@ Actualizado el 2026-11-07. Todo está en commits locales, sin publicar.
 | Fase 5 | Facturación con Nubefact: boletas, facturas, anulaciones, reintentos y bandeja, probados contra un **simulador**. Falta probar en su modo demo y notas de crédito, facturar vales y validar con el contador |
 | Fase 2 | Hecho: PHP 8.4 y MySQL 8.4 en Docker, sin avisos de obsolescencia, mPDF 8.3, CI en GitHub Actions y copias de seguridad (2.6). Todas las pruebas pasan en XAMPP, PHP 8.4 y Docker. Falta PHPStan, `utf8mb4` (depende del esquema de producción) y confirmar el motor de producción (D3) |
 | Fase 8 | Hecha: estilo unificado, celular, errores junto al campo, valores por defecto, contraste AA medido en 15 pantallas y datos mostrados como texto. Pruebas: `tests/ui.cjs` y `tests/contraste.cjs` |
-| Fase 9 | En curso: página pública con Tailwind (precios en vivo, servicios, promociones, solicitudes de flota) y su administración, hechas y probadas. Falta: rediseñar el panel en el mismo mundo visual y los módulos de gastos, tienda, flotas y personal |
+| Fase 9 | En curso: página pública con Tailwind (precios en vivo, servicios, promociones, solicitudes de flota) y su administración, hechas y probadas. Falta: el resto de pantallas del panel y los módulos de gastos, tienda, flotas y personal |
 | Fase 7 | Sin empezar |
 
 **Pruebas:** `php tests/smoke.php`, `php tests/inventario.php`, `php tests/caja.php`, `tests/chatbot.php` y `tests/ui.cjs` en Edge real (estos dos, ver su cabecera). `php tests/roles.php` cubre roles, menú y auditoría. `php tests/permisos_grifero.php` lista lo que las pantallas del grifero piden y no se le permite: hay que revisarlo al cambiar permisos.
@@ -326,12 +326,12 @@ Pedida por el dueño el 2026-11-07. Las pantallas nuevas usan un estilo propio y
 
 ### Fase 9. Interfaz nueva, página pública y módulos que faltan
 
-Pedida por el dueño el 2026-11-07: interfaz que sorprenda, con Tailwind; página pública administrable desde el panel; agregar módulos que faltan y mejorar los existentes. Mundo visual elegido por el dueño: «Carrocería y cinta reflectiva» (arte de carrocería de camiones y combis). Producto en `PRODUCT.md`; contrato de dirección en `.impeccable/surfaces/index-php.md`.
+Pedida por el dueño el 2026-11-07: interfaz que sorprenda, con Tailwind; página pública administrable desde el panel; agregar módulos que faltan y mejorar los existentes. Estilo visual: convencional tipo shadcn/ui (Inter, grises zinc, acento azul), elegido por el dueño el 2026-11-07 tras descartar el mundo «Carrocería y cinta reflectiva». Producto en `PRODUCT.md`; sistema en `DESIGN.md`.
 
-- [x] **9.1** Tailwind 3.4 compilado con `npm run css` (solo en desarrollo) a `css/publico.css`, que se versiona. Fuentes propias en `fuentes/` (Big Shoulders Display y Barlow Semi Condensed, licencia OFL).
+- [x] **9.1** Tailwind 3.4 compilado con `npm run css` (solo en desarrollo) a `css/publico.css`, que se versiona. Fuente propia en `fuentes/` (Inter, licencia OFL).
 - [x] **9.2** Página pública (`publico/landing.php`): precios en vivo desde Productos con sello si cambiaron hoy, servicios, promociones vigentes, solicitud de crédito para flotas y cómo llegar. Módulo `pagina_publica` apagado por defecto: entonces la dirección del sistema muestra el acceso. El acceso pasa a `login.php`.
 - [x] **9.3** Administración en Configuración → Página pública: datos con validación, servicios con icono y orden, promociones con vigencia, bandeja de solicitudes de flota con estado y nota. Permiso `pagina_publica_gestionar`. Prueba: `tests/pagina_publica.php`.
-- [~] **9.4** Panel en el mismo mundo visual. Hecho: armazón (cabecera con cinta, menú de esmalte con la pantalla actual marcada), paleta y letra en todas las pantallas antiguas mediante `tailwind/panel.css`, acceso (`login.php`), tablero con indicadores y gráficos en la paleta, y registrar turno con pasos pintados, tarjetas de surtidor compactas y barra de cuadre fija (de unos 9 100 px a 6 500 px de alto en celular). Contraste AA: 0 fallas en 15 pantallas. Falta: ventas, cerrar turno y el resto de pantallas con su propia composición.
+- [~] **9.4** Panel con el mismo estilo. Hecho: armazón (cabecera y barra lateral claras, pantalla actual marcada), paleta y letra en todas las pantallas antiguas mediante `tailwind/panel.css`, acceso (`login.php`), tablero con indicadores y gráficos, y registrar turno con pasos numerados, tarjetas de surtidor compactas y barra de cuadre fija (de unos 9 100 px a 6 100 px de alto en celular). Contraste AA: 0 fallas en 15 pantallas. Falta: ventas, cerrar turno y el resto de pantallas con su propia composición.
 - [ ] **9.5** Gastos del grifo: categorías, registro diario y comparación con las ventas.
 - [ ] **9.6** Tienda / market: productos no combustibles, stock y venta rápida.
 - [ ] **9.7** Flotas y vales: empresas con varias placas, límite de crédito, consumo por placa y estado de cuenta mensual. Recibe las solicitudes de 9.3.
@@ -377,6 +377,7 @@ Pedida por el dueño el 2026-11-07: interfaz que sorprenda, con Tailwind; págin
 | 2026-11-07 | Docker con PHP 8.4 y MySQL 8.4 LTS | Ambos con soporte; el modo estricto de MySQL descubre errores que MariaDB local oculta |
 | 2026-11-07 | Se revierte la conexión compartida por petición | Con procedimientos almacenados, los resultados pendientes bloquean la siguiente consulta; el código antiguo no los cierra |
 | 2026-11-07 | Tailwind compilado y versionado, no React + shadcn/ui | Funciona en el hosting compartido sin Node; se adopta el lenguaje visual de shadcn, no su código. Elegido por el dueño |
-| 2026-11-07 | Mundo visual «Carrocería y cinta reflectiva» | Elegido por el dueño entre las direcciones presentadas |
+| 2026-11-07 | Mundo visual «Carrocería y cinta reflectiva» | Elegido por el dueño entre las direcciones presentadas; reemplazado el mismo día |
+| 2026-11-07 | Estilo convencional tipo shadcn/ui en todo el sistema | El dueño pidió «algo normal como los sistemas normales»; referencias Vercel, Linear y Stripe |
 | 2026-11-07 | La página pública es un módulo apagado por defecto y tiene vista previa | Se prepara el contenido antes de publicarla, sin mostrar una página vacía |
 | 2026-11-07 | La clase de conexión pasa a un archivo versionado | `model_conexion.php` está fuera de git y sus mejoras no llegaban a las instalaciones |

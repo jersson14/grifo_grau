@@ -4,13 +4,13 @@
  * números en tablas y el comportamiento en celular.
  */
 :root {
-  --g-azul: #023D77;
-  --g-azul-claro: #0266C8;
-  --g-azul-tenue: #e8f0fa;
-  --g-foco: #2f7de1;
-  --g-texto: #1c2733;
-  --g-texto-suave: #4f5d6b;
-  --g-borde: #d5dde6;
+  --g-azul: #18181b;
+  --g-azul-claro: #2563eb;
+  --g-azul-tenue: #f4f4f5;
+  --g-foco: #2563eb;
+  --g-texto: #09090b;
+  --g-texto-suave: #52525b;
+  --g-borde: #e4e4e7;
 }
 
 ::selection { background: #cfe0f5; color: var(--g-azul); }

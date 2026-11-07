@@ -1,41 +1,6 @@
-// Página pública: destello de la cinta, contador de precios y envío de la solicitud de flota.
+// Página pública: envío de la solicitud de flota sin recargar, con errores junto a cada campo.
 (function () {
   'use strict';
-  var quieto = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  // La cinta reflectiva destella una vez, como bajo los faros.
-  requestAnimationFrame(function () { document.body.classList.add('encendida'); });
-
-  // Contador de surtidor: el precio ya está escrito; si se permite movimiento, cada cifra rueda hasta su valor.
-  if (!quieto) {
-    document.querySelectorAll('.contador[data-valor]').forEach(function (contador, n) {
-      var texto = contador.getAttribute('data-valor');
-      contador.textContent = '';
-      var primeras = [];
-      texto.split('').forEach(function (caracter) {
-        if (!/\d/.test(caracter)) {
-          var fijo = document.createElement('span');
-          fijo.textContent = caracter;
-          contador.appendChild(fijo);
-          return;
-        }
-        var tira = document.createElement('span');
-        tira.className = 'tira';
-        for (var d = 0; d <= 9; d++) {
-          var cifra = document.createElement('span');
-          cifra.textContent = d;
-          tira.appendChild(cifra);
-        }
-        contador.appendChild(tira);
-        primeras.push([tira.firstChild, Number(caracter)]);
-      });
-      setTimeout(function () {
-        contador.classList.add('rodando');
-        primeras.forEach(function (par) { par[0].style.marginTop = (-par[1]) + 'em'; });
-      }, 250 + n * 120);
-    });
-  }
-
   // Solicitud de flota: se envía sin recargar y los errores aparecen junto a cada campo.
   var form = document.getElementById('form_flota');
   if (!form || !window.fetch || !window.FormData) { return; }
@@ -56,7 +21,7 @@
     aviso = document.createElement('p');
     aviso.id = id;
     aviso.setAttribute('data-error', '');
-    aviso.className = 'mt-1.5 text-base font-semibold text-reflectivo-tinta';
+    aviso.className = 'mt-1.5 text-sm font-medium text-red-600';
     aviso.textContent = mensaje;
     campo.setAttribute('aria-invalid', 'true');
     campo.setAttribute('aria-describedby', id);
@@ -68,7 +33,7 @@
     var p = document.createElement('p');
     p.setAttribute('data-error-general', '');
     p.setAttribute('role', 'alert');
-    p.className = 'sm:col-span-2 rounded-[4px] border-2 border-reflectivo-tinta px-4 py-3 text-lg font-semibold text-reflectivo-tinta';
+    p.className = 'sm:col-span-2 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700';
     p.textContent = mensaje;
     form.insertBefore(p, form.querySelector('.sm\\:col-span-2'));
   }

@@ -8,7 +8,7 @@ web
 
 ## Stack
 
-PHP sin framework (MVC propio), jQuery y MySQL/MariaDB, desplegado en hosting compartido. La interfaz nueva usa Tailwind CSS compilado a un único CSS que se versiona en el repositorio: el hosting no ejecuta Node ni ningún paso de compilación. Elegido por el dueño el 2026-11-07 frente a reescribir en React + shadcn/ui; se adopta el lenguaje visual de shadcn/ui, no su código React. Las pantallas antiguas (AdminLTE 3 + Bootstrap 4) se migran una a una sin romper su lógica.
+PHP sin framework (MVC propio), jQuery y MySQL/MariaDB, desplegado en hosting compartido. La interfaz nueva usa Tailwind CSS compilado a un único CSS que se versiona en el repositorio: el hosting no ejecuta Node ni ningún paso de compilación. Elegido por el dueño el 2026-11-07 frente a reescribir en React + shadcn/ui; se adopta el lenguaje visual de shadcn/ui (su estilo convencional, sin temas propios), no su código React. Las pantallas antiguas (AdminLTE 3 + Bootstrap 4) se migran una a una sin romper su lógica.
 
 ## Users
 
@@ -42,7 +42,8 @@ Hecho a la medida de un grifo peruano: turnos con lecturas reales de surtidores,
 
 ## Brand Commitments
 
-Nombre, logo y datos de contacto los define el dueño desde Configuración; el código no fija ninguna marca. Voz en español claro y directo, tuteo o usted según la pantalla existente (el panel usa usted).
+- **Estilo visual: convencional, tipo shadcn/ui.** Elegido por el dueño el 2026-11-07 (al ver el mundo «Carrocería y cinta reflectiva» pidió «algo normal como los sistemas normales»). Referencias de calidad: Vercel, Linear y Stripe. Fondo claro, bordes finos, letra Inter, un solo color de acento; aplica a la página pública, el acceso y el panel.
+- Nombre, logo y datos de contacto los define el dueño desde Configuración; el código no fija ninguna marca. Voz en español claro y directo, tuteo o usted según la pantalla existente (el panel usa usted).
 
 ## Evidence on Hand
 

@@ -27,208 +27,160 @@ $e = fn($texto) => htmlspecialchars((string) $texto, ENT_QUOTES, 'UTF-8');
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#071d34">
+  <meta name="theme-color" content="#fafafa">
   <title>Iniciar sesión · <?php echo $e($empresa['nombre']); ?></title>
   <link rel="icon" href="<?php echo $e($empresa['logo']); ?>">
-  <link rel="preload" href="fuentes/big-shoulders-display.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fuentes/inter.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="plantilla/plugins/fontawesome-free/css/all.min.css">
   <style>
-    /* Acceso en el mundo «Carrocería y cinta reflectiva» (ver DESIGN.md). */
-    @font-face { font-family: 'Big Shoulders Display'; src: url('fuentes/big-shoulders-display.woff2') format('woff2'); font-weight: 100 900; font-display: swap; }
-    @font-face { font-family: 'Barlow Semi Condensed'; src: url('fuentes/barlow-semi-condensed-400.woff2') format('woff2'); font-weight: 400; font-display: swap; }
-    @font-face { font-family: 'Barlow Semi Condensed'; src: url('fuentes/barlow-semi-condensed-600.woff2') format('woff2'); font-weight: 600; font-display: swap; }
-    @font-face { font-family: 'Barlow Semi Condensed'; src: url('fuentes/barlow-semi-condensed-700.woff2') format('woff2'); font-weight: 700; font-display: swap; }
+    /* Acceso con el estilo convencional de shadcn/ui (ver DESIGN.md). */
+    @font-face { font-family: 'Inter'; src: url('fuentes/inter.woff2') format('woff2'); font-weight: 100 900; font-display: swap; }
     :root {
-      --cabina: #0b2a4a;
-      --cabina-profunda: #071d34;
-      --cabina-clara: #123a63;
-      --cabina-linea: #2b5582;
-      --hueso: #f4f1ea;
-      --hueso-oscuro: #e4ded1;
-      --reflectivo: #d7261e;
-      --reflectivo-tinta: #a8170f;
-      --cromo: #c9ced4;
-      --tinta: #0d1117;
-      --texto-suave: #4a525c;
-      --borde: #b9b1a1;
+      --fondo: #fafafa;
+      --tarjeta: #ffffff;
+      --borde: #e4e4e7;
+      --campo: #d4d4d8;
+      --texto: #09090b;
+      --suave: #52525b;
+      --primario: #18181b;
+      --primario-hover: #27272a;
+      --foco: #2563eb;
+      --tenue: #f4f4f5;
     }
     * { box-sizing: border-box; }
     html, body { height: 100%; }
     body {
       margin: 0;
-      font-family: "Barlow Semi Condensed", system-ui, sans-serif;
-      font-size: 17px;
-      color: var(--tinta);
-      background: var(--cabina-profunda);
-      caret-color: var(--cabina);
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+      font-size: 15px;
+      color: var(--texto);
+      background: var(--fondo);
+      -webkit-font-smoothing: antialiased;
     }
-    ::selection { background: var(--cabina); color: var(--hueso); }
+    ::selection { background: #dbeafe; color: var(--texto); }
 
     .acceso {
       min-height: 100%;
       display: grid;
-      grid-template-columns: 1fr;
       place-items: center;
-      padding: 24px 16px;
-      border-top: 8px solid transparent;
-      border-image: repeating-linear-gradient(-45deg, var(--reflectivo) 0 14px, #fff 14px 28px) 8;
+      padding: 32px 16px;
     }
     .acceso-tarjeta {
       width: 100%;
-      max-width: 880px;
-      display: grid;
-      grid-template-columns: 1fr;
-      background: var(--hueso);
-      border-radius: 6px;
-      overflow: hidden;
-      border: 2px solid var(--cabina-linea);
+      max-width: 400px;
+      background: var(--tarjeta);
+      border: 1px solid var(--borde);
+      border-radius: 12px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, .05);
     }
-
     .acceso-marca {
-      position: relative;
-      background: var(--cabina);
-      color: var(--hueso);
-      padding: 28px 24px 34px;
       display: flex;
       align-items: center;
-      gap: 16px;
-    }
-    .acceso-marca::after {
-      content: '';
-      position: absolute;
-      left: 0; right: 0; bottom: 0;
-      height: 8px;
-      background: repeating-linear-gradient(-45deg, var(--reflectivo) 0 10px, #fff 10px 20px);
+      gap: 12px;
+      padding: 24px 24px 0;
     }
     .acceso-marca img {
-      width: 104px;
-      height: auto;
-      border-radius: 6px;
+      width: 44px;
+      height: 44px;
+      object-fit: contain;
+      border-radius: 8px;
+      border: 1px solid var(--borde);
       flex: none;
     }
     .acceso-marca h1 {
       margin: 0;
-      font-family: "Big Shoulders Display", sans-serif;
-      font-weight: 900;
-      font-size: 2rem;
-      line-height: .95;
-      letter-spacing: .01em;
-      text-transform: uppercase;
-      text-wrap: balance;
-      text-shadow: 0.06em 0.06em 0 var(--reflectivo), 0.09em 0.1em 0 var(--cabina-profunda);
+      font-size: 15px;
+      font-weight: 600;
+      line-height: 1.3;
     }
     .acceso-marca p {
-      margin: 8px 0 0;
-      color: var(--cromo);
-      font-size: 1rem;
+      margin: 2px 0 0;
+      color: var(--suave);
+      font-size: 13px;
     }
-
-    .acceso-form { padding: 28px 24px 32px; }
+    .acceso-form { padding: 20px 24px 24px; }
     .acceso-form h2 {
-      margin: 0 0 24px;
-      font-family: "Big Shoulders Display", sans-serif;
-      font-weight: 800;
-      font-size: 2.25rem;
-      line-height: 1;
-      text-transform: uppercase;
-      color: var(--cabina);
+      margin: 0 0 4px;
+      font-size: 24px;
+      font-weight: 600;
+      letter-spacing: -.02em;
     }
-    .campo { margin-bottom: 18px; }
+    .acceso-form h2 + * { margin-top: 20px; }
+    .campo { margin-bottom: 16px; }
     .campo label {
       display: block;
-      font-weight: 700;
+      font-size: 14px;
+      font-weight: 500;
       margin-bottom: 6px;
     }
-    .control {
-      position: relative;
-      display: flex;
-    }
+    .control { position: relative; display: flex; }
     .control input {
       width: 100%;
-      min-height: 50px;
-      padding: 10px 14px;
+      min-height: 44px;
+      padding: 8px 12px;
       font: inherit;
-      color: var(--tinta);
+      font-size: 16px;
+      color: var(--texto);
       background: #fff;
-      border: 2px solid var(--borde);
-      border-radius: 4px;
+      border: 1px solid var(--campo);
+      border-radius: 6px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, .04);
       transition: border-color .15s ease, box-shadow .15s ease;
     }
     .control input:focus {
       outline: none;
-      border-color: var(--cabina-clara);
-      box-shadow: 0 0 0 3px rgba(18, 58, 99, .28);
+      border-color: var(--foco);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, .2);
     }
-    .control input.con-boton { padding-right: 52px; }
+    .control input.con-boton { padding-right: 50px; }
     .ver-clave {
       position: absolute;
-      right: 2px;
-      top: 2px;
-      bottom: 2px;
-      width: 46px;
+      right: 1px; top: 1px; bottom: 1px;
+      width: 44px;
       border: 0;
-      border-radius: 3px;
+      border-radius: 5px;
       background: transparent;
-      color: var(--texto-suave);
+      color: var(--suave);
       cursor: pointer;
     }
-    .ver-clave:hover { color: var(--cabina); background: var(--hueso-oscuro); }
+    .ver-clave:hover { color: var(--texto); background: var(--tenue); }
     .ver-clave:focus-visible, .entrar:focus-visible, .recordar input:focus-visible, .volver:focus-visible {
-      outline: 3px solid var(--cabina-clara);
+      outline: 2px solid var(--foco);
       outline-offset: 2px;
     }
-
     .recordar {
       display: flex;
       align-items: center;
       gap: 10px;
       min-height: 44px;
-      margin: 4px 0 20px;
-      color: var(--texto-suave);
-      font-weight: 600;
+      margin: 0 0 12px;
+      color: var(--suave);
+      font-size: 14px;
       cursor: pointer;
     }
-    .recordar input { width: 20px; height: 20px; accent-color: var(--cabina); margin: 0; }
-
+    .recordar input { width: 18px; height: 18px; accent-color: var(--primario); margin: 0; }
     .entrar {
       width: 100%;
-      min-height: 52px;
+      min-height: 44px;
       border: 0;
-      border-radius: 5px;
-      background: var(--cabina);
-      color: var(--hueso);
+      border-radius: 6px;
+      background: var(--primario);
+      color: #fff;
       font: inherit;
-      font-weight: 700;
-      font-size: 1.125rem;
+      font-size: 14px;
+      font-weight: 500;
       cursor: pointer;
       transition: background-color .15s ease;
     }
-    .entrar:hover { background: var(--cabina-profunda); }
-    .entrar:active { background: #04121f; }
+    .entrar:hover { background: var(--primario-hover); }
     .entrar i { margin-right: 8px; }
-
-    .volver { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; margin-top: 4px; color: var(--cabina-clara); font-weight: 600; }
-    .volver:hover { color: var(--cabina); }
+    .volver { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; margin-top: 8px; color: var(--suave); font-size: 14px; text-decoration: none; }
+    .volver:hover { color: var(--texto); }
     .acceso-pie {
-      margin: 24px 0 0;
-      font-size: .9375rem;
-      color: var(--texto-suave);
+      margin: 20px 0 0;
+      font-size: 13px;
+      color: var(--suave);
     }
-
-    @media (min-width: 768px) {
-      .acceso-tarjeta { grid-template-columns: 5fr 6fr; min-height: 460px; }
-      .acceso-marca {
-        flex-direction: column;
-        justify-content: center;
-        text-align: center;
-        padding: 40px 32px 48px;
-      }
-      .acceso-marca::after { left: auto; top: 0; bottom: 0; right: 0; width: 8px; height: auto; }
-      .acceso-marca img { width: 184px; }
-      .acceso-marca h1 { font-size: 2.75rem; }
-      .acceso-form { padding: 48px 48px; align-self: center; }
-    }
-
     @media (prefers-reduced-motion: reduce) {
       * { transition: none !important; }
     }

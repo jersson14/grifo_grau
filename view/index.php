@@ -11,10 +11,9 @@ $capacidades = capacidades_sesion();
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#071d34">
+  <meta name="theme-color" content="#ffffff">
   <title>Sistema de Gestión - Grifo</title>
-  <link rel="preload" href="../fuentes/barlow-semi-condensed-400.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" href="../fuentes/big-shoulders-display.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../fuentes/inter.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="../plantilla/plugins/fontawesome-free/css/all.min.css">
   <link rel="shortcut icon" href="../img/grau.png" type="image/jpg">
   <link rel="stylesheet" href="../plantilla/dist/css/adminlte.min.css">

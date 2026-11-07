@@ -1,187 +1,47 @@
-/* Página pública del grifo: carrocería pintada y cinta reflectiva. Compilar con `npm run css`. */
-
+/* Página pública del grifo, estilo shadcn/ui. Compilar con `npm run css`. */
 @font-face {
-  font-family: 'Big Shoulders Display';
-  src: url('../fuentes/big-shoulders-display.woff2') format('woff2');
+  font-family: 'Inter';
+  src: url('../fuentes/inter.woff2') format('woff2');
   font-weight: 100 900;
   font-display: swap;
 }
-@font-face { font-family: 'Barlow Semi Condensed'; src: url('../fuentes/barlow-semi-condensed-400.woff2') format('woff2'); font-weight: 400; font-display: swap; }
-@font-face { font-family: 'Barlow Semi Condensed'; src: url('../fuentes/barlow-semi-condensed-500.woff2') format('woff2'); font-weight: 500; font-display: swap; }
-@font-face { font-family: 'Barlow Semi Condensed'; src: url('../fuentes/barlow-semi-condensed-600.woff2') format('woff2'); font-weight: 600; font-display: swap; }
-@font-face { font-family: 'Barlow Semi Condensed'; src: url('../fuentes/barlow-semi-condensed-700.woff2') format('woff2'); font-weight: 700; font-display: swap; }
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
-  html { scroll-behavior: smooth; scrollbar-color: theme('colors.cromo.oscuro') theme('colors.cabina.profunda'); }
-  body { @apply bg-cabina text-hueso font-sans antialiased; font-size: 1.0625rem; caret-color: theme('colors.reflectivo.DEFAULT'); }
-  ::selection { background: theme('colors.hueso.DEFAULT'); color: theme('colors.tinta'); }
-  :focus-visible { outline: 3px solid theme('colors.hueso.DEFAULT'); outline-offset: 3px; box-shadow: 0 0 0 6px theme('colors.reflectivo.DEFAULT'); }
-  a { text-underline-offset: 0.2em; }
-  .numeros { font-variant-numeric: tabular-nums lining-nums; }
+  html { scroll-behavior: smooth; }
+  body { @apply bg-white font-sans text-zinc-950 antialiased; }
+  ::selection { @apply bg-blue-100 text-zinc-950; }
+  :focus-visible { @apply outline-none ring-2 ring-blue-600 ring-offset-2; }
+  .numeros { font-variant-numeric: tabular-nums; }
   @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 }
 
 @layer components {
-  /* Letra de carrocería: rótulo condensado. */
-  .rotulo { @apply font-rotulo font-black uppercase leading-[0.9] tracking-rotulo; }
-  /* Rótulo pintado a mano: contorno oscuro y sombreado rojo, como la letra de una luna o una puerta de camión. */
-  .pintado {
-    text-shadow:
-      -0.03em -0.03em 0 theme('colors.tinta'), 0.03em -0.03em 0 theme('colors.tinta'),
-      -0.03em 0.03em 0 theme('colors.tinta'), 0.03em 0.03em 0 theme('colors.tinta'),
-      0 -0.035em 0 theme('colors.tinta'), 0 0.035em 0 theme('colors.tinta'),
-      -0.035em 0 0 theme('colors.tinta'), 0.035em 0 0 theme('colors.tinta'),
-      0.07em 0.075em 0 theme('colors.reflectivo.DEFAULT'),
-      0.1em 0.11em 0 theme('colors.tinta');
+  .btn {
+    @apply inline-flex h-11 items-center justify-center gap-2 whitespace-nowrap rounded-md px-5 text-sm font-medium no-underline transition-colors disabled:pointer-events-none disabled:opacity-60;
   }
+  .btn-primario { @apply bg-zinc-900 text-white hover:bg-zinc-800; }
+  .btn-contorno { @apply border border-zinc-200 bg-white text-zinc-900 shadow-sm hover:bg-zinc-100; }
+  .btn-fantasma { @apply text-zinc-700 hover:bg-zinc-100 hover:text-zinc-900; }
 
-  /* Cinta reflectiva roja y blanca. Continua: vigente. Cortada: termina pronto o está pendiente. Tachada: inactiva. */
-  .cinta {
-    --paso: 22px;
-    position: relative;
-    overflow: hidden;
-    background: repeating-linear-gradient(-45deg, theme('colors.reflectivo.DEFAULT') 0 var(--paso), #fff var(--paso) calc(var(--paso) * 2));
-  }
-  .cinta-cortada {
-    --paso: 22px;
-    background: repeating-linear-gradient(-45deg, theme('colors.reflectivo.DEFAULT') 0 var(--paso), #fff var(--paso) calc(var(--paso) * 2));
-    -webkit-mask: repeating-linear-gradient(90deg, #000 0 64px, transparent 64px 84px);
-    mask: repeating-linear-gradient(90deg, #000 0 64px, transparent 64px 84px);
-  }
-  .cinta-tachada { position: relative; background: theme('colors.cromo.oscuro'); }
-  .cinta-tachada::after { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 3px; transform: translateY(-50%); background: theme('colors.tinta'); }
-  /* Destello de faros: un barrido de luz que cruza la cinta una sola vez al cargar. */
-  .cinta::after {
-    content: '';
-    position: absolute;
-    inset: -40% auto -40% 0;
-    width: 30%;
-    background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.85) 45%, rgba(255, 246, 200, 0.95) 50%, transparent 60%);
-    transform: translateX(-120%) skewX(-12deg);
-    mix-blend-mode: screen;
-    pointer-events: none;
-  }
-  .encendida .cinta::after { animation: destello 1.1s cubic-bezier(0.16, 1, 0.3, 1) 0.15s 1 both; }
+  .tarjeta { @apply rounded-xl border border-zinc-200 bg-white shadow-sm; }
 
-  /* Franjas pintadas a mano que corren por la carrocería. */
-  .franjas {
-    height: 18px;
-    background: linear-gradient(to bottom,
-      theme('colors.hueso.DEFAULT') 0 4px, transparent 4px 7px,
-      theme('colors.reflectivo.DEFAULT') 7px 11px, transparent 11px 14px,
-      theme('colors.cabina.linea') 14px 18px);
-  }
+  .insignia { @apply inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-semibold; }
+  .insignia-sube { @apply border-red-200 bg-red-50 text-red-700; }
+  .insignia-baja { @apply border-green-200 bg-green-50 text-green-700; }
+  .insignia-neutra { @apply border-zinc-200 bg-zinc-50 text-zinc-700; }
+  .insignia-aviso { @apply border-amber-200 bg-amber-50 text-amber-800; }
 
+  .titulo-seccion { @apply text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl; }
+  .subtitulo-seccion { @apply mt-3 max-w-2xl text-base leading-relaxed text-zinc-600 sm:text-lg; }
 
-  /* Placa atornillada: una cara de esmalte con pernos superpuesta a una plancha de respaldo fija.
-     Al pasar o presionar se mueve la cara (y su texto); la plancha de atrás se queda en su sitio. */
-  .placa {
-    @apply relative z-0 inline-flex min-h-[3.5rem] items-center justify-center gap-2.5 whitespace-nowrap px-6 font-rotulo text-lg font-extrabold uppercase tracking-wide no-underline sm:gap-3 sm:px-8 sm:text-xl;
-    --cara: theme('colors.hueso.DEFAULT');
-    color: theme('colors.tinta');
-    background: none;
-    border: 0;
-    margin: 8px;
+  .etiqueta { @apply mb-1.5 block text-sm font-medium text-zinc-900; }
+  .campo {
+    @apply block h-11 w-full rounded-md border border-zinc-300 bg-white px-3 text-base text-zinc-950 shadow-sm placeholder:text-zinc-500 focus-visible:border-blue-600;
   }
-  .placa::before,
-  .placa::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    border-radius: 5px;
-  }
-  /* Plancha de montaje de acero, más grande que la cara; los pernos van en la cara. */
-  .placa::before {
-    inset: -8px;
-    border-radius: 7px;
-    background-color: theme('colors.cromo.oscuro');
-    border: 2px solid theme('colors.tinta');
-  }
-  .placa::after {
-    background-color: var(--cara);
-    background-image: url('../img/publico/perno.svg'), url('../img/publico/perno.svg'), url('../img/publico/perno.svg'), url('../img/publico/perno.svg');
-    background-size: 12px 12px;
-    background-repeat: no-repeat;
-    background-position: 7px 7px, calc(100% - 7px) 7px, 7px calc(100% - 7px), calc(100% - 7px) calc(100% - 7px);
-    border: 3px solid theme('colors.tinta');
-    transition: transform 160ms cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  .placa > * { transition: transform 160ms cubic-bezier(0.16, 1, 0.3, 1); }
-  .placa:hover::after, .placa:hover > * { transform: translateY(-2px); }
-  .placa:active::after, .placa:active > * { transform: translateY(1px); }
-  .placa-roja { --cara: theme('colors.reflectivo.tinta'); color: theme('colors.hueso.DEFAULT'); }
-  .placa[disabled] { @apply cursor-wait opacity-70; }
-  .placa[disabled]::after, .placa[disabled] > * { transform: none; }
-
-  /* Luna trasera: vidrio oscuro plano dentro de su jebe; la frase va pintada encima. */
-  .luna {
-    @apply relative rounded-[26px];
-    background: theme('colors.cabina.profunda');
-    border: 10px solid theme('colors.caucho.DEFAULT');
-    outline: 2px solid theme('colors.cabina.linea');
-    outline-offset: -12px;
-  }
-
-  /* Defensa: banda de esmalte plano donde se atornillan las placas. */
-  .defensa {
-    background: theme('colors.caucho.DEFAULT');
-    border-top: 6px solid theme('colors.cromo.oscuro');
-    border-bottom: 3px solid theme('colors.tinta');
-  }
-
-  /* Lodera: silueta de caucho con soporte, corte inferior y emblema pintado. */
-  .lodera {
-    @apply relative flex flex-col items-center px-2 pb-[4.75rem] pt-7 text-center sm:px-6 sm:pb-[5.25rem] sm:pt-8;
-    background: url('../img/publico/emblema.svg') no-repeat center calc(100% - 22px) / 40px 40px, url('../img/publico/lodera.svg') no-repeat 0 0 / 100% 100%;
-  }
-  @media (min-width: 640px) {
-    .lodera { background-size: 54px 54px, 100% 100%; background-position: center calc(100% - 28px), 0 0; }
-  }
-
-  /* Sello de cambio de precio: subir es rojo con flecha arriba; bajar es amarillo con flecha abajo. */
-  .sello {
-    @apply inline-flex items-center gap-1.5 whitespace-nowrap rounded-[3px] px-2 py-1 font-rotulo text-base font-extrabold uppercase leading-none tracking-wide sm:px-3 sm:text-xl;
-    transform: rotate(-3deg);
-  }
-  .sello-sube { color: theme('colors.hueso.DEFAULT'); background: theme('colors.reflectivo.tinta'); box-shadow: 0 0 0 2px theme('colors.caucho.DEFAULT'), 0 0 0 4px theme('colors.hueso.DEFAULT'); }
-  .sello-baja { color: theme('colors.tinta'); background: theme('colors.seguridad.DEFAULT'); box-shadow: 0 0 0 2px theme('colors.caucho.DEFAULT'), 0 0 0 4px theme('colors.seguridad.DEFAULT'); }
-
-  /* Contador de surtidor: cada cifra es una tira que rueda hasta su valor. */
-  .contador { display: inline-flex; overflow: hidden; line-height: 1; vertical-align: bottom; }
-  .contador .tira { display: inline-flex; flex-direction: column; height: 1em; }
-  .contador .tira > span { height: 1em; }
-  .contador.rodando .tira > span:first-child { transition: margin-top 1.25s cubic-bezier(0.16, 1, 0.3, 1); }
-  /* El contorno pintado no cabe dentro de la tira recortada: el contador lleva solo el sombreado. */
-  .contador.pintado { text-shadow: 0.06em 0.06em 0 theme('colors.reflectivo.DEFAULT'); }
-
-  /* Ficha técnica pintada en la puerta: panel de esmalte con filete. */
-  .ficha {
-    @apply relative rounded-[6px] p-6 sm:p-8;
-    background: theme('colors.cabina.DEFAULT');
-    color: theme('colors.hueso.DEFAULT');
-    outline: 2px solid theme('colors.hueso.DEFAULT');
-    outline-offset: -10px;
-  }
-
-  /* Campos del formulario de flotas. */
-  .campo { @apply block w-full rounded-[4px] border-2 border-tinta bg-white px-3.5 py-3 text-lg text-tinta placeholder:text-[#5b6470]; }
-  .campo:focus { outline: 3px solid theme('colors.cabina.clara'); outline-offset: 2px; box-shadow: none; border-color: theme('colors.cabina.DEFAULT'); }
-  .campo[aria-invalid='true'] { border-color: theme('colors.reflectivo.tinta'); border-width: 3px; }
-  .etiqueta { @apply mb-1.5 block text-base font-semibold text-tinta; }
-}
-
-@keyframes destello {
-  from { transform: translateX(-120%) skewX(-12deg); }
-  to { transform: translateX(420%) skewX(-12deg); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .encendida .cinta::after { animation: none; }
-  .contador.rodando .tira > span:first-child { transition: none; }
-  .placa::after, .placa > * { transition: none; }
+  textarea.campo { @apply h-auto min-h-[6.5rem] py-2.5; }
+  .campo[aria-invalid='true'] { @apply border-red-600 focus-visible:ring-red-600; }
 }
