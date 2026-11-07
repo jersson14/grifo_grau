@@ -221,13 +221,13 @@ Si XAMPP no ofrece PHP 8.4 al llegar aquí, el desarrollo local pasa a Docker.
 
 Es la base de lo que pediste: que todo se maneje desde el menú.
 
-- [ ] **3.1** Panel **Configuración** con pestañas:
+- [x] **3.1** Panel **Configuración** con pestañas:
   - **Empresa y sedes:** RUC, razón social, logo, dirección.
   - **Apariencia:** colores y logo de login.
   - **Operación:** horarios y nombres de turno, tolerancia de diferencias, días de crédito.
   - **Impuestos:** IGV parametrizable, sin valores fijos en el código.
   - **Integraciones:** DNI/RUC, facturación, IA, correo y copias de seguridad.
-- [ ] **3.2** Tabla `modulos` con interruptores desde la interfaz. Un módulo apagado desaparece del menú **y** su controlador responde 403.
+- [x] **3.2** Tabla `modulos` con interruptores desde la interfaz. Un módulo apagado desaparece del menú **y** su controlador responde 403.
 - [x] **3.3** Menú dinámico guardado en base de datos: orden, íconos y visibilidad por rol, reemplazando el HTML fijo de `view/index.php`.
 - [x] **3.4** Roles y permisos editables. Además de `ADMINISTRADOR` y `GRIFERO`, añadir `SUPERVISOR` y `CONTADOR`.
 - [ ] **3.5** *(parcial)* Página principal configurable: widgets por rol, ventas del día, stock, créditos vencidos, turnos abiertos y alertas. Se elimina el dashboard oculto y se corrigen los indicadores.
