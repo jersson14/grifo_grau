@@ -20,6 +20,7 @@ Rules for this work:
 - Run `php tests/smoke.php` after changing auth, shifts or credits, and `php tests/roles.php` after changing permissions. It needs the demo data on a local database. Tests read `GRIFO_BASE` (base URL) and the `DB_*` variables from the environment, so the same suites run against XAMPP, `php -S ... tests/router.php` or Docker. `.github/workflows/pruebas.yml` runs them on PHP 8.2 and 8.4 against MySQL 8.4.
 - Target is PHP 8.4 and MySQL 8.4 in strict mode. Local XAMPP (PHP 8.2, MariaDB 10.4) runs a lax `sql_mode` that hides errors such as an empty string in an integer column: run the suites against Docker before trusting a database change.
 - Never leave `ANTHROPIC_BASE_URL` or `NUBEFACT_RUTA` in `.env` outside tests: requests would go to the mock.
+- Errors go to `registros/errores.log` (no web access, gitignored), not to the browser. A user with a default, common or admin-assigned password can only change it until they do (`clave_forzar_cambio` in Configuración, off in the `--demo` install so the test suites can log in).
 - Invoicing depends on Nubefact only through `model/facturacion/proveedor_nubefact.php`. A sale is saved before its document is sent, and a retry keeps the same number.
 - Configurable behavior belongs in the database and the admin UI, not in code.
 - Optional modules (electronic invoicing, AI chatbot) stay behind an on/off switch and must never block core shift operations.

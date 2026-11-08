@@ -197,10 +197,10 @@ Objetivo: cerrar S1 a S8.
 - [x] **1.5** CSRF en toda petición que modifique datos, mediante `$.ajaxSetup` para no tocar cada llamada.
 - [x] **1.6** Límite de intentos de login y cierre de sesión por inactividad.
 - [x] **1.7** Subidas seguras: extensión y MIME reales, nombre generado por el servidor, carpeta sin ejecución de PHP.
-- [ ] **1.8** Dejar de aplicar `htmlspecialchars` al guardar (contraseñas primero). Escapar al mostrar, incluido el HTML generado desde JS. Planificar la corrección de datos ya guardados.
+- [~] **1.8** Hecho: las contraseñas se guardan y comparan sin escapar (las cuentas antiguas se convierten al entrar). Falta: dejar de aplicar `htmlspecialchars` al guardar el resto de datos (unos 220 usos), después de revisar que cada salida escape, en especial los PDF y las pantallas antiguas. También hay que planificar la corrección de los datos ya guardados escapados.
 - [ ] **1.9** Usuario de base de datos con permisos mínimos en lugar de `root`.
-- [ ] **1.10** Registro de errores en archivo y mensajes genéricos al usuario.
-- [ ] **1.11** Forzar el cambio de las credenciales por defecto.
+- [x] **1.10** Errores en `registros/errores.log` (carpeta sin acceso web, fuera de git; `LOG_DIR` la cambia), rotado a los 5 MB con 5 archivos guardados. Una excepción no atrapada responde con un mensaje genérico. El registro de turno, la eliminación de turnos y la reversión de pagos ya no muestran el texto técnico del error; los mensajes de validación del turno pasan a `DomainException`.
+- [x] **1.11** Quien entra con una clave de ejemplo o muy común, o con una que le asignó un administrador (alta o cambio de clave), solo puede cambiarla hasta hacerlo (`usuario.debe_cambiar_clave`, controlado en `_bootstrap.php`). Clave nueva: 8 caracteres o más, distinta de la actual y del usuario, fuera de la lista de claves comunes. El cambio de clave propia usa el usuario de la sesión y bloquea 15 minutos tras 5 intentos fallidos. Ajuste en Configuración → Operación (`clave_forzar_cambio`), encendido por defecto y apagado en la instalación de demostración. Prueba: `tests/claves.php`.
 - [ ] **1.12** Evaluar con el dueño la limpieza del historial de git. Depende de que el token esté revocado y de si el repo es público.
 
 **Listo cuando:** una petición sin sesión a cualquier controlador recibe 401, y el rol `GRIFERO` recibe 403 en las acciones de administrador.
@@ -385,3 +385,4 @@ Pedida por el dueño el 2026-11-07: interfaz que sorprenda, con Tailwind; págin
 | 2026-11-07 | Los faltantes de caja se descuentan desde Personal, no automáticamente | Caja decide si el faltante se descuenta; Personal lo registra con un clic para que el supervisor confirme a quién y cuándo |
 | 2026-11-07 | El margen del combustible se estima con el costo promedio de las compras de 90 días | No hay costo por lote en los tanques; sin compras recientes el producto se muestra sin margen en lugar de suponer un costo |
 | 2026-11-07 | Se descarta el cumplimiento sectorial (Osinergmin) | Decisión del dueño: no se considera en Grifo 2 |
+| 2026-11-08 | El cambio obligatorio de clave se apaga en la instalación de demostración | Sus claves son públicas a propósito y las pruebas automáticas las usan; en una instalación real queda encendido |

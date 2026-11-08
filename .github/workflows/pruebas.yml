@@ -87,6 +87,7 @@ jobs:
           php tests/tienda.php     | tee -a /tmp/resultados.txt || fallo=1
           php tests/personal.php   | tee -a /tmp/resultados.txt || fallo=1
           php tests/analisis.php   | tee -a /tmp/resultados.txt || fallo=1
+          php tests/claves.php     | tee -a /tmp/resultados.txt || fallo=1
           php tests/respaldos.php mysql | tee -a /tmp/resultados.txt || fallo=1
           php tests/facturacion.php /tmp/mock_nubefact | tee -a /tmp/resultados.txt || fallo=1
           php tests/chatbot.php /tmp/mock_anthropic.log | tee -a /tmp/resultados.txt || fallo=1

@@ -11,6 +11,52 @@ require_once dirname(__DIR__) . '/model/model_conexion.php';
 date_default_timezone_set('America/Lima');
 ini_set('display_errors', '0');
 ini_set('log_errors', '1');
+configurar_registro_errores();
+
+/**
+ * Los errores se guardan en registros/errores.log (carpeta sin acceso web) y nunca se muestran.
+ * El archivo se renombra con la fecha al pasar de 5 MB; se conservan los 5 más recientes.
+ */
+function configurar_registro_errores(): void
+{
+    if (PHP_SAPI === 'cli') {
+        return;
+    }
+    $carpeta = rtrim(env('LOG_DIR', dirname(__DIR__) . '/registros'), '/\\');
+    if (!is_dir($carpeta) && !@mkdir($carpeta, 0755, true)) {
+        return; // Sin carpeta escribible, PHP sigue usando el registro del servidor.
+    }
+    if (!is_file($carpeta . '/.htaccess')) {
+        @file_put_contents($carpeta . '/.htaccess', "Require all denied\n");
+    }
+    $archivo = $carpeta . '/errores.log';
+    if (is_file($archivo) && filesize($archivo) > 5 * 1024 * 1024) {
+        @rename($archivo, $carpeta . '/errores-' . date('Ymd-His') . '.log');
+        $viejos = glob($carpeta . '/errores-*.log') ?: [];
+        rsort($viejos);
+        foreach (array_slice($viejos, 5) as $viejo) {
+            @unlink($viejo);
+        }
+    }
+    ini_set('error_log', $archivo);
+
+    // Una excepción que nadie atrapó: se registra y el usuario ve un mensaje genérico, no una página en blanco.
+    set_exception_handler(function (Throwable $e) {
+        error_log('Excepción no atrapada en ' . ruta_script_actual() . ': ' . $e->getMessage() . ' (' . $e->getFile() . ':' . $e->getLine() . ')');
+        if (!headers_sent()) {
+            http_response_code(500);
+        }
+        $mensaje = 'Ocurrió un error inesperado. Inténtelo de nuevo; si sigue fallando, avise al administrador.';
+        if (strpos(ruta_script_actual(), 'controller/') === 0) {
+            if (!headers_sent()) {
+                header('Content-Type: application/json; charset=utf-8');
+            }
+            echo json_encode(['success' => false, 'message' => $mensaje]);
+        } else {
+            echo '<div class="alert alert-danger m-3">' . $mensaje . '</div>';
+        }
+    });
+}
 
 function iniciar_sesion_segura(): void
 {
@@ -249,7 +295,7 @@ function verificar_acceso(): void
     if ($c === null) {
         denegar_acceso(503, 'El sistema no está disponible en este momento.');
     }
-    $query = $c->prepare('SELECT usu_rol, usu_estatus FROM usuario WHERE id_usuario = ?');
+    $query = $c->prepare('SELECT usu_rol, usu_estatus, debe_cambiar_clave FROM usuario WHERE id_usuario = ?');
     $query->execute([$_SESSION['S_ID']]);
     $cuenta = $query->fetch(PDO::FETCH_ASSOC);
     if (!$cuenta || $cuenta['usu_estatus'] !== 'ACTIVO') {
@@ -258,6 +304,19 @@ function verificar_acceso(): void
         denegar_acceso(401, 'Su usuario ya no está activo.');
     }
     $_SESSION['S_ROL'] = $cuenta['usu_rol'];
+
+    // Con una clave de ejemplo, débil o asignada por un administrador, solo se puede cambiarla.
+    $_SESSION['S_CAMBIAR_CLAVE'] = false;
+    if ((int) $cuenta['debe_cambiar_clave'] === 1) {
+        // Se consulta aquí y no con Modelo_Usuario: hay controladores que cargan ese modelo con require.
+        $ajuste = $c->query("SELECT valor FROM configuracion WHERE clave = 'clave_forzar_cambio'")->fetchColumn();
+        if ($ajuste === false || $ajuste === null || $ajuste === '1') {
+            $_SESSION['S_CAMBIAR_CLAVE'] = true;
+            if (!ruta_coincide($ruta, $permisos['cambio_clave'])) {
+                denegar_acceso(403, 'Cambie su contraseña para continuar.');
+            }
+        }
+    }
 
     $propio = ruta_coincide($ruta, $permisos['propios']);
     if (!$propio && !ruta_coincide($ruta, $permisos['base']) && !ruta_permitida($ruta)) {

@@ -27,4 +27,9 @@ if (isset($_FILES['foto']) && $_FILES['foto']['error'] !== UPLOAD_ERR_NO_FILE) {
     $ruta = 'controller/usuario/fotos/' . $nombreFoto;
 }
 
-echo $MU->Registrar_Usuario($dni, $nombre, $apelli, $correo, $tele, $dire, $ruta, $usu, $contra, $rol);
+$resultado = $MU->Registrar_Usuario($dni, $nombre, $apelli, $correo, $tele, $dire, $ruta, $usu, $contra, $rol);
+// La clave la eligió el administrador: el usuario la cambia al entrar por primera vez.
+if ((string) $resultado === '1') {
+    Modelo_Usuario::Marcar_Cambio_Clave($usu);
+}
+echo $resultado;

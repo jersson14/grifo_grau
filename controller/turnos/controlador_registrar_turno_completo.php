@@ -92,14 +92,14 @@ try {
         $lectura_final = floatval($lectura['lectura_final']);
 
         if (isset($surtidores_vistos[$id_surtidor])) {
-            throw new Exception("un surtidor aparece dos veces en las lecturas.");
+            throw new DomainException("un surtidor aparece dos veces en las lecturas.");
         }
         $surtidores_vistos[$id_surtidor] = true;
 
         $datos_surtidor->execute(array($id_surtidor));
         $surtidor = $datos_surtidor->fetch(PDO::FETCH_ASSOC);
         if (!$surtidor) {
-            throw new Exception("uno de los surtidores no existe o está inactivo.");
+            throw new DomainException("uno de los surtidores no existe o está inactivo.");
         }
 
         // La lectura inicial y el precio los decide el servidor. Si no coinciden con lo que vio
@@ -107,10 +107,10 @@ try {
         $lectura_inicial = floatval($surtidor['lectura_actual']);
         $precio = floatval($surtidor['precio_actual']);
         if (abs($lectura_inicial - floatval($lectura['lectura_inicial'])) > 0.0005 || abs($precio - floatval($lectura['precio'])) > 0.0005) {
-            throw new Exception("las lecturas o los precios cambiaron. Recargue la pantalla y vuelva a intentarlo.");
+            throw new DomainException("las lecturas o los precios cambiaron. Recargue la pantalla y vuelva a intentarlo.");
         }
         if ($lectura_final < $lectura_inicial) {
-            throw new Exception("una lectura final es menor que la inicial.");
+            throw new DomainException("una lectura final es menor que la inicial.");
         }
 
         $galones = $lectura_final - $lectura_inicial;
@@ -302,10 +302,14 @@ try {
     if (isset($c)) {
         $c->rollBack();
     }
-    error_log("Error al registrar turno completo: " . $e->getMessage());
+    // Solo los errores de validación llegan al usuario; el resto (base de datos, etc.) se registra y se oculta.
+    $esValidacion = $e instanceof DomainException;
+    if (!$esValidacion) {
+        error_log("Error al registrar turno completo: " . $e->getMessage());
+    }
     echo json_encode([
         'success' => false,
-        'message' => 'Error al registrar el turno: ' . $e->getMessage()
+        'message' => $esValidacion ? 'No se registró el turno: ' . $e->getMessage() : 'No se pudo registrar el turno. Inténtelo de nuevo; si sigue fallando, avise al administrador.'
     ]);
 } finally {
     if (isset($c)) {

@@ -744,7 +744,7 @@ class Modelo_Turnos extends conexionBD {
         } catch (Exception $e) {
             if ($c) $c->rollBack();
             error_log("Error al eliminar turno: " . $e->getMessage());
-            return array('success' => false, 'message' => 'Error al eliminar el turno: ' . $e->getMessage());
+            return array('success' => false, 'message' => 'No se pudo eliminar el turno.');
         } finally {
             $c = null;
         }

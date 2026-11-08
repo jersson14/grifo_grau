@@ -492,7 +492,8 @@ class Modelo_Creditos extends conexionBD {
             return ['success' => true, 'message' => 'Se revirtieron S/. ' . number_format($monto_a_revertir, 2) . ' de los pagos más recientes.', 'vales_afectados' => $vales_afectados];
         } catch (Exception $e) {
             $c->rollBack();
-            return ['success' => false, 'message' => 'Error: ' . $e->getMessage()];
+            error_log('Revertir_Monto_Cliente: ' . $e->getMessage());
+            return ['success' => false, 'message' => 'No se pudo completar la operación.'];
         }
     }
 

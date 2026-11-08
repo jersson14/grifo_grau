@@ -57,6 +57,14 @@
               <div class="col-md-3 form-group"><label for="turno_tolerancia_soles">Tolerancia de diferencia en caja (S/)</label><input type="number" step="0.01" min="0" class="form-control" id="turno_tolerancia_soles" name="turno_tolerancia_soles"></div>
               <div class="col-md-3 form-group"><label for="moneda_simbolo">Símbolo de moneda</label><input class="form-control" id="moneda_simbolo" name="moneda_simbolo" maxlength="5"></div>
               <div class="col-md-3 form-group"><label for="varillaje_tolerancia_pct">Tolerancia de varillaje (%)</label><input type="number" step="0.01" min="0" max="100" class="form-control" id="varillaje_tolerancia_pct" name="varillaje_tolerancia_pct"></div>
+              <div class="col-md-6 form-group">
+                <label for="clave_forzar_cambio">Contraseñas débiles o asignadas</label>
+                <select class="form-control" id="clave_forzar_cambio" name="clave_forzar_cambio" aria-describedby="clave_forzar_cambio_ayuda">
+                  <option value="1">Obligar a cambiarlas al entrar</option>
+                  <option value="0">No obligar</option>
+                </select>
+                <small id="clave_forzar_cambio_ayuda" class="form-text text-muted">Quien entra con una contraseña de ejemplo o muy común, o con la que le asignó un administrador, debe cambiarla antes de usar el sistema.</small>
+              </div>
               <div class="col-12"><button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Guardar</button></div>
             </form>
           </div>

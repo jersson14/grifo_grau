@@ -39,9 +39,18 @@ return [
         'controller/usuario/controlador_cerrar_sesion.php',
     ],
 
+    // Lo único disponible mientras el usuario debe cambiar su contraseña.
+    'cambio_clave' => [
+        'view/index.php',
+        'view/usuario/view_cambiar_clave.php',
+        'controller/usuario/controlador_cambiar_contrasena.php',
+        'controller/usuario/controlador_cerrar_sesion.php',
+    ],
+
     'propios' => [
         'controller/usuario/controlador_actualizar_perfil.php',
         'controller/usuario/controlador_cambiar_contrasena.php',
+        'view/usuario/view_cambiar_clave.php',
         'controller/usuario/controlador_cambiar_foto.php',
         'controller/usuario/controlador_obtener_perfil.php',
         'view/usuario/view_mi_perfil.php',

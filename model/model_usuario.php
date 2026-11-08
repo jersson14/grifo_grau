@@ -56,6 +56,16 @@
             $query = $c->prepare("DELETE FROM login_intentos WHERE clave = ?");
             $query->execute(array($clave));
 
+            // Quien entra con una clave de ejemplo o muy común debe cambiarla antes de usar el sistema.
+            $cambiarClave = false;
+            if (self::Forzar_Cambio_Activo($c)) {
+                $cambiarClave = (int) ($fila['debe_cambiar_clave'] ?? 0) === 1;
+                if (!$cambiarClave && self::Clave_Debil($contrasena, $fila['usu_usuario'])) {
+                    $c->prepare('UPDATE usuario SET debe_cambiar_clave = 1 WHERE id_usuario = ?')->execute([$fila['id_usuario']]);
+                    $cambiarClave = true;
+                }
+            }
+
             $empresa = array();
             try {
                 $query = $c->query("CALL SP_LISTAR_EMPRESA()");
@@ -77,7 +87,89 @@
             $_SESSION['S_ACTIVIDAD']    = time();
 
             $this->Registrar_Auditoria($c, $fila['id_usuario'], $fila['usu_usuario'], 'LOGIN', $ip);
-            return array('ok' => true);
+            return array('ok' => true, 'cambiar_clave' => $cambiarClave);
+        }
+
+        /** Claves de ejemplo o demasiado comunes: quien entra con una debe cambiarla. */
+        public const CLAVES_DEBILES = ['admin123', 'grifero123', 'admin', '123456', '1234567', '12345678', '123456789', '1234567890',
+            'password', 'contraseña', 'contrasena', 'grifo123', 'qwerty', '111111', '000000', 'abc123'];
+        public const CLAVE_MINIMO = 8;
+
+        public static function Clave_Debil(string $clave, string $usuario): bool {
+            $minuscula = mb_strtolower($clave);
+            return in_array($minuscula, self::CLAVES_DEBILES, true) || $minuscula === mb_strtolower($usuario);
+        }
+
+        /** Mensaje de error si la clave nueva no sirve, o null si es aceptable. */
+        public static function Validar_Clave_Nueva(string $nueva, string $usuario): ?string {
+            if (mb_strlen($nueva) < self::CLAVE_MINIMO) {
+                return 'La contraseña nueva debe tener al menos ' . self::CLAVE_MINIMO . ' caracteres.';
+            }
+            if (mb_strlen($nueva) > 72) {
+                return 'La contraseña nueva puede tener hasta 72 caracteres.';
+            }
+            if (self::Clave_Debil($nueva, $usuario)) {
+                return 'Esa contraseña es muy fácil de adivinar. Elija otra.';
+            }
+            return null;
+        }
+
+        /** Si la exigencia de cambio de clave está encendida en Configuración. */
+        public static function Forzar_Cambio_Activo($c): bool {
+            $query = $c->prepare("SELECT valor FROM configuracion WHERE clave = 'clave_forzar_cambio'");
+            $query->execute();
+            $valor = $query->fetchColumn();
+            return $valor === false || $valor === null || $valor === '1';
+        }
+
+        /** Marca la cuenta para que cambie su clave al entrar (clave asignada por un administrador). */
+        public static function Marcar_Cambio_Clave(string $usuario): void {
+            $c = conexionBD::conexionPDO();
+            if (self::Forzar_Cambio_Activo($c)) {
+                $c->prepare('UPDATE usuario SET debe_cambiar_clave = 1 WHERE usu_usuario = ?')->execute([$usuario]);
+            }
+        }
+
+        /**
+         * El usuario en sesión cambia su propia clave. Comprueba la actual con un límite de intentos
+         * (5 fallos bloquean 15 minutos), exige una clave nueva aceptable y distinta, y quita la marca de cambio obligatorio.
+         */
+        public function Cambiar_Clave_Propia(int $id, string $actual, string $nueva, string $ip): array {
+            $c = conexionBD::conexionPDO();
+            $query = $c->prepare('SELECT usu_usuario, usu_contrasenia FROM usuario WHERE id_usuario = ?');
+            $query->execute([$id]);
+            $fila = $query->fetch(PDO::FETCH_ASSOC);
+            if (!$fila) {
+                return ['success' => false, 'message' => 'Su usuario no existe.'];
+            }
+            $clave = hash('sha256', 'cambio_clave|' . $id);
+            $query = $c->prepare('SELECT intentos, bloqueado_hasta FROM login_intentos WHERE clave = ?');
+            $query->execute([$clave]);
+            $intento = $query->fetch(PDO::FETCH_ASSOC);
+            if ($intento && $intento['bloqueado_hasta'] !== null && strtotime($intento['bloqueado_hasta']) > time()) {
+                return ['success' => false, 'message' => 'Demasiados intentos. Espere 15 minutos e inténtelo de nuevo.'];
+            }
+            $escapada = htmlspecialchars($actual, ENT_QUOTES, 'UTF-8');
+            if (!password_verify($actual, $fila['usu_contrasenia']) && !password_verify($escapada, $fila['usu_contrasenia'])) {
+                $intentos = ($intento ? (int) $intento['intentos'] : 0) + 1;
+                $bloqueo = $intentos >= 5 ? date('Y-m-d H:i:s', time() + 900) : null;
+                $c->prepare('REPLACE INTO login_intentos (clave, intentos, bloqueado_hasta, actualizado_en) VALUES (?, ?, ?, NOW())')
+                  ->execute([$clave, $bloqueo ? 0 : $intentos, $bloqueo]);
+                $this->Registrar_Auditoria($c, $id, $fila['usu_usuario'], 'CAMBIO_CLAVE_FALLIDO', $ip);
+                return ['success' => false, 'message' => 'La contraseña actual no es correcta.'];
+            }
+            $error = self::Validar_Clave_Nueva($nueva, $fila['usu_usuario']);
+            if ($error === null && hash_equals($actual, $nueva)) {
+                $error = 'La contraseña nueva debe ser distinta de la actual.';
+            }
+            if ($error !== null) {
+                return ['success' => false, 'message' => $error];
+            }
+            $c->prepare('UPDATE usuario SET usu_contrasenia = ?, debe_cambiar_clave = 0, updated_at = NOW() WHERE id_usuario = ?')
+              ->execute([password_hash($nueva, PASSWORD_DEFAULT), $id]);
+            $c->prepare('DELETE FROM login_intentos WHERE clave = ?')->execute([$clave]);
+            $this->Registrar_Auditoria($c, $id, $fila['usu_usuario'], 'CAMBIO_CLAVE', $ip);
+            return ['success' => true, 'message' => 'Contraseña actualizada.'];
         }
 
         private function Registrar_Auditoria($c, $id_usuario, $usuario, $accion, $ip){

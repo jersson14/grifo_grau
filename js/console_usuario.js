@@ -78,7 +78,7 @@ function listar_usuario(){
     pagingType: 'full_numbers',
     scrollCollapse: true,
     responsive: true,
-      "ordering":false,   
+      "ordering":false,
       "bLengthChange":true,
       "searching": { "regex": false },
       "lengthMenu": [ [10, 25, 50, 100, -1], [10, 25, 50, 100, "All"] ],
@@ -93,9 +93,9 @@ function listar_usuario(){
           "url":"../controller/usuario/controlador_listar_usuario.php",
           type:'POST'
       },
-      dom: 'Bfrtip',       
-    
-      buttons: [ 
+      dom: 'Bfrtip',
+
+      buttons: [
         {
           extend: 'excelHtml5',
           text: '<i class="fas fa-file-excel"></i> Excel',
@@ -141,8 +141,8 @@ function listar_usuario(){
                   }else{
                     return '<img src="../'+data+'" class="img img-responsive" style="width:40px">';
                   }
-              }   
-        }, 
+              }
+        },
         {"data":"USUARIO"},
         {"data":"usu_usuario"},
         {"data":"usu_email"},
@@ -156,7 +156,7 @@ function listar_usuario(){
                     }else{
                     return '<span class="badge bg-danger">INACTIVO</span>';
                     }
-            }   
+            }
         },
         {"data":"usu_estatus",
             render: function(data,type,row){
@@ -165,7 +165,7 @@ function listar_usuario(){
                     }else{
                     return "<button class='editar btn btn-warning btn-sm' title='Editar'><i class='fa fa-edit'></i></button>&nbsp;<button class='contra btn btn-info btn-sm' title='Cambiar contraseña'><i class='fas fa-key'></i></button>&nbsp;<button class='activar btn btn-success btn-sm' title='Activar'><i class='fa fa-check-circle'></i></button>";
                     }
-            }   
+            }
         }
     ],
 
@@ -206,15 +206,15 @@ $('#tabla_usuario').on('click','.editar',function(){
   if (imgElement) {
       console.log('Data:', data); // Depuración
       console.log('Image URL:', data.usu_foto); // Verificar URL
-  
+
       if (data.usu_foto && data.usu_foto.trim() !== '') {
           imgElement.src = "../" + data.usu_foto; // Ruta relativa
       } else {
           imgElement.src = '../img/avatar.png'; // Ruta por defecto
       }
-  
+
       imgElement.style.display = 'block'; // Mostrar siempre la imagen
-  
+
       // Manejar errores de carga
       imgElement.onerror = function () {
           console.error("Error al cargar la imagen desde la ruta: " + imgElement.src);
@@ -223,7 +223,7 @@ $('#tabla_usuario').on('click','.editar',function(){
   } else {
       console.error('Elemento img con id preview2 no encontrado');
   }
-  
+
 
 document.getElementById('txt_usu_editar').value=data.usu_usuario;
 document.getElementById('select_rol_editar2').value=data.usu_rol;
@@ -342,7 +342,7 @@ function Registrar_Usuario(){
   let rol = document.getElementById('select_rol_editar').value;
 
 
-  
+
   if(dni.length==0|| apelli.length==0||correo.length==0||dire.length==0||nombre.length==0){
     return Swal.fire({
       icon: 'warning',
@@ -453,7 +453,7 @@ function Modificar_Usuario(){
   let rol = document.getElementById('select_rol_editar2').value;
 
 
-  
+
   if(id.length==0||dni.length==0|| apelli.length==0||correo.length==0||dire.length==0||nombre.length==0){
     return Swal.fire({
       icon: 'warning',
@@ -587,7 +587,7 @@ function Cargar_Select_Empleado(){
     if(data.length>0){
       let cadena ="";
       for (let i = 0; i < data.length; i++) {
-        cadena+="<option value='"+data[i][0]+"'>"+data[i][4]+"</option>";    
+        cadena+="<option value='"+data[i][0]+"'>"+data[i][4]+"</option>";
       }
         document.getElementById('select_empleado').innerHTML=cadena;
         document.getElementById('select_empleado_editar').innerHTML=cadena;
@@ -610,7 +610,7 @@ function Cargar_Select_Area_Solo(){
     if(data.length>0){
       let cadena ="";
       for (let i = 0; i < data.length; i++) {
-        cadena+="<option value='"+data[i][0]+"'>"+data[i][1]+"</option>";    
+        cadena+="<option value='"+data[i][0]+"'>"+data[i][1]+"</option>";
       }
         document.getElementById('select_area').innerHTML=cadena;
         document.getElementById('select_area_editar').innerHTML=cadena;
@@ -640,7 +640,7 @@ function Total_reuniones_hoy(){
     } else {
       return Swal.fire("Mensaje de Error","No se pudo traer los resultados","error");
     }
-    
+
   })
 }
 
@@ -656,7 +656,7 @@ function Total_reuniones(){
     } else {
       return Swal.fire("Mensaje de Error","No se pudo traer los resultados","error");
     }
-    
+
   })
 }
 function Total_expedientes(){
@@ -671,7 +671,7 @@ function Total_expedientes(){
     } else {
       return Swal.fire("Mensaje de Error","No se pudo traer los resultados","error");
     }
-    
+
   })
 }
 function Total_expedientes_proceso(){
@@ -686,7 +686,7 @@ function Total_expedientes_proceso(){
     } else {
       return Swal.fire("Mensaje de Error","No se pudo traer los resultados","error");
     }
-    
+
   })
 }
 function Total_expedientes_tramite(){
@@ -701,7 +701,7 @@ function Total_expedientes_tramite(){
     } else {
       return Swal.fire("Mensaje de Error","No se pudo traer los resultados","error");
     }
-    
+
   })
 }
 function Total_expedientes_observados(){
@@ -716,7 +716,7 @@ function Total_expedientes_observados(){
     } else {
       return Swal.fire("Mensaje de Error","No se pudo traer los resultados","error");
     }
-    
+
   })
 }
 
@@ -732,7 +732,7 @@ function Total_expedientes_finalizados(){
     } else {
       return Swal.fire("Mensaje de Error","No se pudo traer los resultados","error");
     }
-    
+
   })
 }
 
@@ -749,7 +749,7 @@ function Total_clientes(){
     } else {
       return Swal.fire("Mensaje de Error","No se pudo traer los resultados","error");
     }
-    
+
   })
 }
 
@@ -765,9 +765,9 @@ function Total_ingresos_hoy(){
     } else {
       return Swal.fire("Mensaje de Error","No se pudo traer los resultados","error");
     }
-    
+
   })
-  
+
 }
 
 function Total_gastos_hoy(){
@@ -782,9 +782,9 @@ function Total_gastos_hoy(){
     } else {
       return Swal.fire("Mensaje de Error","No se pudo traer los resultados","error");
     }
-    
+
   })
-  
+
 }
 
 function Total_ingresos_mensual(){
@@ -799,9 +799,9 @@ function Total_ingresos_mensual(){
     } else {
       return Swal.fire("Mensaje de Error","No se pudo traer los resultados","error");
     }
-    
+
   })
-  
+
 }
 
 function Total_gastos_mensual(){
@@ -816,15 +816,15 @@ function Total_gastos_mensual(){
     } else {
       return Swal.fire("Mensaje de Error","No se pudo traer los resultados","error");
     }
-    
+
   })
-  
+
 }
 
 // FUNCIONES PARA BÚSQUEDA DNI
 function Buscar_DNI_Usuario() {
     var dni = $("#txt_dni").val().trim();
-    
+
     if (dni.length == 0) {
         Swal.fire({
             icon: 'warning',
@@ -834,7 +834,7 @@ function Buscar_DNI_Usuario() {
         });
         return;
     }
-    
+
     if (dni.length != 8) {
         Swal.fire({
             icon: 'warning',
@@ -844,7 +844,7 @@ function Buscar_DNI_Usuario() {
         });
         return;
     }
-    
+
     Swal.fire({
         title: 'Buscando...',
         text: 'Consultando datos en RENIEC',
@@ -853,7 +853,7 @@ function Buscar_DNI_Usuario() {
             Swal.showLoading();
         }
     });
-    
+
     $.ajax({
         url: '../consulta-dni-ajax.php',
         type: 'POST',
@@ -861,16 +861,16 @@ function Buscar_DNI_Usuario() {
     }).done(function(resp) {
         try {
             var data = JSON.parse(resp);
-            
+
             // Verificar si la respuesta tiene datos (puede venir en diferentes formatos)
             if (data.success === true && data.data) {
                 var nombres = data.data.nombres || data.data.first_name || '';
                 var apellido_paterno = data.data.apellido_paterno || data.data.first_last_name || '';
                 var apellido_materno = data.data.apellido_materno || data.data.second_last_name || '';
-                
+
                 $("#txt_nomb").val(nombres);
                 $("#txt_apelli").val((apellido_paterno + ' ' + apellido_materno).trim());
-                
+
                 Swal.fire({
                     icon: 'success',
                     title: 'Datos encontrados',
@@ -883,10 +883,10 @@ function Buscar_DNI_Usuario() {
                 var nombres = data.first_name || '';
                 var apellido_paterno = data.first_last_name || '';
                 var apellido_materno = data.second_last_name || '';
-                
+
                 $("#txt_nomb").val(nombres);
                 $("#txt_apelli").val((apellido_paterno + ' ' + apellido_materno).trim());
-                
+
                 Swal.fire({
                     icon: 'success',
                     title: 'Datos encontrados',
@@ -922,7 +922,7 @@ function Buscar_DNI_Usuario() {
 
 function Buscar_DNI_Usuario_Editar() {
     var dni = $("#txt_dni_editar").val().trim();
-    
+
     if (dni.length == 0) {
         Swal.fire({
             icon: 'warning',
@@ -932,7 +932,7 @@ function Buscar_DNI_Usuario_Editar() {
         });
         return;
     }
-    
+
     if (dni.length != 8) {
         Swal.fire({
             icon: 'warning',
@@ -942,7 +942,7 @@ function Buscar_DNI_Usuario_Editar() {
         });
         return;
     }
-    
+
     Swal.fire({
         title: 'Buscando...',
         text: 'Consultando datos en RENIEC',
@@ -951,7 +951,7 @@ function Buscar_DNI_Usuario_Editar() {
             Swal.showLoading();
         }
     });
-    
+
     $.ajax({
         url: '../consulta-dni-ajax.php',
         type: 'POST',
@@ -959,16 +959,16 @@ function Buscar_DNI_Usuario_Editar() {
     }).done(function(resp) {
         try {
             var data = JSON.parse(resp);
-            
+
             // Verificar si la respuesta tiene datos (puede venir en diferentes formatos)
             if (data.success === true && data.data) {
                 var nombres = data.data.nombres || data.data.first_name || '';
                 var apellido_paterno = data.data.apellido_paterno || data.data.first_last_name || '';
                 var apellido_materno = data.data.apellido_materno || data.data.second_last_name || '';
-                
+
                 $("#txt_nomb_editar").val(nombres);
                 $("#txt_apelli_editar").val((apellido_paterno + ' ' + apellido_materno).trim());
-                
+
                 Swal.fire({
                     icon: 'success',
                     title: 'Datos encontrados',
@@ -981,10 +981,10 @@ function Buscar_DNI_Usuario_Editar() {
                 var nombres = data.first_name || '';
                 var apellido_paterno = data.first_last_name || '';
                 var apellido_materno = data.second_last_name || '';
-                
+
                 $("#txt_nomb_editar").val(nombres);
                 $("#txt_apelli_editar").val((apellido_paterno + ' ' + apellido_materno).trim());
-                
+
                 Swal.fire({
                     icon: 'success',
                     title: 'Datos encontrados',
@@ -1025,9 +1025,9 @@ function Buscar_DNI_Usuario_Editar() {
 function Cargar_Datos_Perfil() {
     // Obtener ID del usuario desde el input oculto del index
     var id_usuario = $("#txtprincipalid").val();
-    
+
     console.log('ID Usuario:', id_usuario);
-    
+
     if (!id_usuario || id_usuario == '') {
         Swal.fire({
             icon: 'error',
@@ -1037,9 +1037,9 @@ function Cargar_Datos_Perfil() {
         });
         return;
     }
-    
+
     $("#txt_id_usuario").val(id_usuario);
-    
+
     $.ajax({
         url: '../controller/usuario/controlador_obtener_perfil.php',
         type: 'POST',
@@ -1047,7 +1047,7 @@ function Cargar_Datos_Perfil() {
         dataType: 'json'
     }).done(function(data) {
         console.log('Datos recibidos:', data);
-        
+
         if (data.error) {
             Swal.fire({
                 icon: 'error',
@@ -1057,7 +1057,7 @@ function Cargar_Datos_Perfil() {
             });
             return;
         }
-        
+
         // Llenar formulario
         $("#txt_dni").val(data.dni_usuario || '');
         $("#txt_usuario").val(data.usu_usuario || '');
@@ -1066,11 +1066,11 @@ function Cargar_Datos_Perfil() {
         $("#txt_email").val(data.usu_email || '');
         $("#txt_telefono").val(data.usu_telefono || '');
         $("#txt_direccion").val(data.usu_direccion || '');
-        
+
         // Actualizar tarjeta de perfil
         $("#perfil_nombre_completo").text((data.usu_nombre || '') + ' ' + (data.usu_apellido || ''));
         $("#perfil_rol").text(data.usu_rol || '');
-        
+
         // Actualizar foto
         if (data.usu_foto && data.usu_foto != '') {
             $("#perfil_foto_preview").attr('src', '../' + data.usu_foto);
@@ -1096,7 +1096,7 @@ function Actualizar_Mi_Perfil() {
     var email = $("#txt_email").val();
     var telefono = $("#txt_telefono").val();
     var direccion = $("#txt_direccion").val();
-    
+
     if (nombre.length == 0 || apellido.length == 0) {
         Swal.fire({
             icon: 'warning',
@@ -1106,7 +1106,7 @@ function Actualizar_Mi_Perfil() {
         });
         return;
     }
-    
+
     $.ajax({
         url: '../controller/usuario/controlador_actualizar_perfil.php',
         type: 'POST',
@@ -1156,7 +1156,7 @@ function Preview_Foto(event) {
 function Cambiar_Foto_Perfil() {
     var id_usuario = $("#txt_id_usuario").val();
     var foto = $("#txt_foto")[0].files[0];
-    
+
     if (!foto) {
         Swal.fire({
             icon: 'warning',
@@ -1166,11 +1166,11 @@ function Cambiar_Foto_Perfil() {
         });
         return;
     }
-    
+
     var formData = new FormData();
     formData.append('id_usuario', id_usuario);
     formData.append('foto', foto);
-    
+
     $.ajax({
         url: '../controller/usuario/controlador_cambiar_foto.php',
         type: 'POST',
@@ -1206,72 +1206,28 @@ function Abrir_Modal_Cambiar_Contrasena() {
 }
 
 function Cambiar_Contrasena() {
-    var id_usuario = $("#txt_id_usuario").val();
     var contrasena_actual = $("#txt_contrasena_actual").val();
     var contrasena_nueva = $("#txt_contrasena_nueva").val();
     var contrasena_confirmar = $("#txt_contrasena_confirmar").val();
-    
-    if (contrasena_actual.length == 0 || contrasena_nueva.length == 0 || contrasena_confirmar.length == 0) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Advertencia',
-            text: 'Complete todos los campos',
-            confirmButtonColor: '#023D77'
-        });
+
+    if (!contrasena_actual || !contrasena_nueva || !contrasena_confirmar) {
+        Swal.fire('Revise los datos', 'Complete todos los campos.', 'warning');
         return;
     }
-    
-    if (contrasena_nueva.length < 6) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Advertencia',
-            text: 'La contraseña debe tener al menos 6 caracteres',
-            confirmButtonColor: '#023D77'
-        });
+    if (contrasena_nueva.length < 8) {
+        Swal.fire('Revise los datos', 'La contraseña nueva debe tener al menos 8 caracteres.', 'warning');
         return;
     }
-    
-    if (contrasena_nueva != contrasena_confirmar) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Advertencia',
-            text: 'Las contraseñas no coinciden',
-            confirmButtonColor: '#023D77'
-        });
+    if (contrasena_nueva !== contrasena_confirmar) {
+        Swal.fire('Revise los datos', 'Las contraseñas no coinciden.', 'warning');
         return;
     }
-    
-    $.ajax({
-        url: '../controller/usuario/controlador_cambiar_contrasena.php',
-        type: 'POST',
-        data: {
-            id_usuario: id_usuario,
-            contrasena_actual: contrasena_actual,
-            contrasena_nueva: contrasena_nueva
-        }
-    }).done(function(resp) {
-        if (resp == 1) {
-            Swal.fire({
-                icon: 'success',
-                title: 'Éxito',
-                text: 'Contraseña actualizada correctamente',
-                confirmButtonColor: '#023D77'
-            });
-            $("#modal_cambiar_contrasena").modal('hide');
-        } else if (resp == 2) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'La contraseña actual es incorrecta',
-                confirmButtonColor: '#023D77'
-            });
-        } else {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'No se pudo cambiar la contraseña',
-                confirmButtonColor: '#023D77'
-            });
-        }
+    // El servidor usa siempre el usuario de la sesión y limita los intentos.
+    G.post('../controller/usuario/controlador_cambiar_contrasena.php', {
+        contrasena_actual: contrasena_actual,
+        contrasena_nueva: contrasena_nueva
+    }, function () {
+        $("#modal_cambiar_contrasena").modal('hide');
+        G.ok('Contraseña actualizada');
     });
 }

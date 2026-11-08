@@ -4,6 +4,10 @@ require_once __DIR__ . '/../model/model_menu.php';
 $modelo_menu = new Modelo_Menu();
 $menu_sesion = $modelo_menu->Para_Sesion();
 $vista_inicio = $modelo_menu->Vista_Inicio($menu_sesion);
+// Mientras deba cambiar su contraseña, el panel abre directamente esa pantalla.
+if (!empty($_SESSION['S_CAMBIAR_CLAVE'])) {
+    $vista_inicio = 'usuario/view_cambiar_clave.php';
+}
 $capacidades = capacidades_sesion();
 ?>
 <!DOCTYPE html>

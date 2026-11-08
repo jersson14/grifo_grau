@@ -81,5 +81,7 @@ if ($vacia && in_array('--demo', $argv, true)) {
     }
 
     $pdo->exec("INSERT INTO clientes (nombre_completo, dni_ruc, telefono) VALUES ('CLIENTE DEMO', '00000000', '')");
+    // Las claves de demostración son públicas a propósito: no se obliga a cambiarlas. En producción queda encendido.
+    $pdo->exec("UPDATE configuracion SET valor = '0' WHERE clave = 'clave_forzar_cambio'");
     echo "Datos de demostración creados. Usuarios: admin/admin123 y grifero1/grifero123\n";
 }
