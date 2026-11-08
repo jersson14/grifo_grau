@@ -40,7 +40,7 @@ The web container waits for the database, creates `.env` and `model/model_conexi
 - Place project under `htdocs/grifo_grau`
 - MySQL on port 3307, user `root`, no password. Database `grifo2` on branch `grifo2`
 - Copy `.env.example` to `.env` and `model/model_conexion.example.php` to `model/model_conexion.php` (both gitignored), then run `composer install`
-- Create the empty database and run `php database/migrate.php --demo`. An empty database gets `database/schema/000_base_provisional.sql`, **reconstructed from code, not a copy of production**. `database/init.sql`, `tipos_pago.sql` and `fix_ventas_credito.sql` are legacy
+- Create the empty database and run `php database/migrate.php --demo`. Without `--demo` there are no users: opening the site shows the installation wizard (`instalar.php`: company, administrator, fuels and pumps), which locks itself once a user exists. An empty database gets `database/schema/000_base_provisional.sql`, **reconstructed from code, not a copy of production**. `database/init.sql`, `tipos_pago.sql` and `fix_ventas_credito.sql` are legacy
 - Legacy modules not in the menu (gastos, ingresos, indicadores, pagos) call stored procedures the provisional schema doesn't include
 - Access at `http://localhost/grifo_grau` (the login is `login.php`; `index.php` shows the public page when the `pagina_publica` module is on)
 

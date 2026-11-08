@@ -60,11 +60,15 @@ jobs:
           cp model/model_conexion.example.php model/model_conexion.php
           sed "s/^APP_KEY=.*/APP_KEY=$(php -r 'echo bin2hex(random_bytes(32));')/" .env.example > .env
           php database/migrate.php --demo
+          # Base vacía, sin --demo, para el asistente de instalación de un grifo nuevo.
+          mysql -h 127.0.0.1 -uroot -praiz -e "CREATE DATABASE grifo_instalar CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"
+          DB_NAME=grifo_instalar php database/migrate.php
 
       - name: Iniciar el sistema y los simuladores
         run: |
           mkdir -p /tmp/mock_nubefact
           PHP_CLI_SERVER_WORKERS=4 php -S 127.0.0.1:8000 -t "$(dirname "$GITHUB_WORKSPACE")" tests/router.php > /tmp/servidor.log 2>&1 &
+          DB_NAME=grifo_instalar php -S 127.0.0.1:8001 -t "$(dirname "$GITHUB_WORKSPACE")" tests/router.php > /tmp/servidor_instalar.log 2>&1 &
           MOCK_DIR=/tmp/mock_nubefact php -S 127.0.0.1:8767 tests/mock_nubefact.php > /dev/null 2>&1 &
           MOCK_LOG=/tmp/mock_anthropic.log php -S 127.0.0.1:8765 tests/mock_anthropic.php > /dev/null 2>&1 &
           printf '\nNUBEFACT_RUTA=http://127.0.0.1:8767/api\nANTHROPIC_BASE_URL=http://127.0.0.1:8765\n' >> .env
@@ -91,6 +95,7 @@ jobs:
           php tests/texto.php      | tee -a /tmp/resultados.txt || fallo=1
           php tests/avisos.php     | tee -a /tmp/resultados.txt || fallo=1
           php tests/combustibles.php | tee -a /tmp/resultados.txt || fallo=1
+          GRIFO_BASE=http://127.0.0.1:8001/${{ github.event.repository.name }} DB_NAME=grifo_instalar php tests/instalacion.php | tee -a /tmp/resultados.txt || fallo=1
           php tests/respaldos.php mysql | tee -a /tmp/resultados.txt || fallo=1
           php tests/facturacion.php /tmp/mock_nubefact | tee -a /tmp/resultados.txt || fallo=1
           php tests/chatbot.php /tmp/mock_anthropic.log | tee -a /tmp/resultados.txt || fallo=1

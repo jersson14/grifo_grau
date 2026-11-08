@@ -39,6 +39,7 @@
   .subtitulo-seccion { @apply mt-3 max-w-2xl text-base leading-relaxed text-zinc-600 sm:text-lg; }
 
   .etiqueta { @apply mb-1.5 block text-sm font-medium text-zinc-900; }
+  .paso { @apply inline-flex h-7 w-7 flex-none items-center justify-center rounded-full bg-zinc-900 text-sm font-semibold text-white; }
   .campo {
     @apply block h-11 w-full rounded-md border border-zinc-300 bg-white px-3 text-base text-zinc-950 shadow-sm placeholder:text-zinc-500 focus-visible:border-blue-600;
   }

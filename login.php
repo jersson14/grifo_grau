@@ -5,6 +5,11 @@ if (isset($_SESSION['S_ID'])) {
     header('Location: view/index.php');
     exit;
 }
+require_once __DIR__ . '/model/model_instalacion.php';
+if (Modelo_Instalacion::Pendiente()) {
+    header('Location: instalar.php');
+    exit;
+}
 
 // Nombre y logo de la empresa, editables en Configuración → Empresa.
 $empresa = ['nombre' => 'Sistema de Gestión de Grifo', 'logo' => 'img/grau.png'];

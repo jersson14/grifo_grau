@@ -34,6 +34,8 @@ return [
     'publico' => [
         'index.php',
         'login.php',
+        // Solo funciona mientras no existe ningún usuario: lo comprueba la propia página.
+        'instalar.php',
         'publico/solicitud_flota.php',
         'controller/usuario/controlador_iniciar_sesion.php',
         'controller/usuario/controlador_cerrar_sesion.php',

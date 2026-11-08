@@ -20,7 +20,7 @@ $denegado =
     preg_match('#(^|/)\.#', $interna)
     || preg_match('/\.(sql|md|bat|lock|yml|example)$/i', $nombre)
     || in_array($nombre, ['composer.json', 'Dockerfile'], true)
-    || preg_match('#^(config|database|respaldos|scripts|tests)(/|$)#', $interna)
+    || preg_match('#^(config|database|respaldos|registros|scripts|tests)(/|$)#', $interna)
     || (preg_match('#^(controller/empresa/FOTOS|controller/usuario/fotos|img/usuarios)/#', $interna)
         && preg_match('/\.(php\d?|phtml|phar|pl|py|cgi|sh)$/i', $nombre));
 
