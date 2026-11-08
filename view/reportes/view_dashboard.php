@@ -1,6 +1,5 @@
 <?php require_once __DIR__ . '/../../controller/_bootstrap.php'; ?>
 <script src="../js/console_reportes.js?rev=<?php echo time(); ?>"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <div class="content-header">
     <div class="container-fluid">

@@ -22,7 +22,7 @@ $capacidades = capacidades_sesion();
   <link rel="shortcut icon" href="../img/grau.png" type="image/jpg">
   <link rel="stylesheet" href="../plantilla/dist/css/adminlte.min.css">
   <link href="../utilitario/DataTables/datatables.min.css" type="text/css" rel="stylesheet" />
-  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+  <link href="../librerias/select2-4.1.0-rc.0/select2.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="../css/grifo.css?rev=<?php echo filemtime(__DIR__ . '/../css/grifo.css'); ?>">
   <link rel="stylesheet" href="../css/panel.css?rev=<?php echo filemtime(__DIR__ . '/../css/panel.css'); ?>">
 </head>
@@ -164,7 +164,7 @@ $capacidades = capacidades_sesion();
   </div>
 
   <!-- Scripts -->
-  <script src="../plantilla/plugins/jquery/jquery.min.js"></script>
+  <script src="../librerias/jquery-3.7.1/jquery.min.js"></script>
   <script>
     // Token CSRF en toda petición AJAX, y respuesta común a sesión vencida o falta de permisos.
     window.CAPACIDADES = <?php echo json_encode($capacidades === null ? '*' : array_values($capacidades)); ?>;
@@ -181,9 +181,9 @@ $capacidades = capacidades_sesion();
   <script src="../plantilla/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
   <script src="../plantilla/dist/js/adminlte.min.js"></script>
   <script src="../utilitario/DataTables/datatables.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="../librerias/sweetalert2-11.26.25/sweetalert2.all.min.js"></script>
+  <script src="../librerias/select2-4.1.0-rc.0/select2.min.js"></script>
+  <script src="../librerias/chart.js-4.6.1/chart.umd.min.js"></script>
   <script src="../js/console_utilidades.js?rev=<?php echo time(); ?>"></script>
   <?php if ($chat_visible) { ?><script src="../js/console_chatbot.js?rev=<?php echo time(); ?>"></script><?php } ?>
 

@@ -9,6 +9,8 @@ const BASE = process.env.GRIFO_BASE || 'http://localhost/grifo_grau';
 let fallos = 0, total = 0;
 const comprobar = (n, ok, d = '') => { total++; if (!ok) fallos++; console.log((ok ? '  ok    ' : '  FALLA ') + n + (ok || !d ? '' : ' -> ' + d)); };
 const espera = ms => new Promise(r => setTimeout(r, ms));
+// Recursos pedidos a otro servidor: el panel debe funcionar sin depender de un CDN.
+const externas = new Set();
 
 (async () => {
   const navegador = await puppeteer.launch({ executablePath: process.env.NAVEGADOR || 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', headless: 'new', args: ['--window-size=1366,850'] });
@@ -22,6 +24,7 @@ const espera = ms => new Promise(r => setTimeout(r, ms));
     p.on('pageerror', e => p.errores.push('JS: ' + e.message));
     p.on('console', m => { if (m.type() === 'error' && !/favicon/.test(m.text())) p.errores.push('consola: ' + m.text()); });
     p.on('response', r => { if (r.status() >= 400 && r.url().includes('grifo_grau')) p.errores.push(r.status() + ' ' + r.url().replace(BASE, '')); });
+    p.on('request', r => { const u = new URL(r.url()); if (/^https?:$/.test(u.protocol) && u.host !== new URL(BASE).host) externas.add(u.host + u.pathname); });
     await p.goto(BASE + '/', { waitUntil: 'networkidle2' });
     await p.type('#txt_usuario', usuario);
     await p.type('#txt_contra', clave);
@@ -498,6 +501,8 @@ const espera = ms => new Promise(r => setTimeout(r, ms));
   comprobar('cerrar sesión vuelve al login', !!(await g.$('#txt_usuario')));
   await g.goto(BASE + '/view/index.php', { waitUntil: 'networkidle2' });
   comprobar('el panel sin sesión redirige al login', !!(await g.$('#txt_usuario')));
+
+  comprobar('ninguna página pide recursos a otros servidores', externas.size === 0, [...externas].slice(0, 5).join(' | '));
 
   await navegador.close();
   console.log(`\n${total} comprobaciones, ${fallos} fallidas`);

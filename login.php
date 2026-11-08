@@ -276,9 +276,9 @@ $e = fn($texto) => htmlspecialchars((string) $texto, ENT_QUOTES, 'UTF-8');
     </div>
   </main>
 
-  <script src="plantilla/plugins/jquery/jquery.min.js"></script>
+  <script src="librerias/jquery-3.7.1/jquery.min.js"></script>
   <script src="js/console_usuario.js?rev=<?php echo time(); ?>"></script>
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="librerias/sweetalert2-11.26.25/sweetalert2.all.min.js"></script>
   <script>
     const rmcheck = document.getElementById('remember'),
           usuarioInput = document.getElementById('txt_usuario'),
