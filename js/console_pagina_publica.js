@@ -119,7 +119,7 @@ function mover_servicio(id, direccion) {
   G.post(RUTA_PUB + 'mover_servicio.php', { id_servicio: id, direccion: direccion }, cargar_pagina_publica);
 }
 function quitar_servicio(s) {
-  Swal.fire({ title: '¿Quitar «' + s.titulo + '»?', text: 'Deja de mostrarse en la página. Si solo quiere ocultarlo un tiempo, edítelo y marque Visible: No.', icon: 'warning', showCancelButton: true, confirmButtonText: 'Quitar', cancelButtonText: 'Cancelar' })
+  Swal.fire({ titleText: '¿Quitar «' + s.titulo + '»?', text: 'Deja de mostrarse en la página. Si solo quiere ocultarlo un tiempo, edítelo y marque Visible: No.', icon: 'warning', showCancelButton: true, confirmButtonText: 'Quitar', cancelButtonText: 'Cancelar' })
     .then(function (r) { if (r.isConfirmed) { G.post(RUTA_PUB + 'eliminar_servicio.php', { id_servicio: s.id_servicio }, function () { G.ok('Servicio quitado'); cargar_pagina_publica(); }); } });
 }
 
@@ -133,7 +133,7 @@ function editar_promo(p) {
   $('#promo_guardar').text('Guardar cambios'); $('#promo_cancelar').removeClass('d-none');
 }
 function eliminar_promo(p) {
-  Swal.fire({ title: '¿Eliminar «' + p.titulo + '»?', icon: 'warning', showCancelButton: true, confirmButtonText: 'Eliminar', cancelButtonText: 'Cancelar' })
+  Swal.fire({ titleText: '¿Eliminar «' + p.titulo + '»?', icon: 'warning', showCancelButton: true, confirmButtonText: 'Eliminar', cancelButtonText: 'Cancelar' })
     .then(function (r) { if (r.isConfirmed) { G.post(RUTA_PUB + 'eliminar_promocion.php', { id_promocion: p.id_promocion }, function () { G.ok('Promoción eliminada'); cargar_pagina_publica(); }); } });
 }
 

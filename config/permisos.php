@@ -58,6 +58,8 @@ return [
 
     'base' => [
         'view/index.php',
+        // Cada usuario recibe solo los avisos que le corresponden: lo decide el controlador.
+        'controller/avisos/controlador_listar.php',
         // Quién usa realmente el chatbot se configura en la interfaz (ia_roles).
         'controller/ia/controlador_preguntar.php',
         'controller/ia/controlador_limpiar_conversacion.php',

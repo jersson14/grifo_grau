@@ -37,6 +37,18 @@ $capacidades = capacidades_sesion();
         </li>
       </ul>
       <ul class="navbar-nav ml-auto">
+        <?php if (puede('avisos') && empty($_SESSION['S_CAMBIAR_CLAVE'])) { ?>
+        <li class="nav-item dropdown" id="g_avisos">
+          <a class="nav-link g-campana" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false" aria-label="Avisos">
+            <i class="far fa-bell" aria-hidden="true"></i>
+            <span class="g-campana-cuenta d-none" id="g_avisos_cuenta" aria-hidden="true"></span>
+          </a>
+          <div class="dropdown-menu dropdown-menu-right g-avisos-menu">
+            <span class="dropdown-header">Avisos</span>
+            <div id="g_avisos_items"><span class="dropdown-item-text text-muted small">Cargando…</span></div>
+          </div>
+        </li>
+        <?php } ?>
         <li class="nav-item dropdown">
           <a class="nav-link g-usuario" data-toggle="dropdown" href="#" aria-haspopup="true" aria-expanded="false">
             <img src="../<?php echo htmlspecialchars((string) $_SESSION['S_FOTO'], ENT_QUOTES, 'UTF-8'); ?>" class="img-circle" width="32" height="32" alt="">
@@ -185,6 +197,7 @@ $capacidades = capacidades_sesion();
   <script src="../librerias/select2-4.1.0-rc.0/select2.min.js"></script>
   <script src="../librerias/chart.js-4.6.1/chart.umd.min.js"></script>
   <script src="../js/console_utilidades.js?rev=<?php echo time(); ?>"></script>
+  <script src="../js/console_avisos.js?rev=<?php echo time(); ?>"></script>
   <?php if ($chat_visible) { ?><script src="../js/console_chatbot.js?rev=<?php echo time(); ?>"></script><?php } ?>
 
   <script>

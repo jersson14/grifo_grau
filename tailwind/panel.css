@@ -268,6 +268,16 @@ a:focus-visible, button:focus-visible, .btn:focus-visible, [tabindex]:focus-visi
   table.tabla-apilable.tabla-surtidores td > .form-control { width: 100% !important; }
 }
 
+/* ---------- Campana de avisos ---------- */
+.g-campana { position: relative; }
+.g-campana-cuenta {
+  position: absolute; top: .25rem; right: .125rem; min-width: 1.125rem; height: 1.125rem; padding: 0 .3rem;
+  border-radius: 9999px; background: theme('colors.red.600'); color: #fff; font-size: .6875rem; font-weight: 600; line-height: 1.125rem; text-align: center;
+}
+.g-avisos-menu { min-width: 19rem; max-width: calc(100vw - 1rem); padding: .25rem 0; }
+.g-aviso { display: flex; align-items: flex-start; gap: .625rem; white-space: normal; padding: .5rem 1rem; }
+.g-aviso i { margin-top: .2rem; flex: none; }
+
 /* ---------- Venta rápida: surtidores como botones, selectores segmentados y monto grande ---------- */
 .g-leyenda { display: block; width: auto; margin-bottom: .5rem; font-size: 1rem; font-weight: 600; color: theme('colors.zinc.900'); }
 .g-maquina + .g-maquina { margin-top: .875rem; }

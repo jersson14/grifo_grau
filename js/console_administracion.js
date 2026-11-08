@@ -20,7 +20,7 @@ function iniciar_roles() {
           return G.grupo(
             G.boton('Editar', 'btn-primary', function () { abrir(x); }),
             x.sistema == 1 ? null : G.boton('Eliminar', 'btn-outline-danger', function () {
-              Swal.fire({ title: '¿Eliminar el rol ' + x.nombre + '?', icon: 'warning', showCancelButton: true, confirmButtonText: 'Eliminar', cancelButtonText: 'Cancelar' }).then(function (c) {
+              Swal.fire({ titleText: '¿Eliminar el rol ' + x.nombre + '?', icon: 'warning', showCancelButton: true, confirmButtonText: 'Eliminar', cancelButtonText: 'Cancelar' }).then(function (c) {
                 if (c.isConfirmed) { G.post(RUTA_ADM + 'eliminar_rol.php', { codigo: x.codigo }, function () { G.ok('Rol eliminado'); listar(); }); }
               });
             })

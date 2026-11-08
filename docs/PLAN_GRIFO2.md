@@ -233,7 +233,7 @@ Es la base de lo que pediste: que todo se maneje desde el menú.
 - [ ] **3.5** *(parcial)* Página principal configurable: widgets por rol, ventas del día, stock, créditos vencidos, turnos abiertos y alertas. Se elimina el dashboard oculto y se corrigen los indicadores.
 - [ ] **3.6** *(parcial: máquinas dinámicas hechas)* Editor de catálogos: productos, surtidores, mangueras, máquinas y tipos de pago. Hoy el sistema asume 12 surtidores en 2 máquinas; debe admitir cualquier cantidad.
 - [x] **3.7** Bitácora de auditoría consultable: quién, qué, cuándo, antes y después.
-- [ ] **3.8** Notificaciones internas: créditos vencidos, stock bajo y turnos sin validar.
+- [x] **3.8** Campana de avisos en la cabecera con los mismos avisos del tablero (los elegidos en Configuración → Página principal y de módulos activos), para quien tiene el permiso «Recibir avisos». Solo muestra los que llevan a una pantalla que ese usuario puede abrir; el tablero aplica el mismo filtro. Se actualiza al abrirla y cada 5 minutos con una consulta que no cuenta como actividad (cabecera `X-Segundo-Plano`), para que la sesión siga venciendo por inactividad. La ventana de créditos vencidos del tablero sale una vez por sesión. Prueba: `tests/avisos.php`. De paso: `G.pedirMotivo` y los títulos de SweetAlert con datos pasan a `titleText`, y se escapan el vale de esa ventana y el producto de las lecturas del turno, que quedaron expuestos al guardar los textos sin escapar (1.8).
 - [ ] **3.9** Asistente de instalación inicial para un grifo nuevo.
 
 ### Fase 4. Grifo completo

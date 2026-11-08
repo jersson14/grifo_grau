@@ -1037,7 +1037,7 @@ function Ver_Detalle_Turno(id_reporte) {
                 html += '<tr>';
                 html += '<td>' + item.numero_maquina + '</td>';
                 html += '<td>' + Texto_Seguro(item.codigo) + '</td>';
-                html += '<td>' + item.producto + '</td>';
+                html += '<td>' + Texto_Seguro(item.producto) + '</td>';
                 html += '<td>' + parseFloat(item.lectura_anterior).toFixed(3) + '</td>';
                 html += '<td>' + parseFloat(item.lectura_actual).toFixed(3) + '</td>';
                 html += '<td>' + parseFloat(item.galones_vendidos).toFixed(3) + '</td>';

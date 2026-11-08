@@ -64,6 +64,12 @@ class Modelo_Alertas extends conexionBD
         return $avisos;
     }
 
+    /** Solo los avisos que llevan a una pantalla que el usuario en sesión puede abrir (permiso y módulo activo). */
+    public static function Visibles(array $avisos): array
+    {
+        return array_values(array_filter($avisos, fn($a) => ruta_accesible('view/' . $a['vista'])));
+    }
+
     public static function Opciones(): array
     {
         $opciones = [];

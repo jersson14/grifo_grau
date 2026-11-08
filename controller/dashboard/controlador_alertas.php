@@ -7,5 +7,5 @@ responder_json(function () {
         return ['data' => []];
     }
     $m = new Modelo_Alertas();
-    return ['data' => $m->Listar()];
+    return ['data' => Modelo_Alertas::Visibles($m->Listar())];
 });

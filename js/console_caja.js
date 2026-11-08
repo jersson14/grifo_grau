@@ -163,6 +163,6 @@ function ver_medios(t) {
     r.data.forEach(function (m) {
       cuerpo.append($('<tr></tr>').append($('<td></td>').text(m.medio)).append($('<td></td>').text(G.soles(m.declarado))).append($('<td></td>').text(G.soles(m.ventas))));
     });
-    Swal.fire({ title: 'Turno ' + t.numero_documento, html: tabla[0], width: 620 });
+    Swal.fire({ titleText: 'Turno ' + t.numero_documento, html: tabla[0], width: 620 });
   });
 }

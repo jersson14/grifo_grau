@@ -229,7 +229,7 @@ var G = {
   // Pide un texto obligatorio y continúa solo si se confirma.
   pedirMotivo: function (titulo, alConfirmar) {
     Swal.fire({
-      title: titulo, input: 'text', inputPlaceholder: 'Motivo', showCancelButton: true, confirmButtonText: 'Confirmar', cancelButtonText: 'Cancelar',
+      titleText: titulo, input: 'text', inputPlaceholder: 'Motivo', showCancelButton: true, confirmButtonText: 'Confirmar', cancelButtonText: 'Cancelar',
       inputValidator: function (v) { return v && v.trim() ? null : 'Indique el motivo'; }
     }).then(function (r) { if (r.isConfirmed) { alConfirmar(r.value.trim()); } });
   }

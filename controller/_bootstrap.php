@@ -297,7 +297,10 @@ function verificar_acceso(): void
         session_destroy();
         denegar_acceso(401, 'Su sesión ha expirado por inactividad.');
     }
-    $_SESSION['S_ACTIVIDAD'] = time();
+    // Las consultas automáticas (la campana de avisos) no cuentan como actividad: si no, la sesión nunca vencería.
+    if (empty($_SERVER['HTTP_X_SEGUNDO_PLANO'])) {
+        $_SESSION['S_ACTIVIDAD'] = time();
+    }
 
     // El rol y el estado se leen en cada petición: un cambio o una baja surten efecto de inmediato.
     $c = conexionBD::conexionPDO();

@@ -261,7 +261,10 @@
 <script>
 $(document).ready(function() {
     Cargar_Dashboard();
-    Verificar_Creditos_Vencidos();
+    // La ventana de créditos vencidos sale una vez por sesión; después quedan en la campana de avisos.
+    var yaMostrada = false;
+    try { yaMostrada = sessionStorage.getItem('g_vencidos_mostrados') === '1'; sessionStorage.setItem('g_vencidos_mostrados', '1'); } catch (e) {}
+    if (!yaMostrada) { Verificar_Creditos_Vencidos(); }
 });
 
 function Verificar_Creditos_Vencidos() {
@@ -275,7 +278,7 @@ function Verificar_Creditos_Vencidos() {
             mensaje += '<p><strong>Hay ' + data.total + ' crédito(s) vencido(s):</strong></p>';
             mensaje += '<ul>';
             data.creditos.forEach(function(credito) {
-                mensaje += '<li><strong>' + Texto_Seguro(credito.cliente) + '</strong> - Vale: ' + credito.numero_vale + ' - Monto: S/. ' + parseFloat(credito.saldo_pendiente).toFixed(2) + ' - Vencido: ' + credito.dias_vencido + ' días</li>';
+                mensaje += '<li><strong>' + Texto_Seguro(credito.cliente) + '</strong> - Vale: ' + Texto_Seguro(credito.numero_vale) + ' - Monto: S/. ' + parseFloat(credito.saldo_pendiente).toFixed(2) + ' - Vencido: ' + credito.dias_vencido + ' días</li>';
             });
             mensaje += '</ul>';
             mensaje += '</div>';
