@@ -4,9 +4,9 @@ require_once '../../model/model_productos.php';
 
 $MProductos = new Modelo_Productos();
 
-$nombre = htmlspecialchars($_POST['nombre'], ENT_QUOTES, 'UTF-8');
-$tipo = htmlspecialchars($_POST['tipo'], ENT_QUOTES, 'UTF-8');
-$precio = htmlspecialchars($_POST['precio'], ENT_QUOTES, 'UTF-8');
+$nombre = trim((string) ($_POST['nombre']));
+$tipo = trim((string) ($_POST['tipo']));
+$precio = trim((string) ($_POST['precio']));
 // Lo registra siempre quien tiene la sesión abierta.
 $id_usuario = (int) $_SESSION['S_ID'];
 

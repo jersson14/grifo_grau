@@ -4,8 +4,8 @@ require_once '../../model/model_surtidores.php';
 
 $MSurtidores = new Modelo_Surtidores();
 
-$id = htmlspecialchars($_POST['id'], ENT_QUOTES, 'UTF-8');
-$lectura = htmlspecialchars($_POST['lectura'], ENT_QUOTES, 'UTF-8');
+$id = trim((string) ($_POST['id']));
+$lectura = trim((string) ($_POST['lectura']));
 
 $consulta = $MSurtidores->Actualizar_Lectura($id, $lectura);
 echo $consulta;

@@ -32,14 +32,14 @@ foreach ($creditos as $index => $credito) {
         continue;
     }
     
-    $id_cliente = htmlspecialchars($credito['id_cliente'], ENT_QUOTES, 'UTF-8');
-    $numero_vale = htmlspecialchars($credito['numero_vale'], ENT_QUOTES, 'UTF-8');
-    $monto = htmlspecialchars($credito['monto'], ENT_QUOTES, 'UTF-8');
+    $id_cliente = trim((string) $credito['id_cliente']);
+    $numero_vale = trim((string) $credito['numero_vale']);
+    $monto = trim((string) $credito['monto']);
     $fecha_registro = isset($credito['fecha_registro']) && !empty($credito['fecha_registro']) 
-        ? htmlspecialchars($credito['fecha_registro'], ENT_QUOTES, 'UTF-8') 
+        ? trim((string) $credito['fecha_registro']) 
         : date('Y-m-d'); // Si no viene fecha, usar hoy
     $observaciones = ''; // No tenemos campo de observaciones en la tabla
-    $placa = isset($credito['placa']) ? strtoupper(trim(htmlspecialchars($credito['placa'], ENT_QUOTES, 'UTF-8'))) : '';
+    $placa = isset($credito['placa']) ? strtoupper(trim(trim((string) $credito['placa']))) : '';
     
     // Agregar crédito
     $resultado = $MCreditos->Agregar_Credito_Manual($id_cliente, $numero_vale, $monto, $fecha_registro, $observaciones, $placa);

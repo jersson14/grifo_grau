@@ -2,7 +2,7 @@
 require_once __DIR__ . '/../_bootstrap.php';
 require_once '../../model/model_conexion.php';
 
-$id_reporte = htmlspecialchars($_POST['id_reporte'], ENT_QUOTES, 'UTF-8');
+$id_reporte = trim((string) ($_POST['id_reporte']));
 
 // Obtener conexión MySQLi
 $host = env('DB_HOST', '127.0.0.1');

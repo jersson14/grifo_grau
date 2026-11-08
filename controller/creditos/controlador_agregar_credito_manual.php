@@ -12,12 +12,12 @@ if (!isset($_POST['id_cliente']) || !isset($_POST['numero_vale']) || !isset($_PO
     exit;
 }
 
-$id_cliente = htmlspecialchars($_POST['id_cliente'], ENT_QUOTES, 'UTF-8');
-$numero_vale = htmlspecialchars($_POST['numero_vale'], ENT_QUOTES, 'UTF-8');
-$monto = htmlspecialchars($_POST['monto'], ENT_QUOTES, 'UTF-8');
-$fecha_registro = isset($_POST['fecha_registro']) && !empty($_POST['fecha_registro']) ? htmlspecialchars($_POST['fecha_registro'], ENT_QUOTES, 'UTF-8') : date('Y-m-d');
-$observaciones = isset($_POST['observaciones']) ? htmlspecialchars($_POST['observaciones'], ENT_QUOTES, 'UTF-8') : '';
-$placa = isset($_POST['placa']) ? strtoupper(trim(htmlspecialchars($_POST['placa'], ENT_QUOTES, 'UTF-8'))) : '';
+$id_cliente = trim((string) ($_POST['id_cliente']));
+$numero_vale = trim((string) ($_POST['numero_vale']));
+$monto = trim((string) ($_POST['monto']));
+$fecha_registro = isset($_POST['fecha_registro']) && !empty($_POST['fecha_registro']) ? trim((string) ($_POST['fecha_registro'])) : date('Y-m-d');
+$observaciones = isset($_POST['observaciones']) ? trim((string) ($_POST['observaciones'])) : '';
+$placa = isset($_POST['placa']) ? strtoupper(trim(trim((string) ($_POST['placa'])))) : '';
 
 // Agregar crédito (sin id_reporte, es manual)
 $consulta = $MCreditos->Agregar_Credito_Manual($id_cliente, $numero_vale, $monto, $fecha_registro, $observaciones, $placa);

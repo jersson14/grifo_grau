@@ -70,7 +70,7 @@ function listar_clientes() {
       { 
         "data": "CLIENTE",
         "render": function(data, type, row) {
-          return "<strong>" + data + "</strong>";
+          return "<strong>" + Texto_Seguro(data) + "</strong>";
         }
       },
       { "data": "celular" },
@@ -241,7 +241,7 @@ $('#tabla_clientes').on('click','.eliminar',function(){
       var data = tbl_clientes.row(this).data();
   }
   Swal.fire({
-    title: 'Desea eliminar al cliente con el nombre: '+data.nombres+' '+data.apellidos+'?',
+    title: 'Desea eliminar al cliente con el nombre: '+Texto_Seguro(data.nombres)+' '+Texto_Seguro(data.apellidos)+'?',
     text: "Una vez aceptado el cliente sera eliminado!!!",
     icon: 'warning',
     showCancelButton: true,
@@ -265,8 +265,8 @@ $('#tabla_clientes').on('click','.ver_expe',function(){
   }
 $("#modal_ver_expedientes").modal('show');
 
-  document.getElementById('lb_titulo_historial_requi').innerHTML="<b>TIPO DOCUMENTO - NRO DOCUMENTO:</b> "+data.tipo_documento+" - "+data.nro_documento;
-  document.getElementById('lb_titulo_historial2_requi').innerHTML="<b>CLIENTE:</b> "+data.CLIENTE+"";
+  document.getElementById('lb_titulo_historial_requi').innerHTML="<b>TIPO DOCUMENTO - NRO DOCUMENTO:</b> "+Texto_Seguro(data.tipo_documento)+" - "+Texto_Seguro(data.nro_documento);
+  document.getElementById('lb_titulo_historial2_requi').innerHTML="<b>CLIENTE:</b> "+Texto_Seguro(data.CLIENTE);
 
   listar_expe(data.id_cliente);
 

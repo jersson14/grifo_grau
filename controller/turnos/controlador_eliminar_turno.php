@@ -14,8 +14,8 @@ if (!isset($_POST['id_reporte']) || !isset($_POST['motivo'])) {
     exit;
 }
 
-$id_reporte = htmlspecialchars($_POST['id_reporte'], ENT_QUOTES, 'UTF-8');
-$motivo = htmlspecialchars($_POST['motivo'], ENT_QUOTES, 'UTF-8');
+$id_reporte = trim((string) ($_POST['id_reporte']));
+$motivo = trim((string) ($_POST['motivo']));
 $id_usuario = $_SESSION['S_ID'];
 
 // Validar que el motivo no esté vacío

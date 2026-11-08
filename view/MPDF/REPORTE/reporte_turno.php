@@ -249,7 +249,7 @@ $html = '
     </tr>
     <tr>
         <td colspan="2" style="width: 50%; border: 1px solid #000; padding: 5px;">
-            <strong>NOMBRE DEL GRIFERO:</strong> ' . strtoupper($turno['grifero_nombre']) . '
+            <strong>NOMBRE DEL GRIFERO:</strong> ' . esc(mb_strtoupper(html_entity_decode((string) $turno['grifero_nombre'], ENT_QUOTES, 'UTF-8'))) . '
         </td>
         <td colspan="2" style="width: 50%; border: 1px solid #000; padding: 5px;">
             <strong>TURNO:</strong> ' . $turno['turno'] . ' (Del ' . $turno['hora_inicio_formateada'] . ' al ' . $turno['hora_fin_formateada'] . ')
@@ -292,7 +292,7 @@ foreach ($por_maquina as $numero_maquina => $filas_maquina) {
     foreach ($filas_maquina as $lectura) {
         $html .= '<tr>
             <td>' . date('d/m/Y', strtotime($turno['fecha_reporte'])) . '</td>
-            <td class="text-left">' . htmlspecialchars($lectura['codigo'] . '-' . $lectura['nombre_producto'], ENT_QUOTES, 'UTF-8') . '</td>
+            <td class="text-left">' . esc($lectura['codigo'] . '-' . $lectura['nombre_producto']) . '</td>
             <td>' . number_format($lectura['lectura_anterior'], 3) . '</td>
             <td>' . number_format($lectura['lectura_actual'], 3) . '</td>
             <td>' . number_format($lectura['galones_vendidos'], 3) . '</td>
@@ -400,7 +400,7 @@ for ($i = 0; $i < $max_rows; $i++) {
     // YAPE
     if (isset($pagos_agrupados['YAPE'][$i])) {
         $html .= '<td>' . number_format($pagos_agrupados['YAPE'][$i]['monto'], 2) . '</td>';
-        $html .= '<td>' . ($pagos_agrupados['YAPE'][$i]['codigo_operacion'] ?: '') . '</td>';
+        $html .= '<td>' . esc($pagos_agrupados['YAPE'][$i]['codigo_operacion'] ?: '') . '</td>';
     } else {
         $html .= '<td></td><td></td>';
     }
@@ -408,7 +408,7 @@ for ($i = 0; $i < $max_rows; $i++) {
     // BCP
     if (isset($pagos_agrupados['BCP'][$i])) {
         $html .= '<td>' . number_format($pagos_agrupados['BCP'][$i]['monto'], 2) . '</td>';
-        $html .= '<td>' . ($pagos_agrupados['BCP'][$i]['codigo_operacion'] ?: '') . '</td>';
+        $html .= '<td>' . esc($pagos_agrupados['BCP'][$i]['codigo_operacion'] ?: '') . '</td>';
     } else {
         $html .= '<td></td><td></td>';
     }
@@ -416,7 +416,7 @@ for ($i = 0; $i < $max_rows; $i++) {
     // VISA
     if (isset($pagos_agrupados['VISA'][$i])) {
         $html .= '<td>' . number_format($pagos_agrupados['VISA'][$i]['monto'], 2) . '</td>';
-        $html .= '<td>' . ($pagos_agrupados['VISA'][$i]['codigo_operacion'] ?: '') . '</td>';
+        $html .= '<td>' . esc($pagos_agrupados['VISA'][$i]['codigo_operacion'] ?: '') . '</td>';
     } else {
         $html .= '<td></td><td></td>';
     }
@@ -444,12 +444,12 @@ for ($i = 0; $i < $max_rows; $i++) {
     
     // CRÉDITOS
     if (isset($creditos[$i])) {
-        $vale_display = htmlspecialchars($creditos[$i]['numero_vale']);
+        $vale_display = esc($creditos[$i]['numero_vale']);
         if (!empty($creditos[$i]['placa'])) {
-            $vale_display .= ' / ' . htmlspecialchars($creditos[$i]['placa']);
+            $vale_display .= ' / ' . esc($creditos[$i]['placa']);
         }
         $html .= '<td>' . $vale_display . '</td>';
-        $html .= '<td class="text-left">' . strtoupper($creditos[$i]['cliente']) . '</td>';
+        $html .= '<td class="text-left">' . esc(mb_strtoupper(html_entity_decode((string) $creditos[$i]['cliente'], ENT_QUOTES, 'UTF-8'))) . '</td>';
         $html .= '<td>' . number_format($creditos[$i]['monto'], 2) . '</td>';
     } else {
         $html .= '<td></td><td></td><td></td>';
@@ -510,7 +510,7 @@ $html .= '
                 <div style="height: 50px;"></div>
                 <div style="border-top: 1px solid #000; padding-top: 5px; margin: 0 50px;">
                     <div style="font-size: 10px; font-weight: bold; margin-bottom: 2px;">PERSONAL DEL GRIFO</div>
-                    <div style="font-size: 9px; margin-bottom: 2px;">' . strtoupper($turno['grifero_nombre']) . '</div>
+                    <div style="font-size: 9px; margin-bottom: 2px;">' . esc(mb_strtoupper(html_entity_decode((string) $turno['grifero_nombre'], ENT_QUOTES, 'UTF-8'))) . '</div>
                     <div style="font-size: 9px; font-weight: bold;">FIRMA</div>
                 </div>
             </td>

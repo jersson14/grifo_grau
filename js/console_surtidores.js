@@ -125,7 +125,7 @@ function Cargar_Vista_Maquinas() {
         data.forEach(function(item) {
             var badge_estado = item.estado == 'ACTIVO' ? 'success' : (item.estado == 'INACTIVO' ? 'danger' : 'warning');
             html += '<tr>';
-            html += '<td><strong>' + item.codigo + '</strong></td>';
+            html += '<td><strong>' + Texto_Seguro(item.codigo) + '</strong></td>';
             html += '<td>' + Texto_Seguro(item.producto_nombre) + '</td>';
             html += '<td>' + parseFloat(item.lectura_actual).toFixed(3) + '</td>';
             html += '<td><span class="badge badge-' + badge_estado + '">' + item.estado + '</span></td>';
@@ -144,7 +144,7 @@ function Cargar_Vista_Maquinas() {
         data.forEach(function(item) {
             var badge_estado = item.estado == 'ACTIVO' ? 'success' : (item.estado == 'INACTIVO' ? 'danger' : 'warning');
             html += '<tr>';
-            html += '<td><strong>' + item.codigo + '</strong></td>';
+            html += '<td><strong>' + Texto_Seguro(item.codigo) + '</strong></td>';
             html += '<td>' + Texto_Seguro(item.producto_nombre) + '</td>';
             html += '<td>' + parseFloat(item.lectura_actual).toFixed(3) + '</td>';
             html += '<td><span class="badge badge-' + badge_estado + '">' + item.estado + '</span></td>';

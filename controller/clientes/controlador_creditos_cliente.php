@@ -4,7 +4,7 @@ require_once '../../model/model_clientes_grifo.php';
 
 $MClientes = new Modelo_Clientes_Grifo();
 
-$id_cliente = htmlspecialchars($_POST['id_cliente'], ENT_QUOTES, 'UTF-8');
+$id_cliente = trim((string) ($_POST['id_cliente']));
 
 $consulta = $MClientes->Listar_Creditos_Cliente($id_cliente);
 

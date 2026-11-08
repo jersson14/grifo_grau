@@ -4,8 +4,8 @@ require_once '../../model/model_creditos.php';
 
 $MCreditos = new Modelo_Creditos();
 
-$id_credito = htmlspecialchars($_POST['id_credito'], ENT_QUOTES, 'UTF-8');
-$motivo = htmlspecialchars($_POST['motivo'], ENT_QUOTES, 'UTF-8');
+$id_credito = trim((string) ($_POST['id_credito']));
+$motivo = trim((string) ($_POST['motivo']));
 
 $consulta = $MCreditos->Anular_Credito($id_credito, $motivo);
 echo $consulta;

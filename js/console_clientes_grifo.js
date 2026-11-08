@@ -302,7 +302,7 @@ function Listar_Creditos_Cliente(id_cliente) {
             { 
                 "data": "turno",
                 "render": function(data, type, row) {
-                    return '<small>' + row.numero_documento + '<br>' + data + '</small>';
+                    return '<small>' + Texto_Seguro(row.numero_documento) + '<br>' + Texto_Seguro(data) + '</small>';
                 }
             },
             { 

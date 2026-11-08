@@ -82,7 +82,7 @@ echo '
     <!-- DATOS CLIENTE -->
     <tr>
         <td colspan="13" class="bloque">
-            <strong>Cliente:</strong> ' . htmlspecialchars($cliente['nombre_completo']) . '
+            <strong>Cliente:</strong> ' . esc($cliente['nombre_completo']) . '
             &nbsp;&nbsp;|&nbsp;&nbsp;
             <strong>DNI/RUC:</strong> ' . ($cliente['dni_ruc'] ?: '-') . '
             &nbsp;&nbsp;|&nbsp;&nbsp;
@@ -136,8 +136,8 @@ foreach ($vales as $vale) {
 
     echo '
     <tr' . $par . '>
-        <td class="tc">' . htmlspecialchars($vale['numero_vale']) . '</td>
-        <td class="tc">' . ($vale['placa'] ? htmlspecialchars($vale['placa']) : '—') . '</td>
+        <td class="tc">' . esc($vale['numero_vale']) . '</td>
+        <td class="tc">' . ($vale['placa'] ? esc($vale['placa']) : '—') . '</td>
         <td class="tc">' . date('d/m/Y', strtotime($vale['created_at'])) . '</td>
         <td>' . $turno . '</td>
         <td class="tr">S/. ' . number_format($monto, 2) . '</td>
@@ -146,9 +146,9 @@ foreach ($vales as $vale) {
         <td class="tc">' . $venc . '</td>
         <td class="tc">' . $fp . '</td>
         <td class="tr">' . (floatval($vale['ultimo_descuento']) > 0 ? 'S/. ' . number_format(floatval($vale['ultimo_descuento']), 2) : '—') . '</td>
-        <td class="tc">' . (!empty($vale['ultimo_codigo_operacion']) ? htmlspecialchars($vale['ultimo_codigo_operacion']) : '—') . '</td>
+        <td class="tc">' . (!empty($vale['ultimo_codigo_operacion']) ? esc($vale['ultimo_codigo_operacion']) : '—') . '</td>
         <td class="tc">' . $vale['estado'] . '</td>
-        <td>' . ($vale['observaciones'] ? htmlspecialchars($vale['observaciones']) : '—') . '</td>
+        <td>' . ($vale['observaciones'] ? esc($vale['observaciones']) : '—') . '</td>
     </tr>';
 }
 

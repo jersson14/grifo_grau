@@ -154,7 +154,7 @@ function Ver_Vales_Cliente(id_cliente, nombre_cliente, dni, total_vales, saldo_t
                 "data": "turno",
                 "render": function(data, type, row) {
                     if (row.numero_documento && row.numero_documento !== 'null' && row.numero_documento !== null) {
-                        return '<small>' + row.numero_documento + '<br>' + (data || '') + '</small>';
+                        return '<small>' + Texto_Seguro(row.numero_documento) + '<br>' + Texto_Seguro(data || '') + '</small>';
                     }
                     return '<small class="text-muted">Manual</small>';
                 }
@@ -306,7 +306,7 @@ function Ver_Vales_Cliente(id_cliente, nombre_cliente, dni, total_vales, saldo_t
 function Eliminar_Credito(id_credito, numero_vale) {
     Swal.fire({
         title: '¿Eliminar crédito permanentemente?',
-        html: 'Se eliminará el vale <strong>' + numero_vale + '</strong> y todo su historial.<br><br><strong class="text-danger">Esta acción NO se puede deshacer.</strong>',
+        html: 'Se eliminará el vale <strong>' + Texto_Seguro(numero_vale) + '</strong> y todo su historial.<br><br><strong class="text-danger">Esta acción NO se puede deshacer.</strong>',
         icon: 'error',
         showCancelButton: true,
         confirmButtonColor: '#d33',
@@ -389,7 +389,7 @@ function Listar_Creditos_Pendientes() {
             {
                 "data": "turno",
                 "render": function(data, type, row) {
-                    return '<small>' + row.numero_documento + '<br>' + data + '</small>';
+                    return '<small>' + Texto_Seguro(row.numero_documento) + '<br>' + Texto_Seguro(data) + '</small>';
                 }
             },
             {
@@ -703,7 +703,7 @@ function Pagar_Todo_Cliente() {
     setTimeout(function() {
         // Configurar el modal de pago para todas las deudas
         $('#txt_id_credito_pago').val('CLIENTE_' + id_cliente); // Indicador especial
-        $('#info_cliente_pago').html('<strong>' + nombre_cliente + '</strong><br><span class="badge badge-warning">PAGO TOTAL DE TODAS LAS DEUDAS</span>');
+        $('#info_cliente_pago').html('<strong>' + Texto_Seguro(nombre_cliente) + '</strong><br><span class="badge badge-warning">PAGO TOTAL DE TODAS LAS DEUDAS</span>');
         $('#info_vale_pago').text('MÚLTIPLES VALES');
         $('#info_monto_total_pago').text('S/. ' + parseFloat(saldo_total).toFixed(2));
         $('#info_saldo_pendiente_pago').text('S/. ' + parseFloat(saldo_total).toFixed(2));
@@ -890,7 +890,7 @@ function Revertir_Monto_Cliente() {
 function Anular_Pago_Credito(id_credito, numero_vale) {
     Swal.fire({
         title: '¿Anular el pago?',
-        html: 'Se eliminará todo el historial de pagos del vale <strong>' + numero_vale + '</strong> y quedará como <strong>PENDIENTE</strong> con el monto original.<br><br><strong class="text-danger">Esta acción no se puede deshacer.</strong>',
+        html: 'Se eliminará todo el historial de pagos del vale <strong>' + Texto_Seguro(numero_vale) + '</strong> y quedará como <strong>PENDIENTE</strong> con el monto original.<br><br><strong class="text-danger">Esta acción no se puede deshacer.</strong>',
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#d33',

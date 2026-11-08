@@ -15,12 +15,12 @@ if (!isset($_POST['numero_documento']) || !isset($_POST['id_usuario']) || !isset
     exit;
 }
 
-$numero_documento = htmlspecialchars($_POST['numero_documento'], ENT_QUOTES, 'UTF-8');
-$id_usuario = htmlspecialchars($_POST['id_usuario'], ENT_QUOTES, 'UTF-8');
-$turno = htmlspecialchars($_POST['turno'], ENT_QUOTES, 'UTF-8');
-$fecha = htmlspecialchars($_POST['fecha'], ENT_QUOTES, 'UTF-8');
-$hora_inicio = htmlspecialchars($_POST['hora_inicio'], ENT_QUOTES, 'UTF-8');
-$hora_fin = htmlspecialchars($_POST['hora_fin'], ENT_QUOTES, 'UTF-8');
+$numero_documento = trim((string) ($_POST['numero_documento']));
+$id_usuario = trim((string) ($_POST['id_usuario']));
+$turno = trim((string) ($_POST['turno']));
+$fecha = trim((string) ($_POST['fecha']));
+$hora_inicio = trim((string) ($_POST['hora_inicio']));
+$hora_fin = trim((string) ($_POST['hora_fin']));
 
 // Log para depuración
 error_log("=== ABRIR TURNO ===");

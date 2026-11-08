@@ -5,14 +5,14 @@ require '../../model/model_usuario.php';
 $MU = new Modelo_Usuario();
 
 $id     = (int) $_POST['id'];
-$dni    = strtoupper(htmlspecialchars($_POST['dni'], ENT_QUOTES, 'UTF-8'));
-$nombre = strtoupper(htmlspecialchars($_POST['nombre'], ENT_QUOTES, 'UTF-8'));
-$apelli = strtoupper(htmlspecialchars($_POST['apelli'], ENT_QUOTES, 'UTF-8'));
-$correo = htmlspecialchars($_POST['correo'], ENT_QUOTES, 'UTF-8');
-$tele   = strtoupper(htmlspecialchars($_POST['tele'], ENT_QUOTES, 'UTF-8'));
-$dire   = strtoupper(htmlspecialchars($_POST['dire'], ENT_QUOTES, 'UTF-8'));
-$usu    = htmlspecialchars($_POST['usu'], ENT_QUOTES, 'UTF-8');
-$rol    = strtoupper(htmlspecialchars($_POST['rol'], ENT_QUOTES, 'UTF-8'));
+$dni    = strtoupper(trim((string) ($_POST['dni'])));
+$nombre = strtoupper(trim((string) ($_POST['nombre'])));
+$apelli = strtoupper(trim((string) ($_POST['apelli'])));
+$correo = trim((string) ($_POST['correo']));
+$tele   = strtoupper(trim((string) ($_POST['tele'])));
+$dire   = strtoupper(trim((string) ($_POST['dire'])));
+$usu    = trim((string) ($_POST['usu']));
+$rol    = strtoupper(trim((string) ($_POST['rol'])));
 
 $MU->Validar_Cambio_Rol($id, $rol);
 

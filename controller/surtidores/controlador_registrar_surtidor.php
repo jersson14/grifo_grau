@@ -4,10 +4,10 @@ require_once '../../model/model_surtidores.php';
 
 $MSurtidores = new Modelo_Surtidores();
 
-$numero_maquina = htmlspecialchars($_POST['numero_maquina'], ENT_QUOTES, 'UTF-8');
-$codigo = htmlspecialchars($_POST['codigo'], ENT_QUOTES, 'UTF-8');
-$id_producto = htmlspecialchars($_POST['id_producto'], ENT_QUOTES, 'UTF-8');
-$lectura_inicial = htmlspecialchars($_POST['lectura_inicial'], ENT_QUOTES, 'UTF-8');
+$numero_maquina = trim((string) ($_POST['numero_maquina']));
+$codigo = trim((string) ($_POST['codigo']));
+$id_producto = trim((string) ($_POST['id_producto']));
+$lectura_inicial = trim((string) ($_POST['lectura_inicial']));
 
 // Verificar si el código ya existe en esa máquina
 $existe = $MSurtidores->Verificar_Codigo_Duplicado($codigo, $numero_maquina);

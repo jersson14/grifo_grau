@@ -74,6 +74,15 @@ function iniciar_sesion_segura(): void
     session_start();
 }
 
+/**
+ * Texto de la base listo para HTML (vistas, PDF, Excel). Primero decodifica, porque los datos antiguos
+ * se guardaron ya escapados (&amp;), y luego escapa una sola vez. Acepta null.
+ */
+function esc($valor): string
+{
+    return htmlspecialchars(html_entity_decode((string) $valor, ENT_QUOTES | ENT_HTML5, 'UTF-8'), ENT_QUOTES, 'UTF-8');
+}
+
 /** Responde con un error y termina. Las vistas reciben HTML; el resto, JSON. */
 function denegar_acceso(int $codigo, string $mensaje): void
 {

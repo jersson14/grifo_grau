@@ -96,15 +96,15 @@ foreach ($creditos as $credito) {
     $html .= '
         <tr>
             <td>' . $contador . '</td>
-            <td>' . htmlspecialchars($credito['cliente_nombre']) . '</td>
-            <td>' . htmlspecialchars($credito['numero_vale']) . '</td>
+            <td>' . esc($credito['cliente_nombre']) . '</td>
+            <td>' . esc($credito['numero_vale']) . '</td>
             <td>' . date('d/m/Y', strtotime($credito['created_at'])) . '</td>
             <td>' . date('d/m/Y', strtotime($credito['fecha_vencimiento'])) . '</td>
             <td class="text-right">S/. ' . number_format($monto, 2) . '</td>
             <td class="text-right">S/. ' . number_format($monto_pagado, 2) . '</td>
             <td class="text-right">S/. ' . number_format($saldo, 2) . '</td>
             <td class="text-center">' . $estado_badge . '</td>
-            <td>' . htmlspecialchars($credito['observaciones']) . '</td>
+            <td>' . esc($credito['observaciones']) . '</td>
         </tr>';
     
     $contador++;

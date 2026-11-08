@@ -73,7 +73,7 @@ function Cargar_Lecturas_Iniciales() {
         
         data.forEach(function(item) {
             var fila = '<tr>';
-            fila += '<td><strong>' + item.codigo + '</strong></td>';
+            fila += '<td><strong>' + Texto_Seguro(item.codigo) + '</strong></td>';
             fila += '<td>' + Texto_Seguro(item.producto_nombre) + '</td>';
             fila += '<td><strong>' + parseFloat(item.lectura_actual).toFixed(3) + '</strong></td>';
             fila += '<td>S/. ' + parseFloat(item.precio_actual).toFixed(2) + '</td>';
@@ -226,7 +226,7 @@ function Cargar_Lecturas_Turno(id_reporte) {
             else if (nombre_upper.includes('PREMIUM')) producto_tipo = 'PREMIUM';
 
             var fila = '<tr>';
-            fila += '<td><strong>' + item.codigo + '</strong></td>';
+            fila += '<td><strong>' + Texto_Seguro(item.codigo) + '</strong></td>';
             fila += '<td>' + Texto_Seguro(item.producto_nombre) + '</td>';
             fila += '<td>' + parseFloat(item.lectura_anterior).toFixed(3) + '</td>';
             
@@ -646,9 +646,9 @@ function Agregar_Fila_Pago(datos = null) {
         
         var fila = '<tr id="' + fila_id + '" data-id-pago="' + (datos ? datos.id_pago_reporte : '0') + '">';
         fila += '<td><select class="form-control form-control-sm tipo-pago-select" onchange="Guardar_Pago_Fila(\'' + fila_id + '\')">' + opciones + '</select></td>';
-        fila += '<td><input type="text" class="form-control form-control-sm codigo-operacion-input" value="' + (datos ? datos.codigo_operacion || '' : '') + '" onchange="Guardar_Pago_Fila(\'' + fila_id + '\')"></td>';
+        fila += '<td><input type="text" class="form-control form-control-sm codigo-operacion-input" value="' + Texto_Seguro(datos ? datos.codigo_operacion || '' : '') + '" onchange="Guardar_Pago_Fila(\'' + fila_id + '\')"></td>';
         fila += '<td><input type="number" step="0.01" class="form-control form-control-sm monto-pago-input" value="' + (datos ? datos.monto : '') + '" onchange="Guardar_Pago_Fila(\'' + fila_id + '\')"></td>';
-        fila += '<td><input type="text" class="form-control form-control-sm observaciones-input" value="' + (datos ? datos.observaciones || '' : '') + '" onchange="Guardar_Pago_Fila(\'' + fila_id + '\')"></td>';
+        fila += '<td><input type="text" class="form-control form-control-sm observaciones-input" value="' + Texto_Seguro(datos ? datos.observaciones || '' : '') + '" onchange="Guardar_Pago_Fila(\'' + fila_id + '\')"></td>';
         fila += '<td><button class="btn btn-danger btn-sm" onclick="Eliminar_Fila_Pago(\'' + fila_id + '\')"><i class="fas fa-trash"></i></button></td>';
         fila += '</tr>';
         
@@ -786,7 +786,7 @@ function Agregar_Fila_Credito(datos = null) {
         
         var fila = '<tr id="' + fila_id + '" data-id-credito="' + (datos ? datos.id_credito : '0') + '" data-numero-fila="' + numero_fila + '">';
         fila += '<td><select class="form-control form-control-sm cliente-select select2-cliente-turno" data-fila-id="' + fila_id + '" onchange="Guardar_Credito_Fila(\'' + fila_id + '\')">' + opciones + '</select></td>';
-        fila += '<td><input type="text" class="form-control form-control-sm numero-vale-input" value="' + (datos ? datos.numero_vale : '') + '" onchange="Guardar_Credito_Fila(\'' + fila_id + '\')" oninput="Auto_Incrementar_Vales()"></td>';
+        fila += '<td><input type="text" class="form-control form-control-sm numero-vale-input" value="' + Texto_Seguro(datos ? datos.numero_vale : '') + '" onchange="Guardar_Credito_Fila(\'' + fila_id + '\')" oninput="Auto_Incrementar_Vales()"></td>';
         fila += '<td><input type="number" step="0.01" class="form-control form-control-sm monto-credito-input" value="' + (datos ? datos.monto : '') + '" onchange="Guardar_Credito_Fila(\'' + fila_id + '\')"></td>';
         fila += '<td><input type="date" class="form-control form-control-sm fecha-vencimiento-input" value="' + (datos ? datos.fecha_vencimiento || '' : '') + '" onchange="Guardar_Credito_Fila(\'' + fila_id + '\')"></td>';
         fila += '<td><button class="btn btn-danger btn-sm" onclick="Eliminar_Fila_Credito(\'' + fila_id + '\')"><i class="fas fa-trash"></i></button></td>';
@@ -1036,7 +1036,7 @@ function Ver_Detalle_Turno(id_reporte) {
             data.forEach(function(item) {
                 html += '<tr>';
                 html += '<td>' + item.numero_maquina + '</td>';
-                html += '<td>' + item.codigo + '</td>';
+                html += '<td>' + Texto_Seguro(item.codigo) + '</td>';
                 html += '<td>' + item.producto + '</td>';
                 html += '<td>' + parseFloat(item.lectura_anterior).toFixed(3) + '</td>';
                 html += '<td>' + parseFloat(item.lectura_actual).toFixed(3) + '</td>';
@@ -1244,7 +1244,7 @@ function Cargar_Lecturas_Para_Registro() {
             else if (nombre_upper.includes('PREMIUM')) producto_tipo = 'PREMIUM';
 
             var fila = '<tr>';
-            fila += '<td><strong>' + item.codigo + '</strong></td>';
+            fila += '<td><strong>' + Texto_Seguro(item.codigo) + '</strong></td>';
             fila += '<td>' + Texto_Seguro(item.producto_nombre) + '</td>';
             fila += '<td><input type="number" step="0.001" class="form-control form-control-sm lectura-inicial-input" ' + 
                     'data-id-surtidor="' + item.id_surtidor + '" ' +
