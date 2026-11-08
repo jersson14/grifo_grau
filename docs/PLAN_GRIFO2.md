@@ -132,7 +132,7 @@ Se confirmaron leyendo el código, sin explotarlos. Producción tiene estos fall
 | PHP en XAMPP | 8.2.12 | Parches de seguridad hasta el 31-12-2026 | 8.4 |
 | MariaDB en XAMPP | 10.4.32 | Sin soporte | 11.4 LTS |
 | MySQL en Docker | 8.4 LTS (antes 8.0) | Con soporte; modo estricto, a diferencia de XAMPP | Un solo motor en todos los entornos, según D3 |
-| AdminLTE / jQuery | 3.2.0 / 3.6.0 | Funcionan | Mantener y actualizar jQuery a la última 3.x |
+| AdminLTE / jQuery | 3.2.0 / 3.7.1 | Funcionan | jQuery actualizado a la última 3.x (2.4); la 4 rompería Bootstrap 4 y DataTables |
 
 Comprobar estas fechas de soporte al iniciar la Fase 2.
 
