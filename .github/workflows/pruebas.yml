@@ -99,6 +99,7 @@ jobs:
           GRIFO_BASE=http://127.0.0.1:8001/${{ github.event.repository.name }} DB_NAME=grifo_instalar php tests/instalacion.php | tee -a /tmp/resultados.txt || fallo=1
           php tests/respaldos.php mysql | tee -a /tmp/resultados.txt || fallo=1
           php tests/facturacion.php /tmp/mock_nubefact | tee -a /tmp/resultados.txt || fallo=1
+          php tests/notas.php /tmp/mock_nubefact | tee -a /tmp/resultados.txt || fallo=1
           php tests/chatbot.php /tmp/mock_anthropic.log | tee -a /tmp/resultados.txt || fallo=1
           if grep -q 'FALLA' /tmp/resultados.txt; then fallo=1; fi
           exit $fallo

@@ -220,7 +220,7 @@ function ruta_accesible(string $ruta): bool
 function auditar_peticion(string $ruta): void
 {
     $accion = str_replace(['controlador_', '.php'], '', basename($ruta));
-    if (!preg_match('/^(regist|guardar|modific|cambiar|anular|eliminar|actualizar|agregar|abrir|cerrar|pagar|revertir|validar|asignar|aplicar|resolver|programar|cancelar|mover|editar)/', $accion)) {
+    if (!preg_match('/^(regist|guardar|modific|cambiar|anular|eliminar|actualizar|agregar|abrir|cerrar|pagar|revertir|validar|asignar|aplicar|resolver|programar|cancelar|mover|editar|facturar|crear)/', $accion)) {
         return;
     }
     try {

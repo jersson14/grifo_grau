@@ -22,6 +22,11 @@ class Modelo_Configuracion extends conexionBD
         'factura_token'          => ['tipo' => 'secreto'],
         'factura_serie_factura'  => ['tipo' => 'patron', 'patron' => '/^F[A-Z0-9]{3}$/'],
         'factura_serie_boleta'   => ['tipo' => 'patron', 'patron' => '/^B[A-Z0-9]{3}$/'],
+        // Notas: SUNAT exige que la serie empiece como la del documento que modifican (F para facturas, B para boletas).
+        'factura_serie_nc_factura' => ['tipo' => 'patron', 'patron' => '/^F[A-Z0-9]{3}$/'],
+        'factura_serie_nc_boleta'  => ['tipo' => 'patron', 'patron' => '/^B[A-Z0-9]{3}$/'],
+        'factura_serie_nd_factura' => ['tipo' => 'patron', 'patron' => '/^F[A-Z0-9]{3}$/'],
+        'factura_serie_nd_boleta'  => ['tipo' => 'patron', 'patron' => '/^B[A-Z0-9]{3}$/'],
         'factura_unidad_medida'  => ['tipo' => 'patron', 'patron' => '/^[A-Z0-9]{2,3}$/'],
         'factura_boleta_tope_sin_documento' => ['tipo' => 'numero', 'min' => 0, 'max' => 100000],
         'ia_api_key'             => ['tipo' => 'secreto'],

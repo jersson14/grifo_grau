@@ -262,10 +262,10 @@ Reglas legales y tributarias: validar con el contador antes de implementar.
 - [ ] **5.3** Primer adaptador según D5:
   - **PSE/OSE por API (recomendado):** el proveedor se encarga de firma y envío. Comparar precios y soporte vigentes antes de contratar.
   - **Emisión directa a SUNAT (por ejemplo, con la librería Greenter):** sin costo por proveedor, pero con certificado digital, firma, resúmenes y bajas a nuestro cargo.
-- [ ] **5.4** Comprobantes: boleta, factura, notas de crédito y débito, series configurables, XML, CDR, PDF con QR, y envío por correo o WhatsApp.
+- [~] **5.4** Hecho: boleta, factura, series configurables y enlaces a XML, CDR y PDF (con QR, los genera Nubefact); notas de crédito y débito desde Comprobantes sobre una factura o boleta ya enviada, con los motivos de los catálogos 09 y 10 de SUNAT, series propias (F… para facturas, B… para boletas, validadas), la de anulación o devolución total por todo lo que queda y la parcial sin pasar de lo que queda (contando las notas anteriores); no se emite una nota sobre otra nota y queda en la auditoría. Falta: envío por correo o WhatsApp (necesita una cuenta de correo).
 - [x] **5.5** Cola con reintentos: si SUNAT o el proveedor no responden, la venta se guarda como pendiente y el turno sigue.
 - [x] **5.6** Bandeja de comprobantes con estados: pendiente, aceptado, observado, rechazado y anulado.
-- [ ] **5.7** Facturar vales de crédito acumulados de un cliente en un solo comprobante.
+- [x] **5.7** Comprobantes → «Facturar vales de un cliente»: se elige el cliente y el periodo, se marcan sus vales pendientes de facturar y se emite una factura (exige RUC) o boleta con una línea por vale (número, placa y fecha). Un vale va en un solo comprobante vigente (`comprobante_vales`); si el comprobante se anula, sus vales se liberan. Pruebas: `tests/notas.php` (28) contra el simulador de Nubefact.
 - [ ] **5.8** Validar con el contador los casos tributarios de combustibles antes de pasar a producción.
 
 **Listo cuando:** se emite en ambiente de pruebas sin errores, y con el interruptor apagado no aparece nada de facturación ni cambia la operación.

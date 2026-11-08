@@ -88,7 +88,8 @@ echo "\n2. Configuración\n";
 $admin->pedir(MODULO, ['codigo' => 'facturacion', 'activo' => '1']);
 comprobar('encendido aparece en el menú', strpos($admin->pedir('view/index.php')['cuerpo'], 'facturacion/view_comprobantes') !== false);
 comprobar('el grifero no abre comprobantes', $grifero->pedir('view/facturacion/view_comprobantes.php')['codigo'] === 403 && $grifero->pedir(CPE . 'listar_comprobantes.php', [])['codigo'] === 403);
-comprobar('el formulario ofrece boleta y factura', strpos($grifero->pedir('view/ventas/view_ventas.php')['cuerpo'], '<option value="BOLETA">') !== false);
+$formVenta = $grifero->pedir('view/ventas/view_ventas.php')['cuerpo'];
+comprobar('el formulario ofrece boleta y factura', strpos($formVenta, 'name="venta_comprobante" value="BOLETA"') !== false && strpos($formVenta, 'name="venta_comprobante" value="FACTURA"') !== false);
 $r = $admin->pedir(GUARDAR, ['factura_ruta' => 'http://sitio-malicioso.com/api']);
 comprobar('una ruta que no es de Nubefact se rechaza', ($r['json']['success'] ?? true) === false, $r['cuerpo']);
 $r = $admin->pedir(GUARDAR, ['factura_ruta' => 'https://api.nubefact.com.atacante.com/api/v1/x']);
@@ -254,7 +255,7 @@ if (!empty($r['json']['id_reporte'])) { $admin->pedir('controller/turnos/control
 $modo('ok');
 
 echo "\n10. Limpieza\n";
-foreach (['comprobantes', 'series_comprobante', 'ventas'] as $t) { $pdo->exec("DELETE FROM $t"); }
+foreach (['comprobante_vales', 'comprobante_items', 'comprobantes', 'series_comprobante', 'ventas'] as $t) { $pdo->exec("DELETE FROM $t"); }
 $pdo->exec("DELETE FROM clientes WHERE id_cliente IN ($cliRuc, $cliDni)");
 $pdo->exec("UPDATE configuracion SET valor = NULL WHERE clave IN ('factura_token', 'factura_ruta')");
 $admin->pedir(MODULO, ['codigo' => 'facturacion', 'activo' => '0']);
