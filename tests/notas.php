@@ -59,6 +59,7 @@ foreach (['documentos.json', 'peticiones.log'] as $f) { if (is_file($dirMock . $
 $modo('ok');
 
 $maxComprobante = (int) $pdo->query('SELECT COALESCE(MAX(id_comprobante), 0) FROM comprobantes')->fetchColumn();
+$maxAuditoria = (int) $pdo->query('SELECT COALESCE(MAX(id_auditoria), 0) FROM auditoria')->fetchColumn();
 $maxCredito = (int) $pdo->query('SELECT COALESCE(MAX(id_credito), 0) FROM ventas_credito')->fetchColumn();
 $maxCliente = (int) $pdo->query('SELECT COALESCE(MAX(id_cliente), 0) FROM clientes')->fetchColumn();
 $seriesAntes = $pdo->query('SELECT serie, ultimo_numero FROM series_comprobante')->fetchAll(PDO::FETCH_KEY_PAIR);
@@ -128,7 +129,7 @@ try {
     comprobar('con el comprobante ya cubierto, no admite otra', $falla($json($admin, CPE . 'crear_nota.php', ['id_referencia' => $idFac, 'clase' => 'NCREDITO', 'motivo' => '09', 'sustento' => 'Otra', 'monto' => 1]), 'todo su importe'));
     $idNc = (int) $pdo->query("SELECT MAX(id_comprobante) FROM comprobantes WHERE tipo = 'NCREDITO'")->fetchColumn();
     comprobar('no se emite una nota sobre otra nota', $falla($json($admin, CPE . 'crear_nota.php', ['id_referencia' => $idNc, 'clase' => 'NCREDITO', 'motivo' => '09', 'sustento' => 'x', 'monto' => 1])));
-    comprobar('la nota queda en la auditoría', (int) $pdo->query("SELECT COUNT(*) FROM auditoria WHERE accion = 'NOTA_CREDITO' AND detalle LIKE '%Rebaja por pronto pago%'")->fetchColumn() === 1);
+    comprobar('la nota queda en la auditoría', (int) $pdo->query("SELECT COUNT(*) FROM auditoria WHERE id_auditoria > $maxAuditoria AND accion = 'NOTA_CREDITO' AND detalle LIKE '%Rebaja por pronto pago%'")->fetchColumn() === 1);
 
     echo "\n4. Nota de débito\n";
     $r = $json($admin, CPE . 'crear_nota.php', ['id_referencia' => $idFac, 'clase' => 'NDEBITO', 'motivo' => '01', 'sustento' => 'Intereses por pago tardío', 'monto' => 5]);

@@ -42,6 +42,22 @@ if (strpos($texto, 'FORZAR_RECHAZO') !== false) {
     exit;
 }
 
+if (strpos($texto, 'TABLA') !== false) {
+    // Respuesta con formato, para probar cómo la pinta el chat (incluye HTML que nunca debe ejecutarse).
+    echo json_encode($base + ['stop_reason' => 'end_turn', 'content' => [['type' => 'text', 'text' =>
+        "**Galones por combustible**
+
+| Combustible | Galones |
+|---|---:|
+| Diesel B5 | 1,250.5 |
+| Premium <img src=x onerror=\"window.xss=1\"> | 480 |
+| Regular | 730.25 |
+
+- Periodo: hoy
+- Fuente: lecturas de surtidores"]]]);
+    exit;
+}
+
 if ($resultado === null) {
     $herramienta = strpos($texto, 'RANKING') !== false ? 'ranking_griferos' : 'ventas_por_periodo';
     $entrada = ['desde' => date('Y-m-d'), 'hasta' => date('Y-m-d')];

@@ -141,29 +141,34 @@ $capacidades = capacidades_sesion();
         $chat_visible = in_array($_SESSION['S_ROL'], explode(',', (string) $config_chat->Obtener('ia_roles', 'ADMINISTRADOR')), true);
     }
     if ($chat_visible) { ?>
-      <button id="chat_abrir" type="button" class="btn btn-primary rounded-circle elevation-3" title="Asistente de datos" aria-label="Abrir asistente de datos"
-              style="position:fixed;right:24px;bottom:24px;width:56px;height:56px;z-index:1050">
-        <i class="fas fa-comments"></i>
+      <button id="chat_abrir" type="button" class="g-chat-boton" aria-label="Abrir el asistente de datos" aria-controls="chat_panel" aria-expanded="false">
+        <i class="fas fa-comment-dots" aria-hidden="true"></i><span class="g-chat-boton-texto">Asistente</span>
       </button>
-      <div id="chat_panel" class="card d-none elevation-4" style="position:fixed;right:24px;bottom:90px;width:380px;max-width:calc(100vw - 48px);height:520px;max-height:calc(100vh - 120px);z-index:1050;margin:0">
-        <div class="card-header d-flex align-items-center" style="background:#023D77;color:#fff">
-          <b class="mr-auto"><i class="fas fa-robot"></i> Asistente de datos</b>
-          <button id="chat_limpiar" type="button" class="btn btn-sm text-white" title="Nueva conversación" aria-label="Nueva conversación"><i class="fas fa-eraser"></i></button>
-          <button id="chat_cerrar" type="button" class="btn btn-sm text-white" title="Cerrar" aria-label="Cerrar"><i class="fas fa-times"></i></button>
+      <section id="chat_panel" class="g-chat d-none" role="dialog" aria-labelledby="chat_titulo">
+        <header class="g-chat-cabecera">
+          <div class="mr-auto">
+            <h2 id="chat_titulo" class="g-chat-titulo">Asistente de datos</h2>
+            <p class="g-chat-sub">Solo consulta. Las cifras son orientativas.</p>
+          </div>
+          <button id="chat_limpiar" type="button" class="g-chat-icono" title="Nueva conversación" aria-label="Nueva conversación"><i class="fas fa-plus" aria-hidden="true"></i></button>
+          <button id="chat_cerrar" type="button" class="g-chat-icono" title="Cerrar" aria-label="Cerrar el asistente"><i class="fas fa-times" aria-hidden="true"></i></button>
+        </header>
+        <div id="chat_mensajes" class="g-chat-mensajes" aria-live="polite">
+          <div class="g-chat-bienvenida" id="chat_bienvenida">
+            <p class="mb-2">Pregunte por ventas, turnos, créditos, precios o stock. Las respuestas son orientativas: confirme las cifras importantes en los reportes.</p>
+            <div class="g-chat-sugerencias">
+              <button type="button" class="g-chat-sugerencia">¿Cuánto vendimos hoy?</button>
+              <button type="button" class="g-chat-sugerencia">Galones por combustible esta semana</button>
+              <button type="button" class="g-chat-sugerencia">Créditos vencidos por cliente</button>
+            </div>
+          </div>
         </div>
-        <div id="chat_mensajes" class="card-body" style="overflow-y:auto">
-          <div class="chat_burbuja chat_bot">Pregúntame por ventas, turnos o créditos. Por ejemplo: «¿Cuántos galones de Premium se vendieron esta semana?». Las respuestas son orientativas: confirma las cifras importantes en los reportes.</div>
-        </div>
-        <form id="chat_form" class="card-footer d-flex p-2">
-          <input id="chat_entrada" class="form-control mr-2" maxlength="1000" placeholder="Escribe tu pregunta" aria-label="Pregunta" autocomplete="off">
-          <button class="btn btn-primary" type="submit" aria-label="Enviar"><i class="fas fa-paper-plane"></i></button>
+        <form id="chat_form" class="g-chat-pie">
+          <label for="chat_entrada" class="sr-only">Pregunta</label>
+          <textarea id="chat_entrada" class="form-control" rows="1" maxlength="1000" placeholder="Escriba su pregunta" autocomplete="off"></textarea>
+          <button class="btn btn-primary g-chat-enviar" type="submit" aria-label="Enviar la pregunta"><i class="fas fa-arrow-up" aria-hidden="true"></i></button>
         </form>
-      </div>
-      <style>
-        .chat_burbuja { padding: 8px 12px; border-radius: 10px; margin-bottom: 8px; white-space: pre-wrap; overflow-wrap: anywhere; }
-        .chat_usuario { background: #023D77; color: #fff; margin-left: 36px; }
-        .chat_bot { background: #f1f3f5; margin-right: 36px; }
-      </style>
+      </section>
     <?php } ?>
 
     <!-- Footer -->

@@ -10,6 +10,18 @@ use Anthropic\Messages\ToolUseBlock;
 class Modelo_Chatbot extends conexionBD
 {
     private const MAX_RONDAS = 6;
+    private const HISTORIAL_VISIBLE = 30;
+    private const HISTORIAL_CONTEXTO = 5;
+
+    /** Lo que ve el usuario mientras se ejecuta cada herramienta. */
+    private const ETIQUETAS = [
+        'ventas_por_periodo'   => 'Consultando las ventas',
+        'turnos_por_periodo'   => 'Revisando los turnos',
+        'creditos_pendientes'  => 'Revisando los créditos',
+        'precios_y_surtidores' => 'Revisando precios y surtidores',
+        'stock_tanques'        => 'Revisando el stock de los tanques',
+        'ranking_griferos'     => 'Comparando a los griferos',
+    ];
 
     /** USD por millón de tokens: entrada, salida, lectura de caché. Solo para estimar el consumo. */
     private const PRECIOS = [
@@ -23,6 +35,8 @@ class Modelo_Chatbot extends conexionBD
 Eres el asistente de datos de un grifo (estación de combustible) en Perú. Respondes en español, de forma breve y clara, a personas que administran u operan el grifo.
 
 Responde solo con datos obtenidos de las herramientas. Si una herramienta no devuelve datos, dilo. Nunca inventes ni estimes cifras, y si una pregunta no se puede responder con las herramientas disponibles, explica qué dato falta.
+
+El chat muestra texto simple, negritas, listas y tablas Markdown. Para comparar varias cifras usa una tabla corta de 2 a 4 columnas; si tiene una sola columna numérica, el chat la acompaña de barras.
 
 Los importes están en soles (S/) y los volúmenes en galones. Indica siempre el periodo consultado. Interpreta "hoy", "ayer" o "esta semana" a partir de la fecha actual indicada en el mensaje del usuario.
 
@@ -45,7 +59,7 @@ TXT;
      * Responde una pregunta. $historial son los turnos anteriores, solo con texto.
      * @return array{ok: bool, respuesta: string}
      */
-    public function Preguntar(string $pregunta, array $historial): array
+    public function Preguntar(string $pregunta, array $historial, ?callable $avance = null): array
     {
         $config = new Modelo_Configuracion();
         $modelo = $config->Obtener('ia_modelo', 'claude-opus-5-5');
@@ -119,6 +133,9 @@ TXT;
                         continue;
                     }
                     $usadas[] = $bloque->name;
+                    if ($avance) {
+                        $avance(self::ETIQUETAS[$bloque->name] ?? 'Consultando datos');
+                    }
                     try {
                         $resultados[] = ['type' => 'tool_result', 'toolUseID' => $bloque->id, 'content' => $herramientas->Ejecutar($bloque->name, (array) $bloque->input)];
                     } catch (InvalidArgumentException $e) {
@@ -134,6 +151,36 @@ TXT;
             error_log('Error del chatbot: ' . get_class($e) . ': ' . $e->getMessage());
             return $this->Terminar($pregunta, 'El servicio de IA no está disponible en este momento. Las demás funciones del sistema siguen operando con normalidad.', $usadas, $modelo, $uso, 'ERROR', false);
         }
+    }
+
+    /** Conversación visible del usuario, de la más antigua a la más reciente. */
+    public function Historial(int $limite = self::HISTORIAL_VISIBLE): array
+    {
+        $c = conexionBD::conexionPDO();
+        $q = $c->prepare("SELECT pregunta, respuesta, estado, DATE_FORMAT(creado_en, '%Y-%m-%d %H:%i') AS creado_en
+                          FROM ia_consultas WHERE id_usuario = ? AND oculta = 0 ORDER BY id_consulta DESC LIMIT " . max(1, $limite));
+        $q->execute([$this->idUsuario]);
+        return array_reverse($q->fetchAll(PDO::FETCH_ASSOC));
+    }
+
+    /** Las últimas preguntas respondidas, como contexto para la siguiente (solo texto). */
+    public function Contexto(): array
+    {
+        $mensajes = [];
+        foreach ($this->Historial(self::HISTORIAL_CONTEXTO) as $fila) {
+            if ($fila['estado'] !== 'OK') {
+                continue;
+            }
+            $mensajes[] = ['role' => 'user', 'content' => $fila['pregunta']];
+            $mensajes[] = ['role' => 'assistant', 'content' => (string) $fila['respuesta']];
+        }
+        return $mensajes;
+    }
+
+    public function Nueva_Conversacion(): void
+    {
+        $c = conexionBD::conexionPDO();
+        $c->prepare('UPDATE ia_consultas SET oculta = 1 WHERE id_usuario = ? AND oculta = 0')->execute([$this->idUsuario]);
     }
 
     public function Gasto_Del_Mes(): float

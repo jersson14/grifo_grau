@@ -11,6 +11,7 @@ return [
     'modulos' => [
         'controller/ia/controlador_preguntar.php'            => 'chatbot_ia',
         'controller/ia/controlador_limpiar_conversacion.php' => 'chatbot_ia',
+        'controller/ia/controlador_historial.php'            => 'chatbot_ia',
         'controller/inventario/*' => 'inventario',
         'view/inventario/*'       => 'inventario',
         'controller/compras/*'    => 'inventario',
@@ -65,5 +66,6 @@ return [
         // Quién usa realmente el chatbot se configura en la interfaz (ia_roles).
         'controller/ia/controlador_preguntar.php',
         'controller/ia/controlador_limpiar_conversacion.php',
+        'controller/ia/controlador_historial.php',
     ],
 ];

@@ -18,7 +18,7 @@ Actualizado el 2026-11-07. Todo está en commits locales, sin publicar.
 |---|---|
 | Fases 0 y 1 | Base y seguridad hechas y probadas sobre el **esquema provisional**. Falta contrastar con producción |
 | Fase 3 | Hecho: Configuración, módulos activables, avisos en el Dashboard, menú editable, roles con permisos editables y auditoría. Falta: admitir cualquier cantidad de surtidores en el formulario de turno (3.6), notificaciones (3.8), asistente de instalación (3.9) y widgets por rol |
-| Fase 6 | Chatbot funcional probado contra una **API simulada**. Falta: probarlo con una clave real (6.7) y añadir streaming |
+| Fase 6 | Chatbot funcional probado contra una **API simulada**, con burbuja en todas las pantallas e historial por usuario. Falta: probarlo con una clave real (6.7) |
 | Fase 4 | Hecho y probado: tanques, kardex, varillaje, compras con cuentas por pagar, ventas individuales, precios (historial y programación) y caja con arqueo y depósitos (4.1 a 4.6). Tienda, flotas, gastos y personal se hicieron en la fase 9; reportes (4.11) hecho. Fase completa: el cumplimiento sectorial (4.12) quedó descartado por el dueño |
 | Fase 5 | Facturación con Nubefact: boletas, facturas, anulaciones, reintentos y bandeja, probados contra un **simulador**. Falta probar en su modo demo y notas de crédito, facturar vales y validar con el contador |
 | Fase 2 | Hecho: PHP 8.4 y MySQL 8.4 en Docker, sin avisos de obsolescencia, mPDF 8.3, CI en GitHub Actions y copias de seguridad (2.6). Todas las pruebas pasan en XAMPP, PHP 8.4 y Docker. Falta PHPStan, `utf8mb4` (depende del esquema de producción) y confirmar el motor de producción (D3) |
@@ -280,7 +280,9 @@ Permite preguntar en lenguaje natural, por ejemplo: «¿Cuántos galones de Prem
 - [ ] **6.4** Después, si hace falta, `consulta_sql` para preguntas no previstas, con estas defensas:
   - Usuario de base de datos con `SELECT` solo sobre **vistas** `ia_*`.
   - Una sola sentencia `SELECT`, con límite de filas y tiempo.
-- [ ] **6.5** Burbuja de chat en toda la interfaz con respuesta en streaming, tablas y gráficos simples, historial por usuario y aviso de que el resultado es orientativo.
+- [x] **6.5** Burbuja de chat en toda la interfaz con respuesta en streaming, tablas y gráficos simples, historial por usuario y aviso de que el resultado es orientativo.
+  - Hecho: burbuja en todas las pantallas (pantalla completa en celular, sube sobre la barra de cuadre de turnos), historial guardado en `ia_consultas` por usuario (migración 018; «Nueva conversación» lo oculta sin borrar la bitácora de consumo) que también es el contexto de la siguiente pregunta, tablas Markdown con barras cuando hay una sola cifra, sugerencias de preguntas y aviso de que es orientativo. Todo se pinta como texto.
+  - El avance llega por líneas (`flujo=1`): se ve qué dato se está consultando mientras responde. El texto de la respuesta no llega palabra por palabra: llega completo al terminar. Si hiciera falta, se puede cambiar a streaming de tokens con el SDK.
 - [x] **6.6** Bitácora de preguntas, consultas ejecutadas, tokens y costo. Panel de consumo en la interfaz.
 - [ ] **6.7** Pruebas con un conjunto de preguntas reales y respuestas conocidas antes de habilitarlo a los usuarios.
 

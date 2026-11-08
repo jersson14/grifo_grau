@@ -97,6 +97,9 @@ $admin->pedir(GUARDAR, ['ia_roles' => 'ADMINISTRADOR']);
 $r = $grifero->pedir(PREGUNTAR, ['pregunta' => 'ventas']);
 comprobar('un rol sin acceso recibe 403', $r['codigo'] === 403, (string) $r['codigo']);
 comprobar('el chat no aparece a ese rol', strpos($grifero->pedir('view/index.php')['cuerpo'], 'chat_panel') === false);
+$r = $grifero->pedir('controller/ia/controlador_historial.php', []);
+comprobar('un rol sin acceso no lee el historial', $r['codigo'] === 403, (string) $r['codigo']);
+$pdo->exec('DELETE FROM ia_consultas');
 
 echo "\n4. Ciclo con herramientas\n";
 file_put_contents($registro, '');
@@ -124,6 +127,40 @@ $r = $admin->pedir(PREGUNTAR, ['pregunta' => 'Y de ayer?']);
 $peticiones = array_map(fn($l) => json_decode($l, true), array_filter(explode("\n", file_get_contents($registro))));
 $mensajes = $peticiones[2]['peticion']['messages'] ?? [];
 comprobar('recuerda la conversación', count($mensajes) === 3 && $mensajes[1]['role'] === 'assistant', (string) count($mensajes));
+
+echo "\n4b. Historial por usuario y avance\n";
+$r = $admin->pedir('controller/ia/controlador_historial.php', []);
+$h = $r['json']['data'] ?? [];
+comprobar('el historial trae las dos preguntas en orden', count($h) === 2 && $h[0]['pregunta'] === '¿Cuánto vendimos hoy?' && $h[1]['pregunta'] === 'Y de ayer?', $r['cuerpo']);
+comprobar('el historial trae la respuesta y la hora', strpos($h[0]['respuesta'] ?? '', 'RESULTADO') !== false && preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/', $h[0]['creado_en'] ?? ''), json_encode($h[0] ?? null));
+$otro = new Cliente($base);
+$otro->entrar('admin', 'admin123');
+$r = $otro->pedir('controller/ia/controlador_historial.php', []);
+comprobar('el historial sigue en otra sesión del mismo usuario', count($r['json']['data'] ?? []) === 2, $r['cuerpo']);
+
+$pdo->exec("INSERT INTO ia_consultas (id_usuario, pregunta, respuesta, estado) SELECT id_usuario, 'pregunta ajena', 'dato ajeno', 'OK' FROM usuario WHERE usu_usuario = 'grifero1'");
+$r = $admin->pedir('controller/ia/controlador_historial.php', []);
+comprobar('no muestra conversaciones de otro usuario', strpos($r['cuerpo'], 'ajen') === false, $r['cuerpo']);
+
+file_put_contents($registro, '');
+$r = $admin->pedir(PREGUNTAR, ['pregunta' => '¿Cuánto vendimos hoy?', 'flujo' => '1']);
+$lineas = array_values(array_filter(explode("\n", $r['cuerpo'])));
+$datos = array_map(fn($l) => json_decode($l, true), $lineas);
+comprobar('en modo flujo envía el avance antes de la respuesta', count($datos) === 2 && ($datos[0]['avance'] ?? '') === 'Consultando las ventas', $r['cuerpo']);
+comprobar('la última línea es la respuesta', strpos($datos[1]['respuesta'] ?? '', 'RESULTADO') !== false && ($datos[1]['ok'] ?? false) === true, $r['cuerpo']);
+$peticiones = array_map(fn($l) => json_decode($l, true), array_filter(explode("\n", file_get_contents($registro))));
+comprobar('el contexto sale de la base: lleva las preguntas anteriores', count($peticiones[0]['peticion']['messages'] ?? []) === 5, (string) count($peticiones[0]['peticion']['messages'] ?? []));
+
+$r = $admin->pedir('controller/ia/controlador_limpiar_conversacion.php', []);
+$r = $admin->pedir('controller/ia/controlador_historial.php', []);
+comprobar('«Nueva conversación» vacía el historial visible', ($r['json']['data'] ?? null) === [], $r['cuerpo']);
+comprobar('pero la bitácora de consumo conserva las consultas', (int) $pdo->query("SELECT COUNT(*) FROM ia_consultas WHERE pregunta LIKE '%vendimos%'")->fetchColumn() === 2);
+file_put_contents($registro, '');
+$admin->pedir(PREGUNTAR, ['pregunta' => 'ventas']);
+$peticiones = array_map(fn($l) => json_decode($l, true), array_filter(explode("\n", file_get_contents($registro))));
+comprobar('tras la nueva conversación no arrastra el contexto', count($peticiones[0]['peticion']['messages'] ?? []) === 1, (string) count($peticiones[0]['peticion']['messages'] ?? []));
+comprobar('el grifero conserva su propia conversación', (int) $pdo->query("SELECT COUNT(*) FROM ia_consultas WHERE pregunta = 'pregunta ajena' AND oculta = 0")->fetchColumn() === 1);
+$pdo->exec("DELETE FROM ia_consultas WHERE pregunta = 'pregunta ajena'");
 
 echo "\n5. Límites por rol dentro del chat\n";
 $admin->pedir(GUARDAR, ['ia_roles' => 'ADMINISTRADOR,GRIFERO']);
