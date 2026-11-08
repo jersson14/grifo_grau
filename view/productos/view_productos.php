@@ -139,6 +139,9 @@
                             <option value="DIESEL">DIESEL</option>
                             <option value="REGULAR">REGULAR</option>
                             <option value="PREMIUM">PREMIUM</option>
+                            <option value="GLP">GLP</option>
+                            <option value="GNV">GNV</option>
+                            <option value="OTRO">OTRO</option>
                         </select>
                     </div>
                     <div class="col-12 form-group">
@@ -180,6 +183,9 @@
                             <option value="DIESEL">DIESEL</option>
                             <option value="REGULAR">REGULAR</option>
                             <option value="PREMIUM">PREMIUM</option>
+                            <option value="GLP">GLP</option>
+                            <option value="GNV">GNV</option>
+                            <option value="OTRO">OTRO</option>
                         </select>
                     </div>
                     <div class="col-12 form-group">

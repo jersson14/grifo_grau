@@ -31,7 +31,13 @@ class Modelo_Productos extends conexionBD {
     }
 
     // REGISTRAR PRODUCTO
+    /** Tipos de combustible. Diésel, regular y premium además llenan sus columnas propias en el turno. */
+    public const TIPOS = ['DIESEL', 'REGULAR', 'PREMIUM', 'GLP', 'GNV', 'OTRO'];
+
     public function Registrar_Producto($nombre, $tipo, $precio, $id_usuario) {
+        if (!in_array($tipo, self::TIPOS, true)) {
+            return 0;
+        }
         $c = conexionBD::conexionPDO();
         $sql = "INSERT INTO productos (nombre, tipo, precio_actual, estado, created_at, id_usuario) 
                 VALUES (?, ?, ?, 'ACTIVO', NOW(), ?)";
@@ -47,6 +53,9 @@ class Modelo_Productos extends conexionBD {
 
     // MODIFICAR PRODUCTO
     public function Modificar_Producto($id, $nombre, $tipo, $precio, $id_usuario = null) {
+        if (!in_array($tipo, self::TIPOS, true)) {
+            return 0;
+        }
         $c = conexionBD::conexionPDO();
         $c->beginTransaction();
         try {

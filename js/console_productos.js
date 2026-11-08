@@ -27,6 +27,7 @@ function Listar_Productos() {
                     } else if (data == 'PREMIUM') {
                         return '<span class="badge badge-warning">PREMIUM</span>';
                     }
+                    return '<span class="badge badge-light">' + Texto_Seguro(data || 'SIN TIPO') + '</span>';
                 }
             },
             { 

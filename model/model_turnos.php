@@ -488,8 +488,9 @@ class Modelo_Turnos extends conexionBD {
             }
         }
         
-        $totales['total_ventas'] = $totales['total_diesel'] + $totales['total_regular'] + $totales['total_premium'];
-        $totales['total_galones'] = $totales['galones_diesel'] + $totales['galones_regular'] + $totales['galones_premium'];
+        // El total suma todas las lecturas: un combustible de otro tipo también cuenta en el cuadre.
+        $totales['total_ventas'] = array_sum(array_map('floatval', array_column($resultados, 'total')));
+        $totales['total_galones'] = array_sum(array_map('floatval', array_column($resultados, 'galones')));
         
         // Total de pagos por método
         $sql_pagos = "SELECT 

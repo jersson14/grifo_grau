@@ -83,7 +83,13 @@ $response = [
     'galones_diesel' => $galones_diesel,
     'galones_regular' => $galones_regular,
     'galones_premium' => $galones_premium,
-    'total_galones' => $total_galones
+    'total_galones' => $total_galones,
+    // Desglose por producto: incluye cualquier combustible, no solo diésel, regular y premium.
+    'por_producto' => array_map(fn($f) => [
+        'nombre' => $f['nombre_producto'],
+        'galones' => round((float) $f['total_galones'], 3),
+        'total' => round((float) $f['total_soles'], 2),
+    ], $resultado),
 ];
 
 echo json_encode($response);

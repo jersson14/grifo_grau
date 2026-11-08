@@ -237,6 +237,7 @@ function Cargar_Lecturas_Turno(id_reporte) {
                     'data-lectura-anterior="' + item.lectura_anterior + '" ' +
                     'data-precio="' + item.precio_galon + '" ' +
                     'data-producto="' + producto_tipo + '" ' +
+                    'data-nombre="' + Texto_Seguro(item.producto_nombre) + '" ' +
                     'value="' + parseFloat(item.lectura_actual).toFixed(3) + '"></td>';
             
             fila += '<td class="galones-' + item.id_lectura + '">' + parseFloat(item.galones_vendidos).toFixed(3) + '</td>';
@@ -294,9 +295,6 @@ function Calcular_Fila_Local(input) {
 }
 
 function Calcular_Totales_Locales() {
-    var total_diesel = 0;
-    var total_regular = 0;
-    var total_premium = 0;
     var total_ventas = 0;
     
     // Recorrer todos los inputs de lectura
@@ -318,17 +316,10 @@ function Calcular_Totales_Locales() {
             $(this).attr('data-total-calculado', total_fila);
         }
         
-        if (producto == 'DIESEL') total_diesel += total_fila;
-        else if (producto == 'REGULAR') total_regular += total_fila;
-        else if (producto == 'PREMIUM') total_premium += total_fila;
-        
         total_ventas += total_fila;
     });
-    
-    // Actualizar tarjetas de resumen
-    $("#total_diesel").text('S/. ' + total_diesel.toFixed(2));
-    $("#total_regular").text('S/. ' + total_regular.toFixed(2));
-    $("#total_premium").text('S/. ' + total_premium.toFixed(2));
+
+    Pintar_Resumen_Combustibles('.input-lectura', 'lectura-anterior');
     $("#total_ventas").text('S/. ' + total_ventas.toFixed(2));
     
     // Actualizar Cuadre de Caja Localmente
@@ -990,6 +981,22 @@ function Ver_Detalle_Turno(id_reporte) {
         $("#detalle_grifero").text(data.grifero || '-');
         
         // Totales en tarjetas
+        // Una fila por combustible del turno, sea cual sea su tipo.
+        var cuerpo = $("#detalle_por_producto").empty();
+        (data.por_producto || []).forEach(function (p) {
+            cuerpo.append($('<tr></tr>').append(
+                $('<td></td>').text(p.nombre),
+                $('<td class="text-right"></td>').text(parseFloat(p.galones || 0).toFixed(3) + ' gal'),
+                $('<td class="text-right"></td>').text('S/. ' + parseFloat(p.total || 0).toFixed(2))
+            ));
+        });
+        if (!(data.por_producto || []).length) {
+            cuerpo.append($('<tr></tr>').append($('<td colspan="3" class="text-muted text-center"></td>').text('Sin lecturas')));
+        }
+        $("#detalle_total_ventas").text('S/. ' + parseFloat(data.total_ventas || 0).toFixed(2));
+        $("#detalle_galones_total").text(parseFloat(data.total_galones || 0).toFixed(3) + ' gal');
+
+        // Ventanas de detalle de otras pantallas de reportes: siguen con sus casillas por tipo; el total incluye todo.
         $("#detalle_total_diesel").text('S/. ' + parseFloat(data.total_diesel || 0).toFixed(2));
         $("#detalle_total_regular").text('S/. ' + parseFloat(data.total_regular || 0).toFixed(2));
         $("#detalle_total_premium").text('S/. ' + parseFloat(data.total_premium || 0).toFixed(2));
@@ -1256,6 +1263,7 @@ function Cargar_Lecturas_Para_Registro() {
                     'data-lectura-inicial="' + item.lectura_actual + '" ' +
                     'data-precio="' + item.precio_actual + '" ' +
                     'data-producto="' + producto_tipo + '" ' +
+                    'data-nombre="' + Texto_Seguro(item.producto_nombre) + '" ' +
                     'value="' + parseFloat(item.lectura_actual).toFixed(3) + '"></td>';
             
             fila += '<td class="galones-registro-' + item.id_surtidor + '">0.000</td>';
@@ -1299,9 +1307,6 @@ function Calcular_Fila_Registro(input) {
 }
 
 function Calcular_Totales_Registro() {
-    var total_diesel = 0;
-    var total_regular = 0;
-    var total_premium = 0;
     var total_ventas = 0;
     
     // Recorrer todos los inputs de lectura final
@@ -1309,17 +1314,10 @@ function Calcular_Totales_Registro() {
         var producto = $(this).data('producto');
         var total_fila = parseFloat($(this).attr('data-total-calculado')) || 0;
         
-        if (producto == 'DIESEL') total_diesel += total_fila;
-        else if (producto == 'REGULAR') total_regular += total_fila;
-        else if (producto == 'PREMIUM') total_premium += total_fila;
-        
         total_ventas += total_fila;
     });
-    
-    // Actualizar tarjetas de resumen
-    $("#total_diesel").text('S/. ' + total_diesel.toFixed(2));
-    $("#total_regular").text('S/. ' + total_regular.toFixed(2));
-    $("#total_premium").text('S/. ' + total_premium.toFixed(2));
+
+    Pintar_Resumen_Combustibles('.lectura-final-input', 'lectura-inicial');
     $("#total_ventas").text('S/. ' + total_ventas.toFixed(2));
     
     // Actualizar Cuadre de Caja
@@ -1691,4 +1689,36 @@ function Iniciar_Barra_Cuadre() {
   var observador = new MutationObserver(reflejar);
   [total, faltante].forEach(function (nodo) { observador.observe(nodo, { childList: true, characterData: true, subtree: true }); });
   reflejar();
+}
+
+// Resumen por combustible: una tarjeta por cada producto que aparece en las lecturas, sea cual sea su tipo.
+function Pintar_Resumen_Combustibles(selector, campoInicial) {
+    var caja = $('#resumen_combustibles');
+    if (!caja.length) { return; }
+    var grupos = {}, orden = [];
+    $(selector).each(function () {
+        var nombre = $(this).attr('data-nombre') || 'Sin nombre';
+        var total = parseFloat($(this).attr('data-total-calculado')) || 0;
+        var inicial = parseFloat($(this).attr('data-' + campoInicial));
+        var galones = Math.max(0, (parseFloat($(this).val()) || 0) - (isNaN(inicial) ? 0 : inicial));
+        if (!grupos[nombre]) { grupos[nombre] = { total: 0, galones: 0 }; orden.push(nombre); }
+        grupos[nombre].total += total;
+        grupos[nombre].galones += galones;
+    });
+    var color = function (n) {
+        n = n.toUpperCase();
+        return n.indexOf('DIESEL') !== -1 ? 'text-primary' : (n.indexOf('PREMIUM') !== -1 || n.indexOf('95') !== -1) ? 'text-warning' : (n.indexOf('REGULAR') !== -1 || n.indexOf('84') !== -1 || n.indexOf('90') !== -1) ? 'text-success' : 'text-secondary';
+    };
+    caja.empty();
+    orden.forEach(function (nombre) {
+        var g = grupos[nombre];
+        caja.append($('<div class="col-sm-6 col-lg-4"></div>').append($('<div class="info-box"></div>').append(
+            $('<span class="info-box-icon"></span>').append($('<i class="fas fa-gas-pump" aria-hidden="true"></i>').addClass(color(nombre))),
+            $('<div class="info-box-content"></div>').append(
+                $('<span class="info-box-text"></span>').text(nombre),
+                $('<span class="info-box-number"></span>').text('S/. ' + g.total.toFixed(2)),
+                $('<span class="small text-muted"></span>').text(g.galones.toFixed(3) + ' gal')
+            )
+        )));
+    });
 }

@@ -93,32 +93,8 @@
                                         <i class="fas fa-chart-bar"></i> RESUMEN POR COMBUSTIBLE
                                     </h5>
                                 </div>
-                                <div class="col-md-4">
-                                    <div class="info-box bg-dark">
-                                        <span class="info-box-icon"><i class="fas fa-gas-pump"></i></span>
-                                        <div class="info-box-content">
-                                            <span class="info-box-text">DIESEL</span>
-                                            <span class="info-box-number" id="total_diesel">S/. 0.00</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="info-box bg-info">
-                                        <span class="info-box-icon"><i class="fas fa-gas-pump"></i></span>
-                                        <div class="info-box-content">
-                                            <span class="info-box-text">REGULAR</span>
-                                            <span class="info-box-number" id="total_regular">S/. 0.00</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="info-box bg-warning">
-                                        <span class="info-box-icon"><i class="fas fa-gas-pump"></i></span>
-                                        <div class="info-box-content">
-                                            <span class="info-box-text">PREMIUM</span>
-                                            <span class="info-box-number" id="total_premium">S/. 0.00</span>
-                                        </div>
-                                    </div>
+                                <div class="col-12">
+                                    <div class="row" id="resumen_combustibles" aria-live="polite"></div>
                                 </div>
                                 <div class="col-md-12">
                                     <div class="info-box bg-success">

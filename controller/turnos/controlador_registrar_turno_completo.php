@@ -3,20 +3,20 @@ require_once __DIR__ . '/../_bootstrap.php';
 require_once '../../model/model_turnos.php';
 
 // Recibir datos del formulario
-$numero_documento = trim((string) ($_POST['numero_documento']));
-$id_usuario = trim((string) ($_POST['id_usuario']));
-$turno = trim((string) ($_POST['turno']));
-$fecha = trim((string) ($_POST['fecha']));
-$hora_inicio = trim((string) ($_POST['hora_inicio']));
-$hora_fin = trim((string) ($_POST['hora_fin']));
+$numero_documento = trim((string) ($_POST['numero_documento'] ?? ''));
+$id_usuario = trim((string) ($_POST['id_usuario'] ?? ''));
+$turno = trim((string) ($_POST['turno'] ?? ''));
+$fecha = trim((string) ($_POST['fecha'] ?? ''));
+$hora_inicio = trim((string) ($_POST['hora_inicio'] ?? ''));
+$hora_fin = trim((string) ($_POST['hora_fin'] ?? ''));
 
-$lecturas = json_decode($_POST['lecturas'], true);
-$pagos = json_decode($_POST['pagos'], true);
-$creditos = json_decode($_POST['creditos'], true);
+$lecturas = json_decode($_POST['lecturas'] ?? '[]', true);
+$pagos = json_decode($_POST['pagos'] ?? '[]', true);
+$creditos = json_decode($_POST['creditos'] ?? '[]', true);
 
-$descuentos = floatval($_POST['descuentos']);
-$otros_gastos = floatval($_POST['otros_gastos']);
-$monto_efectivo = floatval($_POST['monto_efectivo']);
+$descuentos = floatval($_POST['descuentos'] ?? 0);
+$otros_gastos = floatval($_POST['otros_gastos'] ?? 0);
+$monto_efectivo = floatval($_POST['monto_efectivo'] ?? 0);
 
 // Validar datos obligatorios
 if (empty($numero_documento) || empty($id_usuario) || empty($turno) || empty($fecha) || empty($hora_inicio) || empty($hora_fin)) {
@@ -82,7 +82,12 @@ try {
         'PREMIUM' => 0
     ];
     
-    $datos_surtidor = $c->prepare("SELECT s.lectura_actual, p.precio_actual FROM surtidores s
+    // Total y galones del turno: todas las lecturas, sea cual sea el combustible. Las columnas por tipo
+    // (diésel, regular y premium) se conservan para los reportes que aún las usan.
+    $total_ventas = 0;
+    $total_galones = 0;
+
+    $datos_surtidor = $c->prepare("SELECT s.lectura_actual, p.precio_actual, p.tipo FROM surtidores s
                                    INNER JOIN productos p ON s.id_producto = p.id_producto
                                    WHERE s.id_surtidor = ? AND s.estado = 'ACTIVO' FOR UPDATE");
     $surtidores_vistos = [];
@@ -126,22 +131,13 @@ try {
             $total
         ));
         
-        // Obtener tipo de producto para acumular totales
-        $sql_producto = "SELECT p.tipo FROM surtidores s 
-                        INNER JOIN productos p ON s.id_producto = p.id_producto 
-                        WHERE s.id_surtidor = ?";
-        $query_producto = $c->prepare($sql_producto);
-        $query_producto->execute(array($id_surtidor));
-        $producto = $query_producto->fetch(PDO::FETCH_ASSOC);
-        
-        if ($producto && isset($totales_combustible[$producto['tipo']])) {
-            $totales_combustible[$producto['tipo']] += $total;
-            $galones_combustible[$producto['tipo']] += $galones;
+        $total_ventas += $total;
+        $total_galones += $galones;
+        if (isset($totales_combustible[$surtidor['tipo']])) {
+            $totales_combustible[$surtidor['tipo']] += $total;
+            $galones_combustible[$surtidor['tipo']] += $galones;
         }
     }
-    
-    $total_ventas = array_sum($totales_combustible);
-    $total_galones = array_sum($galones_combustible);
     
     // 3. REGISTRAR PAGOS
     $sql_pago = "INSERT INTO pagos_reporte (id_reporte, id_tipo_pago, codigo_operacion, monto, observaciones, created_at) 

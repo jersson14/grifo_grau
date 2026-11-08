@@ -146,29 +146,19 @@ function Cargar_Grafico_Combustibles() {
     }).done(function(resp) {
         var data = JSON.parse(resp);
         
+        // Una barra por producto del mes. Diésel, regular y premium mantienen sus colores; los demás van en gris.
+        var COLORES = { DIESEL: '#2563eb', REGULAR: '#059669', PREMIUM: '#f59e0b' };
+        var productos = data.por_producto || [];
         var ctx = document.getElementById('grafico_combustibles').getContext('2d');
         new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: ['Diesel', 'Regular', 'Premium'],
+                labels: productos.length ? productos.map(function (p) { return p.nombre; }) : ['Diesel', 'Regular', 'Premium'],
                 datasets: [{
                     label: 'Ventas (S/.)',
-                    data: [
-                        parseFloat(data.total_diesel),
-                        parseFloat(data.total_regular),
-                        parseFloat(data.total_premium)
-                    ],
-                    backgroundColor: [
-                        'rgba(37, 99, 235, 0.85)',
-                        'rgba(5, 150, 105, 0.85)',
-                        'rgba(245, 158, 11, 0.85)'
-                    ],
-                    borderColor: [
-                        '#2563eb',
-                        '#059669',
-                        '#f59e0b'
-                    ],
-                    borderWidth: 2
+                    data: productos.length ? productos.map(function (p) { return parseFloat(p.total); }) : [0, 0, 0],
+                    backgroundColor: productos.map(function (p) { return COLORES[p.tipo] || '#71717a'; }),
+                    borderRadius: 4
                 }]
             },
             options: {

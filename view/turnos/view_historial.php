@@ -102,43 +102,12 @@
                         <h3 class="card-title"><i class="fas fa-chart-bar"></i> Resumen de Ventas</h3>
                     </div>
                     <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-3">
-                                <div class="info-box bg-dark">
-                                    <span class="info-box-icon"><i class="fas fa-gas-pump"></i></span>
-                                    <div class="info-box-content">
-                                        <span class="info-box-text">DIESEL</span>
-                                        <span class="info-box-number" id="detalle_total_diesel">S/. 0.00</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="info-box bg-info">
-                                    <span class="info-box-icon"><i class="fas fa-gas-pump"></i></span>
-                                    <div class="info-box-content">
-                                        <span class="info-box-text">REGULAR</span>
-                                        <span class="info-box-number" id="detalle_total_regular">S/. 0.00</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="info-box bg-warning">
-                                    <span class="info-box-icon"><i class="fas fa-gas-pump"></i></span>
-                                    <div class="info-box-content">
-                                        <span class="info-box-text">PREMIUM</span>
-                                        <span class="info-box-number" id="detalle_total_premium">S/. 0.00</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="info-box bg-success">
-                                    <span class="info-box-icon"><i class="fas fa-dollar-sign"></i></span>
-                                    <div class="info-box-content">
-                                        <span class="info-box-text">TOTAL</span>
-                                        <span class="info-box-number" id="detalle_total_ventas">S/. 0.00</span>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="table-responsive">
+                            <table class="table table-sm mb-0">
+                                <thead><tr><th>Combustible</th><th class="text-right">Galones</th><th class="text-right">Soles</th></tr></thead>
+                                <tbody id="detalle_por_producto"></tbody>
+                                <tfoot><tr class="font-weight-bold"><td>Total</td><td class="text-right" id="detalle_galones_total">0.000 gal</td><td class="text-right" id="detalle_total_ventas">S/. 0.00</td></tr></tfoot>
+                            </table>
                         </div>
                     </div>
                 </div>
