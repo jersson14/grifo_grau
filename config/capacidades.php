@@ -57,7 +57,9 @@ return [
     'turnos_eliminar'  => ['Turnos', 'Eliminar turnos', ['controller/turnos/controlador_eliminar_turno.php']],
     'ver_todos'        => ['Turnos', 'Ver datos de todos los griferos (si no, solo los propios)', []],
 
-    'dashboard_ver'        => ['Reportes', 'Ver el Dashboard', ['view/reportes/view_dashboard.php', 'controller/dashboard/*', 'controller/reportes/*']],
+    // Las cifras de todo el grifo del tablero (controller/reportes/*) son de «Reportes gerenciales»: sin ese permiso
+    // el tablero muestra el resumen propio del usuario.
+    'dashboard_ver'        => ['Reportes', 'Ver el Dashboard', ['view/reportes/view_dashboard.php', 'controller/dashboard/*', 'controller/inicio/*']],
     'avisos'               => ['Reportes', 'Recibir avisos en el Dashboard', []],
     'reportes_gerenciales' => ['Reportes', 'Ver reportes de ventas y listados', array_merge($turnoLectura, ['view/reportes/view_ventas_por_fecha.php', 'view/reportes/view_listado_reportes.php', 'controller/reportes/*', 'controller/usuario/controlador_listar_griferos.php'])],
 

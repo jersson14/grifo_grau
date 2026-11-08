@@ -22,6 +22,15 @@ function cargar_configuracion() {
         .append($('<label class="form-check-label"></label>').attr('for', idRol).text(rol)));
     });
 
+    var bloques = datos.valores.inicio_bloques === undefined ? null : String(datos.valores.inicio_bloques || '').split(',');
+    var listaB = $('#lista_bloques').empty();
+    (datos.bloques || []).forEach(function (b) {
+      var id = 'bloque_' + b.clave;
+      listaB.append($('<div class="form-check"></div>')
+        .append($('<input type="checkbox" class="form-check-input bloque_opcion">').attr('id', id).val(b.clave).prop('checked', bloques === null || bloques.indexOf(b.clave) !== -1))
+        .append($('<label class="form-check-label"></label>').attr('for', id).text(b.nombre)));
+    });
+
     var elegidas = (datos.valores.inicio_alertas || '').split(',');
     var lista = $('#lista_alertas').empty();
     datos.alertas.forEach(function (a) {
@@ -72,6 +81,7 @@ $(document).off('submit.config').on('submit.config', '.form_config', function (e
   var marcados = $('.ia_rol:checked').map(function () { return this.value; }).get().join(',');
   $('#ia_roles').val(marcados);
   $('#inicio_alertas').val($('.alerta_opcion:checked').map(function () { return this.value; }).get().join(','));
+  $('#inicio_bloques').val($('.bloque_opcion:checked').map(function () { return this.value; }).get().join(','));
 
   $.post('../controller/configuracion/controlador_guardar.php', $(this).serialize(), function (r) {
     if (r.success) {

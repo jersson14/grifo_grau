@@ -17,6 +17,7 @@ class Modelo_Configuracion extends conexionBD
         'ia_limite_mensual_usd'  => ['tipo' => 'numero', 'min' => 0, 'max' => 100000],
         'ia_roles'               => ['tipo' => 'roles'],
         'inicio_alertas'         => ['tipo' => 'lista'],
+        'inicio_bloques'         => ['tipo' => 'bloques'],
         'factura_ruta'           => ['tipo' => 'patron', 'opcional' => true, 'patron' => '#^https://([a-z0-9-]+\.)*nubefact\.com/api/v1/[A-Za-z0-9-]+$#'],
         'factura_token'          => ['tipo' => 'secreto'],
         'factura_serie_factura'  => ['tipo' => 'patron', 'patron' => '/^F[A-Z0-9]{3}$/'],
@@ -100,6 +101,10 @@ class Modelo_Configuracion extends conexionBD
                 case 'lista':
                     require_once __DIR__ . '/model_alertas.php';
                     $valor = implode(',', array_intersect(explode(',', $valor), array_keys(Modelo_Alertas::ALERTAS)));
+                    break;
+                case 'bloques':
+                    require_once __DIR__ . '/model_inicio.php';
+                    $valor = implode(',', array_intersect(explode(',', $valor), array_keys(Modelo_Inicio::BLOQUES)));
                     break;
                 case 'secreto':
                     if ($valor === '') {

@@ -70,8 +70,13 @@
           </div>
 
           <div class="tab-pane fade" id="tab_inicio" role="tabpanel">
-            <p class="text-muted">Elige qué avisos ve el administrador en el Dashboard. Los de un módulo apagado no se muestran aunque estén marcados.</p>
             <form class="form_config">
+              <h3 class="h6 font-weight-bold">Bloques del Dashboard</h3>
+              <p class="text-muted small mb-2">Las cifras de todo el grifo solo las ve quien tiene «Reportes gerenciales». El resumen propio lo ve quien solo puede ver sus datos (el grifero).</p>
+              <div id="lista_bloques" class="mb-4"></div>
+              <input type="hidden" id="inicio_bloques" name="inicio_bloques">
+              <h3 class="h6 font-weight-bold">Avisos</h3>
+              <p class="text-muted small mb-2">Avisos del Dashboard y de la campana. Los de un módulo apagado no se muestran aunque estén marcados.</p>
               <div id="lista_alertas" class="mb-3"></div>
               <input type="hidden" id="inicio_alertas" name="inicio_alertas">
               <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Guardar</button>

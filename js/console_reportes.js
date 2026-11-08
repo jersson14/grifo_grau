@@ -11,15 +11,43 @@ function Cargar_Alertas() {
 }
 
 function Cargar_Dashboard() {
-    Cargar_Alertas();
-    Cargar_Indicadores_Dia();
-    Cargar_Grafico_Ventas_Semana();
-    Cargar_Ventas_Mes();
-    Cargar_Grafico_Combustibles();
-    Cargar_Grafico_Metodos_Pago();
-    Cargar_Grafico_Turnos();
-    Cargar_Desempeno_Griferos();
-    Cargar_Creditos_Mes();
+    // Cada bloque se carga solo si está en la pantalla: el servidor decide cuáles ve cada usuario.
+    var hay = function (id) { return document.getElementById(id) !== null; };
+    if (hay('panel_alertas')) { Cargar_Alertas(); }
+    if (hay('mi_resumen')) { Cargar_Mi_Resumen(); }
+    if (hay('indicadores_dia')) { Cargar_Indicadores_Dia(); }
+    if (hay('grafico_ventas_semana')) { Cargar_Grafico_Ventas_Semana(); }
+    if (hay('resumen_mes_productos')) { Cargar_Ventas_Mes(); }
+    if (hay('grafico_combustibles')) { Cargar_Grafico_Combustibles(); }
+    if (hay('grafico_metodos_pago')) { Cargar_Grafico_Metodos_Pago(); }
+    if (hay('grafico_turnos')) { Cargar_Grafico_Turnos(); }
+    if (hay('tabla_desempeno_griferos')) { Cargar_Desempeno_Griferos(); }
+    if (hay('mes_total_creditos')) { Cargar_Creditos_Mes(); }
+}
+
+// RESUMEN PROPIO DEL GRIFERO
+function Cargar_Mi_Resumen() {
+    $.post('../controller/inicio/controlador_mi_resumen.php', function (r) {
+        if (!r || !r.success) { return; }
+        var m = r.mes;
+        var tarjeta = function (titulo, valor, ayuda, clase) {
+            return $('<div class="col-6 col-xl-3"></div>').append($('<div class="card mb-3"></div>').append($('<div class="card-body py-3"></div>').append(
+                $('<div class="small text-muted"></div>').text(titulo), $('<div class="g-cifra"></div>').addClass(clase || '').text(valor), $('<div class="small text-muted"></div>').text(ayuda))));
+        };
+        $('#mi_resumen').empty().append(
+            tarjeta('Mis turnos del mes', String(m.turnos), r.abiertos ? r.abiertos + ' abierto(s) ahora' : 'Turnos cerrados'),
+            tarjeta('Mis ventas del mes', G.soles(m.ventas), G.num(m.galones, 3) + ' galones'),
+            tarjeta('Faltantes del mes', G.soles(m.faltantes), m.turnos ? m.cuadrados + ' de ' + m.turnos + ' turnos cuadraron' : 'Sin turnos cerrados', m.faltantes > 0 ? 'text-danger' : ''),
+            tarjeta('Vendido a crédito', G.soles(m.creditos), 'En mis turnos del mes')
+        );
+        var u = r.ultimo;
+        if (u) {
+            var cuadre = u.estado === 'ABIERTO' ? 'todavía abierto' : (Math.abs(Number(u.monto_faltante)) < 0.01 ? 'cuadró' : (Number(u.monto_faltante) < 0 ? 'faltaron ' + G.soles(-u.monto_faltante) : 'sobraron ' + G.soles(u.monto_faltante)));
+            $('#mi_ultimo_turno').text('Último turno: ' + u.numero_documento + ' del ' + Fecha_Local(u.fecha_reporte).toLocaleDateString('es-PE') + ' (' + (u.turno === 'DIA' ? 'día' : 'noche') + '), ' + G.soles(u.total_ventas) + ', ' + cuadre + '.');
+        } else {
+            $('#mi_ultimo_turno').text('Todavía no registra turnos.');
+        }
+    }, 'json');
 }
 
 // INDICADORES DEL DÍA
@@ -30,8 +58,11 @@ function Cargar_Indicadores_Dia() {
     }).done(function(resp) {
         var data = JSON.parse(resp);
         $('#total_turnos_activos').text(data.turnos_activos);
-        $('#total_ventas_dia').text('S/. ' + parseFloat(data.ventas_dia).toFixed(2));
-        $('#total_creditos_pendientes').text(data.creditos_pendientes);
+        $('#total_turnos_cerrados_hoy').text(data.turnos_cerrados_hoy + (data.turnos_cerrados_hoy === 1 ? ' turno cerrado hoy' : ' turnos cerrados hoy'));
+        $('#total_ventas_dia').text(G.soles(data.ventas_dia));
+        $('#total_creditos_saldo').text(G.soles(data.creditos_saldo));
+        $('#total_creditos_pendientes').empty().append(document.createTextNode(data.creditos_pendientes + (data.creditos_pendientes === 1 ? ' vale' : ' vales')),
+            data.creditos_vencidos ? $('<span class="text-danger font-weight-bold"></span>').text(' · ' + data.creditos_vencidos + ' vencido(s)') : null);
         $('#total_reportes_pendientes').text(data.reportes_pendientes);
     });
 }
@@ -43,13 +74,13 @@ function Cargar_Grafico_Ventas_Semana() {
         type: 'POST'
     }).done(function(resp) {
         var data = JSON.parse(resp);
-        
+
         var fechas = [];
         var diesel = [];
         var regular = [];
         var premium = [];
         var totales = [];
-        
+
         data.forEach(function(item) {
             var fecha = Fecha_Local(item.fecha_reporte);
             fechas.push(fecha.toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit' }));
@@ -58,7 +89,7 @@ function Cargar_Grafico_Ventas_Semana() {
             premium.push(parseFloat(item.total_premium));
             totales.push(parseFloat(item.total_ventas));
         });
-        
+
         var ctx = document.getElementById('grafico_ventas_semana').getContext('2d');
         new Chart(ctx, {
             type: 'line',
@@ -123,18 +154,20 @@ function Cargar_Ventas_Mes() {
         type: 'POST'
     }).done(function(resp) {
         var data = JSON.parse(resp);
-        
-        $('#mes_total_diesel').text('S/. ' + parseFloat(data.total_diesel).toFixed(2));
-        $('#mes_galones_diesel').text(parseFloat(data.galones_diesel).toFixed(2) + ' gal');
-        
-        $('#mes_total_regular').text('S/. ' + parseFloat(data.total_regular).toFixed(2));
-        $('#mes_galones_regular').text(parseFloat(data.galones_regular).toFixed(2) + ' gal');
-        
-        $('#mes_total_premium').text('S/. ' + parseFloat(data.total_premium).toFixed(2));
-        $('#mes_galones_premium').text(parseFloat(data.galones_premium).toFixed(2) + ' gal');
-        
-        $('#mes_total_ventas').text('S/. ' + parseFloat(data.total_ventas).toFixed(2));
-        $('#mes_total_galones').text(parseFloat(data.total_galones).toFixed(2) + ' gal');
+        // Una tarjeta por producto vendido en el mes, sea cual sea su tipo.
+        var caja = $('#resumen_mes_productos').empty();
+        (data.por_producto || []).forEach(function (p) {
+            caja.append($('<div class="col-6 col-lg-3 mb-3"></div>').append(
+                $('<div class="small text-muted"></div>').text(p.nombre),
+                $('<div class="font-weight-bold"></div>').text(G.soles(p.total)),
+                $('<div class="small text-muted"></div>').text(G.num(p.galones, 2) + ' gal')
+            ));
+        });
+        if (!(data.por_producto || []).length) {
+            caja.append($('<div class="col-12 text-muted mb-3"></div>').text('Sin turnos cerrados este mes.'));
+        }
+        $('#mes_total_ventas').text(G.soles(data.total_ventas || 0));
+        $('#mes_total_galones').text(G.num(data.total_galones || 0, 2) + ' gal');
     });
 }
 
@@ -145,7 +178,7 @@ function Cargar_Grafico_Combustibles() {
         type: 'POST'
     }).done(function(resp) {
         var data = JSON.parse(resp);
-        
+
         // Una barra por producto del mes. Diésel, regular y premium mantienen sus colores; los demás van en gris.
         var COLORES = { DIESEL: '#2563eb', REGULAR: '#059669', PREMIUM: '#f59e0b' };
         var productos = data.por_producto || [];
@@ -193,7 +226,7 @@ function Cargar_Grafico_Metodos_Pago() {
         type: 'POST'
     }).done(function(resp) {
         var data = JSON.parse(resp);
-        
+
         var ctx = document.getElementById('grafico_metodos_pago').getContext('2d');
         new Chart(ctx, {
             type: 'doughnut',
@@ -236,17 +269,17 @@ function Cargar_Grafico_Turnos() {
         type: 'POST'
     }).done(function(resp) {
         var data = JSON.parse(resp);
-        
+
         var turnos = [];
         var ventas = [];
         var promedios = [];
-        
+
         data.forEach(function(item) {
             turnos.push(item.turno);
             ventas.push(parseFloat(item.total_ventas));
             promedios.push(parseFloat(item.promedio_ventas));
         });
-        
+
         var ctx = document.getElementById('grafico_turnos').getContext('2d');
         new Chart(ctx, {
             type: 'bar',
@@ -296,18 +329,13 @@ function Cargar_Desempeno_Griferos() {
         type: 'POST'
     }).done(function(resp) {
         var data = JSON.parse(resp);
-        var html = '';
-        
-        data.forEach(function(item) {
-            html += '<tr>';
-            html += '<td>' + Texto_Seguro(item.grifero_nombre) + '</td>';
-            html += '<td>' + item.total_turnos + '</td>';
-            html += '<td>S/. ' + parseFloat(item.total_ventas).toFixed(2) + '</td>';
-            html += '<td>S/. ' + parseFloat(item.promedio_ventas).toFixed(2) + '</td>';
-            html += '</tr>';
-        });
-        
-        $('#tabla_desempeno_griferos').html(html);
+        var der = function (t) { return $('<span class="d-block text-right text-nowrap"></span>').text(t); };
+        G.tabla('#tabla_desempeno_griferos', data, [
+            function (g) { return g.grifero_nombre; },
+            function (g) { return der(g.total_turnos); },
+            function (g) { return der(G.soles(g.total_ventas)); },
+            function (g) { return der(G.soles(g.promedio_ventas)); }
+        ], 'Sin turnos cerrados este mes.');
     });
 }
 
@@ -318,10 +346,10 @@ function Cargar_Creditos_Mes() {
         type: 'POST'
     }).done(function(resp) {
         var data = JSON.parse(resp);
-        
+
         $('#mes_total_creditos').text(data.total_creditos);
-        $('#mes_monto_creditos').text('S/. ' + parseFloat(data.monto_total).toFixed(2));
-        $('#mes_pagado_creditos').text('S/. ' + parseFloat(data.monto_pagado).toFixed(2));
-        $('#mes_saldo_creditos').text('S/. ' + parseFloat(data.saldo_pendiente).toFixed(2));
+        $('#mes_monto_creditos').text(G.soles(data.monto_total));
+        $('#mes_pagado_creditos').text(G.soles(data.monto_pagado));
+        $('#mes_saldo_creditos').text(G.soles(data.saldo_pendiente));
     });
 }

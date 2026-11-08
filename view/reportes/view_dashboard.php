@@ -1,270 +1,170 @@
-<?php require_once __DIR__ . '/../../controller/_bootstrap.php'; ?>
+<?php
+require_once __DIR__ . '/../../controller/_bootstrap.php';
+require_once __DIR__ . '/../../model/model_inicio.php';
+
+// Qué ve cada uno: las cifras de todo el grifo solo con «Reportes gerenciales»; el grifero (sin «ver todos») ve su resumen.
+$bloques = Modelo_Inicio::Elegidos();
+$estacion = puede('reportes_gerenciales');
+$ver = fn(string $b) => in_array($b, $bloques, true) && ($b === 'accesos' || ($b === 'mi_resumen' ? !puede('ver_todos') : $estacion));
+$accesos = array_values(array_filter([
+    ['vista' => 'turnos/view_registrar_turno.php', 'icono' => 'fa-clipboard-check', 'texto' => 'Registrar turno'],
+    ['vista' => 'ventas/view_ventas.php', 'icono' => 'fa-cash-register', 'texto' => 'Registrar venta'],
+    ['vista' => 'reportes/view_validar_reportes.php', 'icono' => 'fa-check-double', 'texto' => 'Validar turnos'],
+    ['vista' => 'creditos/view_creditos_pendientes.php', 'icono' => 'fa-credit-card', 'texto' => 'Créditos pendientes'],
+    ['vista' => 'caja/view_caja.php', 'icono' => 'fa-coins', 'texto' => 'Caja y arqueo'],
+    ['vista' => 'reportes/view_analisis.php', 'icono' => 'fa-chart-pie', 'texto' => 'Análisis'],
+    ['vista' => 'reportes/view_mis_reportes.php', 'icono' => 'fa-file-alt', 'texto' => 'Mis reportes'],
+    ['vista' => 'productos/view_productos.php', 'icono' => 'fa-tags', 'texto' => 'Precios'],
+], fn($a) => ruta_accesible('view/' . $a['vista'])));
+$accesos = array_slice($accesos, 0, 6);
+$e = fn($t) => htmlspecialchars((string) $t, ENT_QUOTES, 'UTF-8');
+?>
 <script src="../js/console_reportes.js?rev=<?php echo time(); ?>"></script>
 
 <div class="content-header">
     <div class="container-fluid">
-        <div class="row mb-2">
-            <div class="col-sm-6">
-                <h1 class="m-0"><i class="fas fa-chart-line"></i> <b>DASHBOARD Y REPORTES</b></h1>
-            </div>
-            <div class="col-sm-6">
-                <ol class="breadcrumb float-sm-right">
-                    <li class="breadcrumb-item"><a href="../view/index.php">Inicio</a></li>
-                    <li class="breadcrumb-item active">Dashboard</li>
-                </ol>
-            </div>
-        </div>
+        <h1 class="m-0"><i class="fas fa-chart-line"></i> <b>DASHBOARD</b></h1>
     </div>
 </div>
 
 <div class="content">
     <div class="container-fluid">
-        
-        <div id="panel_alertas"></div>
 
+        <?php if (puede('avisos')) { ?><div id="panel_alertas"></div><?php } ?>
+
+        <?php if ($ver('mi_resumen')) { ?>
+        <!-- RESUMEN PROPIO -->
+        <h2 class="h6 font-weight-bold text-muted text-uppercase mb-2">Mi mes</h2>
+        <div class="row" id="mi_resumen" aria-live="polite"></div>
+        <p class="small text-muted mb-4" id="mi_ultimo_turno"></p>
+        <?php } ?>
+
+        <?php if ($ver('indicadores')) { ?>
         <!-- INDICADORES DEL DÍA -->
+        <div class="row" id="indicadores_dia">
+            <div class="col-6 col-xl-3"><div class="card mb-3"><div class="card-body py-3">
+                <div class="small text-muted">Turnos abiertos</div>
+                <div class="g-cifra" id="total_turnos_activos">0</div>
+                <div class="small text-muted" id="total_turnos_cerrados_hoy">&nbsp;</div>
+            </div></div></div>
+            <div class="col-6 col-xl-3"><div class="card mb-3"><div class="card-body py-3">
+                <div class="small text-muted">Ventas de hoy</div>
+                <div class="g-cifra" id="total_ventas_dia">S/ 0.00</div>
+                <div class="small text-muted">Turnos cerrados hoy</div>
+            </div></div></div>
+            <div class="col-6 col-xl-3"><div class="card mb-3"><div class="card-body py-3">
+                <div class="small text-muted">Créditos por cobrar</div>
+                <div class="g-cifra" id="total_creditos_saldo">S/ 0.00</div>
+                <div class="small text-muted" id="total_creditos_pendientes">&nbsp;</div>
+            </div></div></div>
+            <div class="col-6 col-xl-3"><div class="card mb-3"><div class="card-body py-3">
+                <div class="small text-muted">Turnos por validar</div>
+                <div class="g-cifra" id="total_reportes_pendientes">0</div>
+                <div class="small text-muted">Cerrados sin validar</div>
+            </div></div></div>
+        </div>
+        <?php } ?>
+
+        <?php if ($ver('ventas_semana')) { ?>
+        <div class="card">
+            <div class="card-header"><h2 class="card-title">Ventas de los últimos 7 días</h2></div>
+            <div class="card-body"><canvas id="grafico_ventas_semana" style="height: 300px;"></canvas></div>
+        </div>
+        <?php } ?>
+
+        <?php if ($ver('combustibles')) { ?>
         <div class="row">
-            <div class="col-md-3">
-                <div class="info-box bg-info">
-                    <span class="info-box-icon"><i class="fas fa-clock"></i></span>
-                    <div class="info-box-content">
-                        <span class="info-box-text">Turnos Activos Hoy</span>
-                        <span class="info-box-number" id="total_turnos_activos">0</span>
-                    </div>
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header"><h2 class="card-title">Ventas por combustible · mes actual</h2></div>
+                    <div class="card-body"><canvas id="grafico_combustibles" style="height: 250px;"></canvas></div>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="info-box bg-success">
-                    <span class="info-box-icon"><i class="fas fa-dollar-sign"></i></span>
-                    <div class="info-box-content">
-                        <span class="info-box-text">Ventas del Día</span>
-                        <span class="info-box-number" id="total_ventas_dia">S/. 0.00</span>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="info-box bg-warning">
-                    <span class="info-box-icon"><i class="fas fa-credit-card"></i></span>
-                    <div class="info-box-content">
-                        <span class="info-box-text">Créditos Pendientes</span>
-                        <span class="info-box-number" id="total_creditos_pendientes">0</span>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="info-box bg-danger">
-                    <span class="info-box-icon"><i class="fas fa-file-alt"></i></span>
-                    <div class="info-box-content">
-                        <span class="info-box-text">Reportes por Validar</span>
-                        <span class="info-box-number" id="total_reportes_pendientes">0</span>
-                    </div>
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header"><h2 class="card-title">Métodos de pago · mes</h2></div>
+                    <div class="card-body"><canvas id="grafico_metodos_pago" style="height: 250px;"></canvas></div>
                 </div>
             </div>
         </div>
+        <?php } ?>
 
-        <!-- GRÁFICO DE VENTAS ÚLTIMOS 7 DÍAS -->
+        <?php if ($ver('turnos')) { ?>
         <div class="row">
-            <div class="col-md-12">
+            <div class="col-lg-6">
                 <div class="card">
-                    <div class="card-header" style="background: linear-gradient(135deg, #023D77, #0266C8)">
-                        <h3 class="card-title" style="color:white"><i class="fas fa-chart-line"></i> Ventas de los Últimos 7 Días</h3>
-                    </div>
-                    <div class="card-body">
-                        <canvas id="grafico_ventas_semana" style="height: 300px;"></canvas>
-                    </div>
+                    <div class="card-header"><h2 class="card-title">Comparativo por turno · mes actual</h2></div>
+                    <div class="card-body"><canvas id="grafico_turnos" style="height: 250px;"></canvas></div>
                 </div>
             </div>
-        </div>
-
-        <!-- VENTAS POR COMBUSTIBLE (MES ACTUAL) -->
-        <div class="row">
-            <div class="col-md-8">
+            <div class="col-lg-6">
                 <div class="card">
-                    <div class="card-header" style="background-color:#28a745; color:white">
-                        <h3 class="card-title"><i class="fas fa-gas-pump"></i> Ventas por Combustible - Mes Actual</h3>
-                    </div>
+                    <div class="card-header"><h2 class="card-title">Desempeño por grifero · mes actual</h2></div>
                     <div class="card-body">
-                        <canvas id="grafico_combustibles" style="height: 250px;"></canvas>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-header" style="background-color:#ffc107; color:black">
-                        <h3 class="card-title"><i class="fas fa-money-bill-wave"></i> Métodos de Pago - Mes</h3>
-                    </div>
-                    <div class="card-body">
-                        <canvas id="grafico_metodos_pago" style="height: 250px;"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- VENTAS POR TURNO -->
-        <div class="row">
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header" style="background-color:#17a2b8; color:white">
-                        <h3 class="card-title"><i class="fas fa-clock"></i> Comparativo por Turno - Mes Actual</h3>
-                    </div>
-                    <div class="card-body">
-                        <canvas id="grafico_turnos" style="height: 250px;"></canvas>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header" style="background-color:#6c757d; color:white">
-                        <h3 class="card-title"><i class="fas fa-users"></i> Desempeño por Grifero - Mes Actual</h3>
-                    </div>
-                    <div class="card-body">
-                        <table class="table table-sm table-bordered">
-                            <thead style="background-color:#6c757d; color:white">
-                                <tr>
-                                    <th>Grifero</th>
-                                    <th>Turnos</th>
-                                    <th>Total Ventas</th>
-                                    <th>Promedio</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tabla_desempeno_griferos">
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- RESUMEN MENSUAL -->
-        <div class="row">
-            <div class="col-md-12">
-                <div class="card card-primary">
-                    <div class="card-header">
-                        <h3 class="card-title"><i class="fas fa-calendar-alt"></i> Resumen del Mes Actual</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-3">
-                                <div class="info-box">
-                                    <span class="info-box-icon bg-dark"><i class="fas fa-gas-pump"></i></span>
-                                    <div class="info-box-content">
-                                        <span class="info-box-text">Diesel</span>
-                                        <span class="info-box-number" id="mes_total_diesel">S/. 0.00</span>
-                                        <small id="mes_galones_diesel">0 gal</small>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="info-box">
-                                    <span class="info-box-icon bg-info"><i class="fas fa-gas-pump"></i></span>
-                                    <div class="info-box-content">
-                                        <span class="info-box-text">Regular</span>
-                                        <span class="info-box-number" id="mes_total_regular">S/. 0.00</span>
-                                        <small id="mes_galones_regular">0 gal</small>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="info-box">
-                                    <span class="info-box-icon bg-warning"><i class="fas fa-gas-pump"></i></span>
-                                    <div class="info-box-content">
-                                        <span class="info-box-text">Premium</span>
-                                        <span class="info-box-number" id="mes_total_premium">S/. 0.00</span>
-                                        <small id="mes_galones_premium">0 gal</small>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="info-box">
-                                    <span class="info-box-icon bg-success"><i class="fas fa-dollar-sign"></i></span>
-                                    <div class="info-box-content">
-                                        <span class="info-box-text">Total Mes</span>
-                                        <span class="info-box-number" id="mes_total_ventas">S/. 0.00</span>
-                                        <small id="mes_total_galones">0 gal</small>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead><tr><th>Grifero</th><th class="text-right">Turnos</th><th class="text-right">Ventas</th><th class="text-right">Promedio</th></tr></thead>
+                                <tbody id="tabla_desempeno_griferos"></tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+        <?php } ?>
 
-        <!-- CRÉDITOS DEL MES -->
-        <div class="row">
-            <div class="col-md-12">
-                <div class="card card-danger">
-                    <div class="card-header">
-                        <h3 class="card-title"><i class="fas fa-credit-card"></i> Créditos del Mes</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-3">
-                                <p><strong>Total Créditos:</strong> <span id="mes_total_creditos">0</span></p>
-                            </div>
-                            <div class="col-md-3">
-                                <p><strong>Monto Total:</strong> <span id="mes_monto_creditos">S/. 0.00</span></p>
-                            </div>
-                            <div class="col-md-3">
-                                <p><strong>Monto Pagado:</strong> <span id="mes_pagado_creditos">S/. 0.00</span></p>
-                            </div>
-                            <div class="col-md-3">
-                                <p><strong>Saldo Pendiente:</strong> <span id="mes_saldo_creditos" class="text-danger">S/. 0.00</span></p>
-                            </div>
-                        </div>
-                    </div>
+        <?php if ($ver('resumen_mes')) { ?>
+        <div class="card">
+            <div class="card-header"><h2 class="card-title">Resumen del mes</h2></div>
+            <div class="card-body">
+                <div class="row" id="resumen_mes_productos"></div>
+                <p class="mb-0"><strong>Total del mes:</strong> <span id="mes_total_ventas">S/ 0.00</span> · <span id="mes_total_galones">0 gal</span></p>
+            </div>
+        </div>
+        <?php } ?>
+
+        <?php if ($ver('creditos')) { ?>
+        <div class="card">
+            <div class="card-header"><h2 class="card-title">Créditos del mes</h2></div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6 col-md-3"><div class="small text-muted">Vales</div><div class="font-weight-bold" id="mes_total_creditos">0</div></div>
+                    <div class="col-6 col-md-3"><div class="small text-muted">Monto</div><div class="font-weight-bold" id="mes_monto_creditos">S/ 0.00</div></div>
+                    <div class="col-6 col-md-3"><div class="small text-muted">Cobrado</div><div class="font-weight-bold" id="mes_pagado_creditos">S/ 0.00</div></div>
+                    <div class="col-6 col-md-3"><div class="small text-muted">Por cobrar</div><div class="font-weight-bold" id="mes_saldo_creditos">S/ 0.00</div></div>
                 </div>
             </div>
         </div>
+        <?php } ?>
 
-        <!-- ACCESOS RÁPIDOS -->
+        <?php if ($ver('accesos') && $accesos) { ?>
+        <h2 class="h6 font-weight-bold text-muted text-uppercase mb-2">Accesos rápidos</h2>
         <div class="row">
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="card-header" style="background-color:#6c757d; color:white">
-                        <h3 class="card-title"><i class="fas fa-bolt"></i> Accesos Rápidos</h3>
-                    </div>
-                    <div class="card-body text-center">
-                        <div class="row">
-                            <div class="col-md-3">
-                                <a href="#" onclick="cargar_contenido('contenido_principal','turnos/view_abrir_turno.php')" class="btn btn-app btn-lg bg-gradient-success" style="width: 100%; height: 120px;">
-                                    <i class="fas fa-clock fa-3x"></i><br>
-                                    <span style="font-size: 16px;">Abrir Turno</span>
-                                </a>
-                            </div>
-                            <div class="col-md-3">
-                                <a href="#" onclick="cargar_contenido('contenido_principal','reportes/view_listado_reportes.php')" class="btn btn-app btn-lg bg-gradient-primary" style="width: 100%; height: 120px;">
-                                    <i class="fas fa-file-alt fa-3x"></i><br>
-                                    <span style="font-size: 16px;">Todos los Reportes</span>
-                                </a>
-                            </div>
-                            <div class="col-md-3">
-                                <a href="#" onclick="cargar_contenido('contenido_principal','creditos/view_creditos_pendientes.php')" class="btn btn-app btn-lg bg-gradient-warning" style="width: 100%; height: 120px;">
-                                    <i class="fas fa-credit-card fa-3x"></i><br>
-                                    <span style="font-size: 16px;">Créditos Pendientes</span>
-                                </a>
-                            </div>
-                            <div class="col-md-3">
-                                <a href="#" onclick="cargar_contenido('contenido_principal','productos/view_productos.php')" class="btn btn-app btn-lg bg-gradient-info" style="width: 100%; height: 120px;">
-                                    <i class="fas fa-gas-pump fa-3x"></i><br>
-                                    <span style="font-size: 16px;">Productos</span>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <?php foreach ($accesos as $a) { ?>
+            <div class="col-6 col-md-4 col-xl-2 mb-3">
+                <a href="#" class="card h-100 mb-0 text-center text-reset g-acceso" onclick="cargar_contenido('contenido_principal', <?php echo $e(json_encode($a['vista'], JSON_UNESCAPED_SLASHES)); ?>); return false;">
+                    <span class="card-body py-3"><i class="fas <?php echo $e($a['icono']); ?> fa-lg text-primary mb-2 d-block" aria-hidden="true"></i><span class="font-weight-bold"><?php echo $e($a['texto']); ?></span></span>
+                </a>
             </div>
+            <?php } ?>
         </div>
+        <?php } ?>
+
+        <?php if (!$bloques || (!$estacion && !$ver('mi_resumen') && !($ver('accesos') && $accesos) && !puede('avisos'))) { ?>
+        <div class="card"><div class="card-body text-muted">No hay bloques para mostrar. El administrador los elige en Configuración → Página principal.</div></div>
+        <?php } ?>
     </div>
 </div>
 
 <script>
 $(document).ready(function() {
     Cargar_Dashboard();
+    <?php if ($estacion) { ?>
     // La ventana de créditos vencidos sale una vez por sesión; después quedan en la campana de avisos.
     var yaMostrada = false;
     try { yaMostrada = sessionStorage.getItem('g_vencidos_mostrados') === '1'; sessionStorage.setItem('g_vencidos_mostrados', '1'); } catch (e) {}
     if (!yaMostrada) { Verificar_Creditos_Vencidos(); }
+    <?php } ?>
 });
 
 function Verificar_Creditos_Vencidos() {
@@ -282,13 +182,12 @@ function Verificar_Creditos_Vencidos() {
             });
             mensaje += '</ul>';
             mensaje += '</div>';
-            
+
             Swal.fire({
                 icon: 'warning',
-                title: '⚠️ Créditos Vencidos',
+                title: 'Créditos vencidos',
                 html: mensaje,
-                confirmButtonColor: '#023D77',
-                confirmButtonText: 'Ver Créditos',
+                confirmButtonText: 'Ver créditos',
                 showCancelButton: true,
                 cancelButtonText: 'Cerrar',
                 width: '600px'

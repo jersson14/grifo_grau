@@ -50,7 +50,7 @@ class Modelo_Reportes extends conexionBD {
                     SUM(total_premium) as total_premium,
                     SUM(total_ventas) as total_ventas
                 FROM reportes_turno
-                WHERE fecha_reporte >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+                WHERE fecha_reporte >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)
                 AND estado = 'CERRADO'
                 GROUP BY fecha_reporte
                 ORDER BY fecha_reporte ASC";
@@ -183,10 +183,10 @@ class Modelo_Reportes extends conexionBD {
     // TURNOS ACTIVOS HOY
     public function Turnos_Activos_Hoy() {
         $c = conexionBD::conexionPDO();
+        // Todos los turnos abiertos: un turno noche abierto ayer sigue abierto hoy.
         $sql = "SELECT COUNT(*) as total 
                 FROM reportes_turno 
-                WHERE fecha_reporte = CURDATE() 
-                AND estado = 'ABIERTO'";
+                WHERE estado = 'ABIERTO'";
         $query = $c->prepare($sql);
         $query->execute();
         $resultado = $query->fetch(PDO::FETCH_ASSOC);
@@ -199,12 +199,20 @@ class Modelo_Reportes extends conexionBD {
         $c = conexionBD::conexionPDO();
         $sql = "SELECT COUNT(*) as total 
                 FROM ventas_credito 
-                WHERE estado = 'PENDIENTE'";
+                WHERE estado = 'PENDIENTE' AND saldo_pendiente > 0";
         $query = $c->prepare($sql);
         $query->execute();
         $resultado = $query->fetch(PDO::FETCH_ASSOC);
         return $resultado['total'];
         conexionBD::cerrar_conexion();
+    }
+
+    /** Créditos por cobrar: vales con saldo, cuánto suman y cuántos están vencidos. */
+    public function Resumen_Creditos_Pendientes() {
+        $c = conexionBD::conexionPDO();
+        return $c->query("SELECT COUNT(*) AS vales, COALESCE(SUM(saldo_pendiente), 0) AS saldo,
+                                 COALESCE(SUM(fecha_vencimiento < CURDATE()), 0) AS vencidos
+                          FROM ventas_credito WHERE estado = 'PENDIENTE' AND saldo_pendiente > 0")->fetch(PDO::FETCH_ASSOC);
     }
 
     // REPORTES PENDIENTES DE VALIDACIÓN
