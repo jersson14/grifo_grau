@@ -996,24 +996,6 @@ function Ver_Detalle_Turno(id_reporte) {
         $("#detalle_total_ventas").text('S/. ' + parseFloat(data.total_ventas || 0).toFixed(2));
         $("#detalle_galones_total").text(parseFloat(data.total_galones || 0).toFixed(3) + ' gal');
 
-        // Ventanas de detalle de otras pantallas de reportes: siguen con sus casillas por tipo; el total incluye todo.
-        $("#detalle_total_diesel").text('S/. ' + parseFloat(data.total_diesel || 0).toFixed(2));
-        $("#detalle_total_regular").text('S/. ' + parseFloat(data.total_regular || 0).toFixed(2));
-        $("#detalle_total_premium").text('S/. ' + parseFloat(data.total_premium || 0).toFixed(2));
-        $("#detalle_total_ventas").text('S/. ' + parseFloat(data.total_ventas || 0).toFixed(2));
-        
-        // Totales en Soles
-        $("#detalle_soles_diesel").text('S/. ' + parseFloat(data.total_diesel || 0).toFixed(2));
-        $("#detalle_soles_regular").text('S/. ' + parseFloat(data.total_regular || 0).toFixed(2));
-        $("#detalle_soles_premium").text('S/. ' + parseFloat(data.total_premium || 0).toFixed(2));
-        $("#detalle_soles_total").text('S/. ' + parseFloat(data.total_ventas || 0).toFixed(2));
-        
-        // Totales en Galones
-        $("#detalle_galones_diesel").text(parseFloat(data.galones_diesel || 0).toFixed(3) + ' gal');
-        $("#detalle_galones_regular").text(parseFloat(data.galones_regular || 0).toFixed(3) + ' gal');
-        $("#detalle_galones_premium").text(parseFloat(data.galones_premium || 0).toFixed(3) + ' gal');
-        $("#detalle_galones_total").text(parseFloat(data.total_galones || 0).toFixed(3) + ' gal');
-        
         // Otros Conceptos
         // Otros Conceptos - Usamos selectores de clase para evitar conflictos de IDs duplicados
         var modal = $("[id='modal_detalle_turno']").last();

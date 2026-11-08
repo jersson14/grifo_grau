@@ -109,103 +109,15 @@
                     </div>
                 </div>
                 
-                <div class="row mb-3">
-                    <div class="col-md-3">
-                        <div class="info-box bg-danger">
-                            <div class="info-box-content">
-                                <span class="info-box-text">Diesel</span>
-                                <span class="info-box-number" id="detalle_total_diesel">S/. 0.00</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="info-box bg-success">
-                            <div class="info-box-content">
-                                <span class="info-box-text">Regular</span>
-                                <span class="info-box-number" id="detalle_total_regular">S/. 0.00</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="info-box bg-warning">
-                            <div class="info-box-content">
-                                <span class="info-box-text">Premium</span>
-                                <span class="info-box-number" id="detalle_total_premium">S/. 0.00</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="info-box bg-primary">
-                            <div class="info-box-content">
-                                <span class="info-box-text">Total Ventas</span>
-                                <span class="info-box-number" id="detalle_total_ventas">S/. 0.00</span>
-                            </div>
-                        </div>
-                    </div>
+                <!-- RESUMEN POR COMBUSTIBLE: una fila por cada combustible del turno, sea cual sea su tipo -->
+                <div class="table-responsive mb-3">
+                    <table class="table table-sm mb-0">
+                        <thead><tr><th>Combustible</th><th class="text-right">Galones</th><th class="text-right">Soles</th></tr></thead>
+                        <tbody id="detalle_por_producto"></tbody>
+                        <tfoot><tr class="font-weight-bold"><td>Total</td><td class="text-right" id="detalle_galones_total">0.000 gal</td><td class="text-right" id="detalle_total_ventas">S/. 0.00</td></tr></tfoot>
+                    </table>
                 </div>
 
-                <!-- TOTALES GENERALES -->
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <div class="card">
-                            <div class="card-header" style="background-color: #ffc107; color: #000;">
-                                <h5 class="card-title mb-0"><i class="fas fa-dollar-sign"></i> Totales en Soles</h5>
-                            </div>
-                            <div class="card-body">
-                                <table class="table table-sm table-bordered">
-                                    <tbody>
-                                        <tr>
-                                            <td><strong>Diesel:</strong></td>
-                                            <td class="text-right" id="detalle_soles_diesel">S/. 0.00</td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>Regular:</strong></td>
-                                            <td class="text-right" id="detalle_soles_regular">S/. 0.00</td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>Premium:</strong></td>
-                                            <td class="text-right" id="detalle_soles_premium">S/. 0.00</td>
-                                        </tr>
-                                        <tr style="background-color: #f0f0f0;">
-                                            <td><strong>TOTAL:</strong></td>
-                                            <td class="text-right"><strong id="detalle_soles_total">S/. 0.00</strong></td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="card">
-                            <div class="card-header" style="background-color: #17a2b8; color: white;">
-                                <h5 class="card-title mb-0"><i class="fas fa-tint"></i> Totales en Galones</h5>
-                            </div>
-                            <div class="card-body">
-                                <table class="table table-sm table-bordered">
-                                    <tbody>
-                                        <tr>
-                                            <td><strong>Diesel:</strong></td>
-                                            <td class="text-right" id="detalle_galones_diesel">0.000 gal</td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>Regular:</strong></td>
-                                            <td class="text-right" id="detalle_galones_regular">0.000 gal</td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>Premium:</strong></td>
-                                            <td class="text-right" id="detalle_galones_premium">0.000 gal</td>
-                                        </tr>
-                                        <tr style="background-color: #f0f0f0;">
-                                            <td><strong>TOTAL:</strong></td>
-                                            <td class="text-right"><strong id="detalle_galones_total">0.000 gal</strong></td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
                 <!-- OTROS CONCEPTOS -->
                 <div class="card card-warning">
                     <div class="card-header">

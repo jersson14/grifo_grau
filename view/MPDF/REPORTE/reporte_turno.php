@@ -51,7 +51,7 @@ if ($id_turno == 0) {
 $c = conexionBD::conexionPDO();
 
 // Obtener información del turno
-$sql = "SELECT 
+$sql = "SELECT
             rt.*,
             CONCAT(u.usu_nombre, ' ', u.usu_apellido) as grifero_nombre,
             DATE_FORMAT(rt.fecha_reporte, '%d/%m/%Y') as fecha_formateada,
@@ -70,7 +70,7 @@ if (!$turno) {
 }
 
 // Obtener lecturas del turno
-$sql_lecturas = "SELECT 
+$sql_lecturas = "SELECT
                     s.numero_maquina,
                     s.codigo,
                     p.nombre as nombre_producto,
@@ -83,8 +83,8 @@ $sql_lecturas = "SELECT
                 INNER JOIN surtidores s ON lt.id_surtidor = s.id_surtidor
                 INNER JOIN productos p ON s.id_producto = p.id_producto
                 WHERE lt.id_reporte = ?
-                ORDER BY s.numero_maquina, 
-                CASE 
+                ORDER BY s.numero_maquina,
+                CASE
                     WHEN p.nombre LIKE '%Diesel%' THEN 1
                     WHEN p.nombre LIKE '%Regular%' THEN 2
                     WHEN p.nombre LIKE '%Premium%' THEN 3
@@ -111,7 +111,7 @@ foreach ($lecturas as $lectura) {
     $galones = floatval($lectura['galones_vendidos']);
     $total_general += $total;
     $total_galones += $galones;
-    
+
     $producto = strtoupper($lectura['nombre_producto']);
     if (strpos($producto, 'DIESEL') !== false || strpos($producto, 'DB5') !== false) {
         $total_diesel += $total;
@@ -125,8 +125,14 @@ foreach ($lecturas as $lectura) {
     }
 }
 
+$total_otros = max(0, round($total_general - $total_diesel - $total_regular - $total_premium, 2));
+$galones_otros = max(0, round($total_galones - $galones_diesel - $galones_regular - $galones_premium, 3));
+$hay_otros = $total_otros > 0.004 || $galones_otros > 0.0004;
+$ancho = $hay_otros ? '20%' : '25%';
+$cab_otros = $hay_otros ? '<td style="width: 20%;">OTROS</td>' : '';
+
 // Obtener pagos agrupados por tipo
-$sql_pagos = "SELECT 
+$sql_pagos = "SELECT
                 tp.codigo as tipo_codigo,
                 tp.nombre as tipo_pago,
                 pr.codigo_operacion,
@@ -170,7 +176,7 @@ $total_efectivo = floatval($turno['monto_efectivo']);
 
 // Obtener créditos del turno
 try {
-    $sql_creditos = "SELECT 
+    $sql_creditos = "SELECT
                         vc.numero_vale,
                         vc.placa,
                         c.nombre_completo as cliente,
@@ -183,7 +189,7 @@ try {
     $creditos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     // Si falla (e.g. columna placa no existe), intentar sin placa
-    $sql_creditos = "SELECT 
+    $sql_creditos = "SELECT
                         vc.numero_vale,
                         '' as placa,
                         c.nombre_completo as cliente,
@@ -324,15 +330,17 @@ $html .= '
 <!-- TOTALES POR COMBUSTIBLE -->
 <table style="margin-bottom: 5px;">
     <tr class="green-header">
-        <td style="width: 25%;">DIESEL</td>
-        <td style="width: 25%;">GASOL_REGULAR</td>
-        <td style="width: 25%;">GASOL_PREMIUM</td>
-        <td style="width: 25%;">TOTAL EN SOLES</td>
+        <td style="width: ' . $ancho . ';">DIESEL</td>
+        <td style="width: ' . $ancho . ';">GASOL_REGULAR</td>
+        <td style="width: ' . $ancho . ';">GASOL_PREMIUM</td>
+        ' . $cab_otros . '
+        <td style="width: ' . $ancho . ';">TOTAL EN SOLES</td>
     </tr>
     <tr>
         <td>' . number_format($total_diesel, 2) . '</td>
         <td>' . number_format($total_regular, 2) . '</td>
         <td>' . number_format($total_premium, 2) . '</td>
+        ' . ($hay_otros ? '<td>' . number_format($total_otros, 2) . '</td>' : '') . '
         <td style="background-color: #FFA500; font-weight: bold;">' . number_format($total_general, 2) . '</td>
     </tr>
 </table>
@@ -340,15 +348,17 @@ $html .= '
 <!-- TOTALES EN GALONES -->
 <table style="margin-bottom: 10px;">
     <tr class="green-header">
-        <td style="width: 25%;">DIESEL</td>
-        <td style="width: 25%;">GASOL_REGULAR</td>
-        <td style="width: 25%;">GASOL_PREMIUM</td>
-        <td style="width: 25%;">TOTAL EN GALONES</td>
+        <td style="width: ' . $ancho . ';">DIESEL</td>
+        <td style="width: ' . $ancho . ';">GASOL_REGULAR</td>
+        <td style="width: ' . $ancho . ';">GASOL_PREMIUM</td>
+        ' . $cab_otros . '
+        <td style="width: ' . $ancho . ';">TOTAL EN GALONES</td>
     </tr>
     <tr>
         <td>' . number_format($galones_diesel, 3) . '</td>
         <td>' . number_format($galones_regular, 3) . '</td>
         <td>' . number_format($galones_premium, 3) . '</td>
+        ' . ($hay_otros ? '<td>' . number_format($galones_otros, 3) . '</td>' : '') . '
         <td style="background-color: #FFA500; font-weight: bold;">' . number_format($total_galones, 3) . '</td>
     </tr>
 </table>
@@ -396,7 +406,7 @@ $max_rows = max(
 // Generar filas
 for ($i = 0; $i < $max_rows; $i++) {
     $html .= '<tr>';
-    
+
     // YAPE
     if (isset($pagos_agrupados['YAPE'][$i])) {
         $html .= '<td>' . number_format($pagos_agrupados['YAPE'][$i]['monto'], 2) . '</td>';
@@ -404,7 +414,7 @@ for ($i = 0; $i < $max_rows; $i++) {
     } else {
         $html .= '<td></td><td></td>';
     }
-    
+
     // BCP
     if (isset($pagos_agrupados['BCP'][$i])) {
         $html .= '<td>' . number_format($pagos_agrupados['BCP'][$i]['monto'], 2) . '</td>';
@@ -412,7 +422,7 @@ for ($i = 0; $i < $max_rows; $i++) {
     } else {
         $html .= '<td></td><td></td>';
     }
-    
+
     // VISA
     if (isset($pagos_agrupados['VISA'][$i])) {
         $html .= '<td>' . number_format($pagos_agrupados['VISA'][$i]['monto'], 2) . '</td>';
@@ -420,28 +430,28 @@ for ($i = 0; $i < $max_rows; $i++) {
     } else {
         $html .= '<td></td><td></td>';
     }
-    
+
     // DESCUENTOS (solo en la primera fila)
     if ($i == 0 && floatval($turno['monto_descuentos']) > 0) {
         $html .= '<td>' . number_format($turno['monto_descuentos'], 2) . '</td>';
     } else {
         $html .= '<td></td>';
     }
-    
+
     // EFECTIVO (solo en la primera fila, usando el monto del turno)
     if ($i == 0 && floatval($turno['monto_efectivo']) > 0) {
         $html .= '<td>' . number_format($turno['monto_efectivo'], 2) . '</td>';
     } else {
         $html .= '<td></td>';
     }
-    
+
     // OTROS GASTOS (solo en la primera fila)
     if ($i == 0 && floatval($turno['monto_otros_gastos']) > 0) {
         $html .= '<td>' . number_format($turno['monto_otros_gastos'], 2) . '</td>';
     } else {
         $html .= '<td></td>';
     }
-    
+
     // CRÉDITOS
     if (isset($creditos[$i])) {
         $vale_display = esc($creditos[$i]['numero_vale']);
@@ -454,7 +464,7 @@ for ($i = 0; $i < $max_rows; $i++) {
     } else {
         $html .= '<td></td><td></td><td></td>';
     }
-    
+
     $html .= '</tr>';
 }
 

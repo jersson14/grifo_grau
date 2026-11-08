@@ -100,6 +100,16 @@ try {
     comprobar('y su total es el del turno', abs((float) ($d['total_ventas'] ?? 0) - $esperado) < 0.01);
     $m = json_decode($admin->pedir('controller/reportes/controlador_ventas_mes.php', [])['cuerpo'], true);
     comprobar('el gráfico del mes incluye el GLP', in_array('GLP PRUEBA', array_column($m['por_producto'] ?? [], 'nombre'), true), json_encode($m['por_producto'] ?? null));
+    $v = $admin->json('controller/reportes/controlador_ventas_por_fecha.php', ['fecha_inicio' => date('Y-m-d'), 'fecha_fin' => date('Y-m-d')]);
+    $t = array_values(array_filter($v['turnos'] ?? [], fn($x) => (int) $x['id_reporte'] === $id))[0] ?? null;
+    comprobar('Ventas por fecha desglosa el GLP por producto', in_array('GLP PRUEBA', array_column($v['por_producto'] ?? [], 'nombre'), true), json_encode($v['por_producto'] ?? null));
+    comprobar('y en la tabla de turnos sus galones van en «Otros»', $t !== null && abs((float) $t['galones_otros'] - 20) < 0.001, json_encode($t));
+    $pdf = $admin->pedir('view/MPDF/REPORTE/reporte_turno.php?id=' . $id);
+    comprobar('el PDF del turno se genera con el combustible nuevo', $pdf['codigo'] === 200 && str_starts_with($pdf['cuerpo'], '%PDF'));
+    foreach (['view_listado_reportes', 'view_mis_reportes', 'view_validar_reportes', 'view_ventas_por_fecha'] as $vista) {
+        $html = $admin->pedir("view/reportes/$vista.php")['cuerpo'];
+        comprobar("$vista ya no tiene casillas fijas para tres combustibles", strpos($html, 'detalle_total_diesel') === false && strpos($html, 'id="galones_diesel"') === false);
+    }
 } finally {
     $ids = "SELECT id_reporte FROM reportes_turno WHERE id_reporte > $maxReporte";
     foreach (['lecturas_turno', 'pagos_reporte', 'ventas_credito'] as $t) {

@@ -19,7 +19,7 @@
 
 <div class="content">
     <div class="container-fluid">
-        
+
         <!-- FILTROS -->
         <div class="row">
             <div class="col-md-12">
@@ -97,42 +97,8 @@
                 </div>
             </div>
 
-            <!-- DETALLE POR COMBUSTIBLE -->
-            <div class="row">
-                <div class="col-md-4">
-                    <div class="card">
-                        <div class="card-header" style="background-color:#343a40; color:white">
-                            <h3 class="card-title"><i class="fas fa-gas-pump"></i> DIESEL</h3>
-                        </div>
-                        <div class="card-body">
-                            <p><strong>Galones:</strong> <span id="galones_diesel" class="text-primary" style="font-size:20px">0.000</span> gal</p>
-                            <p><strong>Total:</strong> <span id="soles_diesel" class="text-success" style="font-size:20px">S/. 0.00</span></p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card">
-                        <div class="card-header" style="background-color:#17a2b8; color:white">
-                            <h3 class="card-title"><i class="fas fa-gas-pump"></i> REGULAR</h3>
-                        </div>
-                        <div class="card-body">
-                            <p><strong>Galones:</strong> <span id="galones_regular" class="text-primary" style="font-size:20px">0.000</span> gal</p>
-                            <p><strong>Total:</strong> <span id="soles_regular" class="text-success" style="font-size:20px">S/. 0.00</span></p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card">
-                        <div class="card-header" style="background-color:#ffc107; color:black">
-                            <h3 class="card-title"><i class="fas fa-gas-pump"></i> PREMIUM</h3>
-                        </div>
-                        <div class="card-body">
-                            <p><strong>Galones:</strong> <span id="galones_premium" class="text-primary" style="font-size:20px">0.000</span> gal</p>
-                            <p><strong>Total:</strong> <span id="soles_premium" class="text-success" style="font-size:20px">S/. 0.00</span></p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <!-- DETALLE POR COMBUSTIBLE: una tarjeta por cada producto vendido en el periodo -->
+            <div class="row" id="resumen_productos"></div>
 
             <!-- GRÁFICOS -->
             <div class="row">
@@ -176,6 +142,7 @@
                                         <th>Diesel (gal)</th>
                                         <th>Regular (gal)</th>
                                         <th>Premium (gal)</th>
+                                        <th>Otros (gal)</th>
                                         <th>Total Galones</th>
                                         <th>Total Soles</th>
                                     </tr>
@@ -188,6 +155,7 @@
                                         <td id="foot_diesel">0.000</td>
                                         <td id="foot_regular">0.000</td>
                                         <td id="foot_premium">0.000</td>
+                                        <td id="foot_otros">0.000</td>
                                         <td id="foot_total_galones">0.000</td>
                                         <td id="foot_total_soles">S/. 0.00</td>
                                     </tr>
@@ -240,10 +208,10 @@ $(document).ready(function() {
     var hoy = new Date();
     var hace_mes = new Date();
     hace_mes.setMonth(hace_mes.getMonth() - 1);
-    
+
     $("#filtro_fecha_inicio_ventas").val(Fecha_ISO_Local(hace_mes));
     $("#filtro_fecha_fin_ventas").val(Fecha_ISO_Local(hoy));
-    
+
     // Cargar griferos
     Cargar_Griferos_Filtro();
 });
@@ -256,11 +224,11 @@ function Cargar_Griferos_Filtro() {
     }).done(function(resp) {
         var data = JSON.parse(resp);
         var opciones = '<option value="">Todos los Griferos</option>';
-        
+
         data.forEach(function(item) {
             opciones += '<option value="' + item.id_usuario + '">' + Texto_Seguro(item.nombre_completo) + '</option>';
         });
-        
+
         $("#filtro_grifero_ventas").html(opciones);
     });
 }
@@ -270,7 +238,7 @@ function Consultar_Ventas() {
     var fecha_inicio = $("#filtro_fecha_inicio_ventas").val();
     var fecha_fin = $("#filtro_fecha_fin_ventas").val();
     var id_grifero = $("#filtro_grifero_ventas").val();
-    
+
     if (fecha_inicio == '' || fecha_fin == '') {
         Swal.fire({
             icon: 'warning',
@@ -280,7 +248,7 @@ function Consultar_Ventas() {
         });
         return;
     }
-    
+
     $.ajax({
         url: '../controller/reportes/controlador_ventas_por_fecha.php',
         type: 'POST',
@@ -291,7 +259,7 @@ function Consultar_Ventas() {
         }
     }).done(function(resp) {
         var data = JSON.parse(resp);
-        
+
         if (data.turnos.length == 0) {
             Swal.fire({
                 icon: 'info',
@@ -302,89 +270,57 @@ function Consultar_Ventas() {
             $("#resumen_ventas").hide();
             return;
         }
-        
+
         // Mostrar resumen
         $("#resumen_ventas").show();
-        
+
         // Actualizar totales generales
         $("#total_galones_general").text(parseFloat(data.resumen.total_galones).toFixed(3));
         $("#total_soles_general").text('S/. ' + parseFloat(data.resumen.total_soles).toFixed(2));
         $("#total_turnos_general").text(data.resumen.total_turnos);
         $("#promedio_turno_general").text('S/. ' + parseFloat(data.resumen.promedio_turno).toFixed(2));
-        
-        // Actualizar por combustible
-        $("#galones_diesel").text(parseFloat(data.resumen.galones_diesel).toFixed(3));
-        $("#soles_diesel").text('S/. ' + parseFloat(data.resumen.soles_diesel).toFixed(2));
-        
-        $("#galones_regular").text(parseFloat(data.resumen.galones_regular).toFixed(3));
-        $("#soles_regular").text('S/. ' + parseFloat(data.resumen.soles_regular).toFixed(2));
-        
-        $("#galones_premium").text(parseFloat(data.resumen.galones_premium).toFixed(3));
-        $("#soles_premium").text('S/. ' + parseFloat(data.resumen.soles_premium).toFixed(2));
-        
+
+        // Una tarjeta por producto del periodo, sea cual sea su tipo.
+        var caja = $("#resumen_productos").empty();
+        (data.por_producto || []).forEach(function (p) {
+            caja.append($('<div class="col-sm-6 col-lg-4"></div>').append($('<div class="card"></div>').append(
+                $('<div class="card-header"></div>').append($('<h3 class="card-title"></h3>').text(p.nombre)),
+                $('<div class="card-body"></div>').append(
+                    $('<p class="mb-1"></p>').append($('<strong></strong>').text('Galones: '), document.createTextNode(parseFloat(p.galones).toFixed(3) + ' gal')),
+                    $('<p class="mb-0"></p>').append($('<strong></strong>').text('Total: '), document.createTextNode('S/. ' + parseFloat(p.total).toFixed(2)))
+                )
+            )));
+        });
+
         // Actualizar gráficos
-        Actualizar_Graficos(data.resumen);
-        
+        Actualizar_Graficos(data.por_producto || []);
+
         // Actualizar tabla detalle
         Actualizar_Tabla_Detalle(data.turnos);
-        
+
         // Actualizar tabla por grifero
         Actualizar_Tabla_Griferos(data.por_grifero);
     });
 }
 
-// ACTUALIZAR GRÁFICOS
-function Actualizar_Graficos(resumen) {
-    // Destruir gráficos anteriores
+// ACTUALIZAR GRÁFICOS: uno por galones y otro por soles, con un sector por producto.
+function Actualizar_Graficos(productos) {
     if (grafico_galones_chart) grafico_galones_chart.destroy();
     if (grafico_soles_chart) grafico_soles_chart.destroy();
-    
-    // Gráfico de Galones
-    var ctx_galones = document.getElementById('grafico_galones').getContext('2d');
-    grafico_galones_chart = new Chart(ctx_galones, {
+    var COLORES = { DIESEL: '#2563eb', REGULAR: '#059669', PREMIUM: '#f59e0b' };
+    var OTROS = ['#71717a', '#a1a1aa', '#52525b', '#d4d4d8'];
+    var colores = productos.map(function (p, i) { return COLORES[p.tipo] || OTROS[i % OTROS.length]; });
+    var nombres = productos.map(function (p) { return p.nombre; });
+    var opciones = { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } };
+    grafico_galones_chart = new Chart(document.getElementById('grafico_galones').getContext('2d'), {
         type: 'doughnut',
-        data: {
-            labels: ['Diesel', 'Regular', 'Premium'],
-            datasets: [{
-                data: [
-                    parseFloat(resumen.galones_diesel),
-                    parseFloat(resumen.galones_regular),
-                    parseFloat(resumen.galones_premium)
-                ],
-                backgroundColor: ['#343a40', '#17a2b8', '#ffc107']
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { position: 'bottom' }
-            }
-        }
+        data: { labels: nombres, datasets: [{ data: productos.map(function (p) { return parseFloat(p.galones); }), backgroundColor: colores }] },
+        options: opciones
     });
-    
-    // Gráfico de Soles
-    var ctx_soles = document.getElementById('grafico_soles').getContext('2d');
-    grafico_soles_chart = new Chart(ctx_soles, {
+    grafico_soles_chart = new Chart(document.getElementById('grafico_soles').getContext('2d'), {
         type: 'doughnut',
-        data: {
-            labels: ['Diesel', 'Regular', 'Premium'],
-            datasets: [{
-                data: [
-                    parseFloat(resumen.soles_diesel),
-                    parseFloat(resumen.soles_regular),
-                    parseFloat(resumen.soles_premium)
-                ],
-                backgroundColor: ['#343a40', '#17a2b8', '#ffc107']
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { position: 'bottom' }
-            }
-        }
+        data: { labels: nombres, datasets: [{ data: productos.map(function (p) { return parseFloat(p.total); }), backgroundColor: colores }] },
+        options: opciones
     });
 }
 
@@ -396,7 +332,7 @@ function Actualizar_Tabla_Detalle(turnos) {
         "ordering": true,
         "pageLength": 25,
         "columns": [
-            { 
+            {
                 "data": "fecha_reporte",
                 "render": function(data) {
                     var fecha = Fecha_Local(data);
@@ -404,7 +340,7 @@ function Actualizar_Tabla_Detalle(turnos) {
                 }
             },
             { "data": "grifero_nombre" },
-            { 
+            {
                 "data": "turno",
                 "render": function(data) {
                     if (data == 'DIA') {
@@ -414,31 +350,37 @@ function Actualizar_Tabla_Detalle(turnos) {
                     }
                 }
             },
-            { 
+            {
                 "data": "galones_diesel",
                 "render": function(data) {
                     return parseFloat(data).toFixed(3);
                 }
             },
-            { 
+            {
                 "data": "galones_regular",
                 "render": function(data) {
                     return parseFloat(data).toFixed(3);
                 }
             },
-            { 
+            {
                 "data": "galones_premium",
                 "render": function(data) {
                     return parseFloat(data).toFixed(3);
                 }
             },
-            { 
+            {
+                "data": "galones_otros",
+                "render": function(data) {
+                    return parseFloat(data || 0).toFixed(3);
+                }
+            },
+            {
                 "data": "total_galones",
                 "render": function(data) {
                     return '<strong>' + parseFloat(data).toFixed(3) + '</strong>';
                 }
             },
-            { 
+            {
                 "data": "total_ventas",
                 "render": function(data) {
                     return '<strong>S/. ' + parseFloat(data).toFixed(2) + '</strong>';
@@ -447,17 +389,19 @@ function Actualizar_Tabla_Detalle(turnos) {
         ],
         "language": idioma_espanol
     });
-    
+
     // Actualizar totales del footer
     var total_diesel = turnos.reduce((sum, t) => sum + parseFloat(t.galones_diesel), 0);
     var total_regular = turnos.reduce((sum, t) => sum + parseFloat(t.galones_regular), 0);
     var total_premium = turnos.reduce((sum, t) => sum + parseFloat(t.galones_premium), 0);
+    var total_otros = turnos.reduce((sum, t) => sum + parseFloat(t.galones_otros || 0), 0);
     var total_galones = turnos.reduce((sum, t) => sum + parseFloat(t.total_galones), 0);
     var total_soles = turnos.reduce((sum, t) => sum + parseFloat(t.total_ventas), 0);
-    
+
     $("#foot_diesel").text(total_diesel.toFixed(3));
     $("#foot_regular").text(total_regular.toFixed(3));
     $("#foot_premium").text(total_premium.toFixed(3));
+    $("#foot_otros").text(total_otros.toFixed(3));
     $("#foot_total_galones").text(total_galones.toFixed(3));
     $("#foot_total_soles").text('S/. ' + total_soles.toFixed(2));
 }
@@ -465,7 +409,7 @@ function Actualizar_Tabla_Detalle(turnos) {
 // ACTUALIZAR TABLA POR GRIFERO
 function Actualizar_Tabla_Griferos(por_grifero) {
     var html = '';
-    
+
     por_grifero.forEach(function(item) {
         html += '<tr>';
         html += '<td>' + Texto_Seguro(item.grifero_nombre) + '</td>';
@@ -475,7 +419,7 @@ function Actualizar_Tabla_Griferos(por_grifero) {
         html += '<td>S/. ' + parseFloat(item.promedio_turno).toFixed(2) + '</td>';
         html += '</tr>';
     });
-    
+
     $("#tbody_ventas_grifero").html(html);
 }
 </script>
