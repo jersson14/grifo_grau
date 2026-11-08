@@ -18,6 +18,7 @@
 - [Instalación rápida con Docker](#instalación-rápida-con-docker)
 - [Instalación manual (XAMPP)](#instalación-manual-xampp)
 - [Usuarios por defecto](#usuarios-por-defecto)
+- Manuales de uso: [administrador](docs/manual_administrador.md) y [grifero](docs/manual_grifero.md)
 - [Sobre Vibe Coding](#sobre-vibe-coding)
 - [Autor](#autor)
 

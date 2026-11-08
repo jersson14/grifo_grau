@@ -308,6 +308,7 @@ Permite preguntar en lenguaje natural, por ejemplo: «¿Cuántos galones de Prem
 - [ ] **7.3** Piloto en paralelo con griferos reales.
 - [ ] **7.4** Plan de reversión probado y cambio en horario de baja actividad.
 - [ ] **7.5** Manuales para administrador y grifero, y capacitación.
+  - Hecho: [manual del administrador](manual_administrador.md) y [manual del grifero](manual_grifero.md). Falta la capacitación con el personal; actualizar los manuales cuando cambie una pantalla.
 - [ ] **7.6** Fusionar `grifo2` en `main` y publicar.
 
 ---
