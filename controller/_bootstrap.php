@@ -204,6 +204,9 @@ function ruta_permitida(string $ruta): bool
 /** Si la ruta es usable ahora: incluye tener permiso y que su módulo esté activo. */
 function ruta_accesible(string $ruta): bool
 {
+    if (ruta_coincide($ruta, bloqueos_demo()['rutas'])) {
+        return false;
+    }
     $permisos = require dirname(__DIR__) . '/config/permisos.php';
     foreach ($permisos['modulos'] as $patron => $modulo) {
         if (ruta_coincide($ruta, [$patron]) && !modulo_activo($modulo)) {
@@ -287,6 +290,10 @@ function verificar_acceso(): void
         return;
     }
 
+    if (ruta_coincide($ruta, bloqueos_demo()['rutas'])) {
+        denegar_acceso(403, 'Esta opción no está disponible en la demostración.');
+    }
+
     if (empty($_SESSION['S_ID'])) {
         denegar_acceso(401, 'Su sesión ha expirado. Vuelva a iniciar sesión.');
     }
@@ -319,7 +326,8 @@ function verificar_acceso(): void
 
     // Con una clave de ejemplo, débil o asignada por un administrador, solo se puede cambiarla.
     $_SESSION['S_CAMBIAR_CLAVE'] = false;
-    if ((int) $cuenta['debe_cambiar_clave'] === 1) {
+    // En la demostración no se cambian contraseñas: las cuentas de prueba son compartidas.
+    if ((int) $cuenta['debe_cambiar_clave'] === 1 && !modo_demo()) {
         // Se consulta aquí y no con Modelo_Usuario: hay controladores que cargan ese modelo con require.
         $ajuste = $c->query("SELECT valor FROM configuracion WHERE clave = 'clave_forzar_cambio'")->fetchColumn();
         if ($ajuste === false || $ajuste === null || $ajuste === '1') {

@@ -148,6 +148,9 @@ class Modelo_Configuracion extends conexionBD
 
     public static function Modulo_Activo(string $codigo): bool
     {
+        if (in_array($codigo, bloqueos_demo()['modulos'], true)) {
+            return false;
+        }
         $c = conexionBD::conexionPDO();
         if ($c === null) {
             return false;

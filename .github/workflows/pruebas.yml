@@ -96,6 +96,7 @@ jobs:
           php tests/avisos.php     | tee -a /tmp/resultados.txt || fallo=1
           php tests/combustibles.php | tee -a /tmp/resultados.txt || fallo=1
           php tests/inicio.php     | tee -a /tmp/resultados.txt || fallo=1
+          php tests/demo.php       | tee -a /tmp/resultados.txt || fallo=1
           GRIFO_BASE=http://127.0.0.1:8001/${{ github.event.repository.name }} DB_NAME=grifo_instalar php tests/instalacion.php | tee -a /tmp/resultados.txt || fallo=1
           php tests/respaldos.php mysql | tee -a /tmp/resultados.txt || fallo=1
           php tests/facturacion.php /tmp/mock_nubefact | tee -a /tmp/resultados.txt || fallo=1

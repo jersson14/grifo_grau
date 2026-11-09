@@ -37,6 +37,9 @@ $capacidades = capacidades_sesion();
         </li>
       </ul>
       <ul class="navbar-nav ml-auto">
+        <?php if (modo_demo()) { ?>
+        <li class="nav-item d-flex align-items-center"><span class="g-demo" title="Sistema de demostración: algunas opciones están bloqueadas">Demostración</span></li>
+        <?php } ?>
         <?php if (puede('avisos') && empty($_SESSION['S_CAMBIAR_CLAVE'])) { ?>
         <li class="nav-item dropdown" id="g_avisos">
           <a class="nav-link g-campana" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false" aria-label="Avisos">
@@ -56,8 +59,10 @@ $capacidades = capacidades_sesion();
             <i class="fas fa-caret-down" aria-hidden="true"></i>
           </a>
           <div class="dropdown-menu dropdown-menu-right">
+            <?php if (ruta_accesible('view/usuario/view_mi_perfil.php')) { ?>
             <a href="#" onclick="cargar_contenido('contenido_principal','usuario/view_mi_perfil.php')" class="dropdown-item"><i class="fas fa-user-circle mr-2" aria-hidden="true"></i>Mi perfil</a>
             <div class="dropdown-divider"></div>
+            <?php } ?>
             <a href="../controller/usuario/controlador_cerrar_sesion.php" class="dropdown-item"><i class="fas fa-power-off mr-2" aria-hidden="true"></i>Cerrar sesión</a>
           </div>
         </li>

@@ -29,6 +29,9 @@ a:hover, .btn-link:hover { color: theme('colors.blue.800'); }
 .dropdown-item:hover, .dropdown-item:focus { background: theme('colors.zinc.100'); color: theme('colors.zinc.950'); }
 .dropdown-item:active { background: theme('colors.zinc.200'); color: theme('colors.zinc.950'); }
 
+/* Etiqueta del modo demostración en la cabecera. */
+.g-demo { display: inline-flex; align-items: center; height: 1.75rem; padding: 0 .625rem; margin-right: .5rem; border: 1px solid theme('colors.amber.300'); border-radius: 999px; background: theme('colors.amber.50'); color: theme('colors.amber.900'); font-size: .75rem; font-weight: 600; white-space: nowrap; }
+
 /* ---------- Barra lateral ---------- */
 .main-sidebar, .sidebar-dark-primary { background: #fff; border-right: 1px solid theme('colors.zinc.200'); box-shadow: none; }
 .main-sidebar .brand-link { background: #fff; border-bottom: 1px solid theme('colors.zinc.200'); padding: .75rem; display: flex; justify-content: center; }

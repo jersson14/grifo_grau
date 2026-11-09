@@ -28,3 +28,19 @@ function env(string $clave, ?string $porDefecto = null): ?string
     }
     return $valores[$clave] ?? $porDefecto;
 }
+
+/** Si el sistema corre como demostración (MODO_DEMO=1). Ver config/demo.php. */
+function modo_demo(): bool
+{
+    return env('MODO_DEMO', '0') === '1';
+}
+
+/** Lo que el modo demostración bloquea, o listas vacías fuera de él. */
+function bloqueos_demo(): array
+{
+    static $bloqueos = null;
+    if ($bloqueos === null) {
+        $bloqueos = modo_demo() ? require dirname(__DIR__) . '/config/demo.php' : ['modulos' => [], 'rutas' => []];
+    }
+    return $bloqueos;
+}
