@@ -80,6 +80,14 @@ if ($vacia && in_array('--demo', $argv, true)) {
         }
     }
 
+    // Historial de precios de los últimos meses para que la página pública muestre su gráfico.
+    $historial = $pdo->prepare("INSERT INTO precios_historial (id_producto, precio_anterior, precio_nuevo, origen, creado_en) VALUES (?, ?, ?, 'DEMO', ?)");
+    foreach ([1 => [14.20, 14.60, 14.45, 14.80, 15.00], 2 => [12.40, 12.70, 12.55, 12.90, 13.00], 3 => [15.30, 15.60, 15.45, 15.80, 16.00]] as $producto => $serie) {
+        foreach (array_slice($serie, 1) as $k => $precio) {
+            $historial->execute([$producto, $serie[$k], $precio, date('Y-m-d 07:00:00', strtotime('-' . (80 - $k * 20) . ' days'))]);
+        }
+    }
+
     $pdo->exec("INSERT INTO clientes (nombre_completo, dni_ruc, telefono) VALUES ('CLIENTE DEMO', '00000000', '')");
     // Las claves de demostración son públicas a propósito: no se obliga a cambiarlas. En producción queda encendido.
     $pdo->exec("UPDATE configuracion SET valor = '0' WHERE clave = 'clave_forzar_cambio'");

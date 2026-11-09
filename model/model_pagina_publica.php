@@ -22,8 +22,17 @@ class Modelo_Pagina_Publica
         'instagram'       => ['tipo' => 'url'],
         'tiktok'          => ['tipo' => 'url'],
         'mostrar_precios' => ['tipo' => 'bandera'],
+        'mostrar_grafico' => ['tipo' => 'bandera'],
         'flota_titulo'    => ['tipo' => 'texto', 'max' => 60],
         'flota_texto'     => ['tipo' => 'texto', 'max' => 220],
+        'cifra1_valor'    => ['tipo' => 'texto', 'max' => 12],
+        'cifra1_texto'    => ['tipo' => 'texto', 'max' => 40],
+        'cifra2_valor'    => ['tipo' => 'texto', 'max' => 12],
+        'cifra2_texto'    => ['tipo' => 'texto', 'max' => 40],
+        'cifra3_valor'    => ['tipo' => 'texto', 'max' => 12],
+        'cifra3_texto'    => ['tipo' => 'texto', 'max' => 40],
+        'cifra4_valor'    => ['tipo' => 'texto', 'max' => 12],
+        'cifra4_texto'    => ['tipo' => 'texto', 'max' => 40],
     ];
 
     /** Iconos que el administrador puede elegir para un servicio (Font Awesome 5, sólidos). */
@@ -139,6 +148,89 @@ class Modelo_Pagina_Publica
             unset($f['precio_ayer']);
         }
         return $filas;
+    }
+
+    /**
+     * Precio de cada combustible activo en los últimos días, como escalones: el precio que regía al empezar
+     * el periodo, cada cambio registrado y el precio de ahora. Llamar después de Precios(), que aplica los programados.
+     */
+    public function Historial_Precios(int $dias = 90): array
+    {
+        $c = $this->c();
+        $inicio = date('Y-m-d 00:00:00', strtotime('-' . $dias . ' days'));
+        $ahora = date('Y-m-d H:i:s');
+        $antes = $c->prepare('SELECT precio_nuevo FROM precios_historial WHERE id_producto = ? AND creado_en < ?
+            ORDER BY creado_en DESC, id_historial DESC LIMIT 1');
+        $cambios = $c->prepare('SELECT precio_anterior, precio_nuevo, creado_en FROM precios_historial
+            WHERE id_producto = ? AND creado_en >= ? ORDER BY creado_en, id_historial');
+
+        $series = [];
+        $hayCambios = false;
+        foreach ($c->query("SELECT id_producto, nombre, tipo, precio_actual FROM productos WHERE estado = 'ACTIVO' ORDER BY id_producto") as $p) {
+            $id = (int) $p['id_producto'];
+            $actual = round((float) $p['precio_actual'], 2);
+            $cambios->execute([$id, $inicio]);
+            $filas = $cambios->fetchAll(PDO::FETCH_ASSOC);
+            $antes->execute([$id, $inicio]);
+            $previo = $antes->fetchColumn();
+            $primero = $previo !== false ? (float) $previo
+                : ($filas ? (float) ($filas[0]['precio_anterior'] ?? $filas[0]['precio_nuevo']) : $actual);
+
+            $puntos = [[$inicio, round($primero, 2)]];
+            foreach ($filas as $f) {
+                $puntos[] = [$f['creado_en'], round((float) $f['precio_nuevo'], 2)];
+            }
+            $puntos[] = [$ahora, $actual];
+            $hayCambios = $hayCambios || $filas;
+            $precios = array_column($puntos, 1);
+            $series[] = [
+                'nombre' => $p['nombre'], 'tipo' => $p['tipo'], 'puntos' => $puntos, 'actual' => $actual,
+                'inicial' => round($primero, 2), 'minimo' => min($precios), 'maximo' => max($precios),
+                'cambios' => count($filas),
+            ];
+        }
+        return ['inicio' => $inicio, 'fin' => $ahora, 'dias' => $dias, 'series' => $series, 'hay_cambios' => $hayCambios];
+    }
+
+    /**
+     * Cifras de la franja bajo la portada. Si el administrador escribió alguna, se muestran solo esas;
+     * si no, se arman con datos reales del grifo.
+     */
+    public function Cifras(array $datos, bool $flotasActivo): array
+    {
+        $propias = [];
+        for ($i = 1; $i <= 4; $i++) {
+            if ($datos["cifra{$i}_valor"] !== '') {
+                $propias[] = ['valor' => $datos["cifra{$i}_valor"], 'texto' => $datos["cifra{$i}_texto"]];
+            }
+        }
+        if ($propias) {
+            return $propias;
+        }
+
+        $c = $this->c();
+        $cifras = [];
+        if (preg_match('/24\s*h/i', $datos['horario'])) {
+            $cifras[] = ['valor' => '24 h', 'texto' => 'Abierto todos los días'];
+        }
+        $surtidores = (int) $c->query("SELECT COUNT(*) FROM surtidores WHERE estado = 'ACTIVO'")->fetchColumn();
+        if ($surtidores > 0) {
+            $cifras[] = ['valor' => (string) $surtidores, 'texto' => $surtidores === 1 ? 'Surtidor en atención' : 'Surtidores para no hacer cola'];
+        }
+        $combustibles = (int) $c->query("SELECT COUNT(*) FROM productos WHERE estado = 'ACTIVO'")->fetchColumn();
+        if ($combustibles > 0) {
+            $cifras[] = ['valor' => (string) $combustibles, 'texto' => $combustibles === 1 ? 'Combustible de calidad' : 'Combustibles de calidad'];
+        }
+        // Pocas flotas no impresionan: se muestran desde cinco.
+        $flotas = $flotasActivo ? (int) $c->query("SELECT COUNT(*) FROM flotas WHERE estado = 'ACTIVA'")->fetchColumn() : 0;
+        if ($flotas >= 5) {
+            $cifras[] = ['valor' => '+' . $flotas, 'texto' => 'Empresas cargan con crédito'];
+        }
+        $servicios = (int) $c->query('SELECT COUNT(*) FROM pagina_servicios WHERE activo = 1')->fetchColumn();
+        if ($servicios > 0) {
+            $cifras[] = ['valor' => (string) $servicios, 'texto' => $servicios === 1 ? 'Servicio en la estación' : 'Servicios en la estación'];
+        }
+        return array_slice($cifras, 0, 4);
     }
 
     // ---------- Servicios ----------

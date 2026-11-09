@@ -24,10 +24,21 @@
     @apply inline-flex h-11 items-center justify-center gap-2 whitespace-nowrap rounded-md px-5 text-sm font-medium no-underline transition-colors disabled:pointer-events-none disabled:opacity-60;
   }
   .btn-primario { @apply bg-zinc-900 text-white hover:bg-zinc-800; }
+  .btn-acento { @apply bg-blue-600 text-white shadow-sm shadow-blue-600/30 hover:bg-blue-700; }
+  .btn-claro { @apply bg-white text-zinc-900 hover:bg-zinc-200; }
   .btn-contorno { @apply border border-zinc-200 bg-white text-zinc-900 shadow-sm hover:bg-zinc-100; }
+  .btn-contorno-oscuro { @apply border border-white/20 bg-white/5 text-white hover:bg-white/15; }
   .btn-fantasma { @apply text-zinc-700 hover:bg-zinc-100 hover:text-zinc-900; }
+  .btn-fantasma-oscuro { @apply text-zinc-300 hover:bg-white/10 hover:text-white; }
+  .cabecera :focus-visible, .fondo-portada :focus-visible, .fondo-flotas > div > div:first-child :focus-visible, footer :focus-visible, .llamado :focus-visible { @apply ring-offset-zinc-950; }
+
+  .saltar { @apply sr-only; }
+  .saltar:focus { @apply not-sr-only fixed left-4 top-4 z-50 rounded-md bg-white px-4 py-2 text-sm font-medium text-zinc-950 shadow-lg; }
+
+  .menu-movil summary::-webkit-details-marker { display: none; }
 
   .tarjeta { @apply rounded-xl border border-zinc-200 bg-white shadow-sm; }
+  .tarjeta-elevable { @apply transition duration-200 hover:-translate-y-0.5 hover:border-zinc-300 hover:shadow-md; }
 
   .insignia { @apply inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-semibold; }
   .insignia-sube { @apply border-red-200 bg-red-50 text-red-700; }
@@ -35,6 +46,7 @@
   .insignia-neutra { @apply border-zinc-200 bg-zinc-50 text-zinc-700; }
   .insignia-aviso { @apply border-amber-200 bg-amber-50 text-amber-800; }
 
+  .antetitulo { @apply mb-3 text-sm font-semibold text-blue-700; }
   .titulo-seccion { @apply text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl; }
   .subtitulo-seccion { @apply mt-3 max-w-2xl text-base leading-relaxed text-zinc-600 sm:text-lg; }
 
@@ -45,4 +57,70 @@
   }
   textarea.campo { @apply h-auto min-h-[6.5rem] py-2.5; }
   .campo[aria-invalid='true'] { @apply border-red-600 focus-visible:ring-red-600; }
+
+  /* Portada oscura con rejilla tenue y brillo azul. */
+  .fondo-portada {
+    background-image:
+      radial-gradient(60rem 30rem at 85% -10%, rgb(37 99 235 / .35), transparent 60%),
+      radial-gradient(40rem 24rem at -10% 110%, rgb(245 158 11 / .12), transparent 60%);
+  }
+  .fondo-portada::before {
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    background-image: linear-gradient(rgb(255 255 255 / .05) 1px, transparent 1px), linear-gradient(90deg, rgb(255 255 255 / .05) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: radial-gradient(ellipse at 70% 30%, #000 20%, transparent 75%);
+    -webkit-mask-image: radial-gradient(ellipse at 70% 30%, #000 20%, transparent 75%);
+  }
+  .punto-vivo { @apply relative inline-flex h-2.5 w-2.5 shrink-0 rounded-full bg-green-400; }
+  .punto-vivo::after { content: ''; @apply absolute inset-0 rounded-full bg-green-400; animation: pulso 2s cubic-bezier(0, 0, .2, 1) infinite; }
+  @keyframes pulso { 75%, 100% { transform: scale(2.4); opacity: 0; } }
+
+  /* Tablero de precios, como el letrero del grifo. */
+  .tablero { @apply overflow-hidden rounded-2xl border border-white/10 bg-zinc-900/70 shadow-2xl shadow-black/50 ring-1 ring-white/5 backdrop-blur; }
+  .barra-combustible { @apply h-12 w-1.5 shrink-0 rounded-full; background: var(--color); box-shadow: 0 0 16px var(--color); }
+  .precio-digitos { @apply text-4xl font-semibold tracking-tight text-white sm:text-5xl; font-variant-numeric: tabular-nums; }
+  .tablero .insignia { @apply mt-1; }
+  .tablero .insignia-sube { @apply border-red-500/30 bg-red-500/15 text-red-300; }
+  .tablero .insignia-baja { @apply border-green-500/30 bg-green-500/15 text-green-300; }
+
+  /* Cifras: con un número impar, la última ocupa la fila en celular. */
+  @media (max-width: 1023px) { .cifra:last-child:nth-child(odd) { grid-column: span 2; } }
+
+  /* Gráfico */
+  .grafico-globo { @apply pointer-events-none absolute top-2 z-10 min-w-[11rem] rounded-lg bg-zinc-950 px-3 py-2.5 text-xs text-white shadow-xl; }
+
+  /* Calculadora */
+  .opcion > span { @apply inline-flex h-10 cursor-pointer items-center gap-2 rounded-full border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50; }
+  .opcion input:checked + span { @apply border-zinc-900 bg-zinc-900 text-white; }
+  .opcion input:focus-visible + span, .segmentado input:focus-visible + span { @apply ring-2 ring-blue-600 ring-offset-2; }
+  .segmentado { @apply inline-flex w-full flex-wrap gap-1 rounded-lg bg-zinc-100 p-1 sm:w-auto; }
+  .segmentado label { @apply flex-1 sm:flex-none; }
+  .segmentado span { @apply flex h-10 cursor-pointer items-center justify-center rounded-md px-3 text-sm font-medium text-zinc-600 transition-colors; }
+  .segmentado input:checked + span { @apply bg-white text-zinc-950 shadow-sm; }
+  .rapido { @apply h-9 rounded-md border border-zinc-200 bg-white px-3 text-sm font-medium text-zinc-700 hover:bg-zinc-100; }
+  .resultado-calculadora { background: linear-gradient(135deg, #2563eb, #1e3a8a); }
+
+  /* Servicios y promociones */
+  .servicio-destacado { @apply rounded-xl text-white shadow-lg; background: radial-gradient(30rem 20rem at 100% 0%, rgb(37 99 235 / .45), transparent 60%), #09090b; }
+  .marca-agua { @apply pointer-events-none absolute -bottom-8 -right-6 text-white/5; font-size: 13rem; }
+  .promocion { @apply tarjeta tarjeta-elevable relative overflow-hidden p-6; }
+  .promocion::before { content: ''; @apply absolute inset-x-0 top-0 h-1; background: linear-gradient(90deg, #f59e0b, #ef4444); }
+
+  /* Flotas */
+  .fondo-flotas { background-image: radial-gradient(50rem 30rem at 0% 0%, rgb(37 99 235 / .25), transparent 60%); }
+  .pasos li:not(:last-child)::before { content: ''; @apply absolute bottom-[-1.5rem] left-4 top-8 w-px bg-white/15; }
+
+  .llamado { background: radial-gradient(30rem 16rem at 100% 0%, rgb(255 255 255 / .18), transparent 60%), linear-gradient(135deg, #2563eb, #1e40af); }
+
+  .whatsapp-flotante { @apply fixed bottom-5 right-5 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-green-500 text-3xl text-white shadow-lg shadow-green-900/30 transition-transform hover:scale-105; }
+
+  /* Sin JavaScript todo se ve; con él, los bloques aparecen al llegar a la vista. */
+  html:not(.js) .solo-js { display: none; }
+  .js [data-aparecer] { opacity: 0; transform: translateY(16px); transition: opacity .6s ease-out, transform .6s ease-out; }
+  .js [data-aparecer].visible { opacity: 1; transform: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .js [data-aparecer] { opacity: 1; transform: none; transition: none; }
+    .punto-vivo::after { animation: none; }
+    .tarjeta-elevable, .whatsapp-flotante { transition: none; transform: none !important; }
+  }
 }

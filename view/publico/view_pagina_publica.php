@@ -45,6 +45,21 @@
                   <label class="custom-control-label" for="pub_mostrar_precios">Mostrar los precios de combustible (salen de Productos, con su cambio del día)</label>
                 </div>
               </div>
+              <div class="col-12 form-group">
+                <div class="custom-control custom-switch">
+                  <input type="checkbox" class="custom-control-input" id="pub_mostrar_grafico" name="mostrar_grafico" value="1">
+                  <label class="custom-control-label" for="pub_mostrar_grafico">Mostrar el gráfico de cómo cambiaron los precios en los últimos 90 días (solo si hubo cambios y los precios están visibles)</label>
+                </div>
+              </div>
+              <div class="col-12"><h2 class="h6 mt-2 mb-1">Cifras bajo la portada</h2><p class="small text-muted mb-3">Hasta cuatro números destacados, por ejemplo «24 h» y «Abierto todos los días». Si las deja vacías, se arman solas con datos reales: horario, surtidores, combustibles, flotas y servicios.</p></div>
+              <?php for ($i = 1; $i <= 4; $i++): ?>
+              <div class="col-md-3 form-group">
+                <label for="pub_cifra<?= $i ?>_valor">Cifra <?= $i ?></label>
+                <input class="form-control mb-1" id="pub_cifra<?= $i ?>_valor" name="cifra<?= $i ?>_valor" maxlength="12" placeholder="<?= ['24 h', '12', '+30', '3'][$i - 1] ?>">
+                <label class="sr-only" for="pub_cifra<?= $i ?>_texto">Texto de la cifra <?= $i ?></label>
+                <input class="form-control" id="pub_cifra<?= $i ?>_texto" name="cifra<?= $i ?>_texto" maxlength="40" placeholder="<?= ['Abierto todos los días', 'Surtidores', 'Empresas con crédito', 'Combustibles'][$i - 1] ?>">
+              </div>
+              <?php endfor; ?>
               <div class="col-12"><button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Guardar datos</button></div>
             </form>
           </div>
