@@ -158,17 +158,18 @@ $e = fn($t) => htmlspecialchars((string) $t, ENT_QUOTES, 'UTF-8');
 
 <script>
 $(document).ready(function() {
-    Cargar_Dashboard();
+    var extras = [];
     <?php if ($estacion) { ?>
     // La ventana de créditos vencidos sale una vez por sesión; después quedan en la campana de avisos.
     var yaMostrada = false;
     try { yaMostrada = sessionStorage.getItem('g_vencidos_mostrados') === '1'; sessionStorage.setItem('g_vencidos_mostrados', '1'); } catch (e) {}
-    if (!yaMostrada) { Verificar_Creditos_Vencidos(); }
+    if (!yaMostrada) { extras.push(Verificar_Creditos_Vencidos); }
     <?php } ?>
+    Cargar_Dashboard(extras);
 });
 
 function Verificar_Creditos_Vencidos() {
-    $.ajax({
+    return $.ajax({
         url: '../controller/creditos/controlador_creditos_vencidos.php',
         type: 'POST',
         dataType: 'json'

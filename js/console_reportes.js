@@ -1,6 +1,6 @@
 // CARGAR DASHBOARD COMPLETO
 function Cargar_Alertas() {
-    $.post('../controller/dashboard/controlador_alertas.php', function (r) {
+    return $.post('../controller/dashboard/controlador_alertas.php', function (r) {
         var panel = $('#panel_alertas').empty();
         (r.data || []).forEach(function (a) {
             var enlace = $('<a href="#" class="alert-link"></a>').text(a.cantidad + ' ' + a.texto);
@@ -10,24 +10,52 @@ function Cargar_Alertas() {
     }, 'json');
 }
 
-function Cargar_Dashboard() {
+function Cargar_Dashboard(extras) {
     // Cada bloque se carga solo si está en la pantalla: el servidor decide cuáles ve cada usuario.
     var hay = function (id) { return document.getElementById(id) !== null; };
-    if (hay('panel_alertas')) { Cargar_Alertas(); }
-    if (hay('mi_resumen')) { Cargar_Mi_Resumen(); }
-    if (hay('indicadores_dia')) { Cargar_Indicadores_Dia(); }
-    if (hay('grafico_ventas_semana')) { Cargar_Grafico_Ventas_Semana(); }
-    if (hay('resumen_mes_productos')) { Cargar_Ventas_Mes(); }
-    if (hay('grafico_combustibles')) { Cargar_Grafico_Combustibles(); }
-    if (hay('grafico_metodos_pago')) { Cargar_Grafico_Metodos_Pago(); }
-    if (hay('grafico_turnos')) { Cargar_Grafico_Turnos(); }
-    if (hay('tabla_desempeno_griferos')) { Cargar_Desempeno_Griferos(); }
-    if (hay('mes_total_creditos')) { Cargar_Creditos_Mes(); }
+    var tareas = [];
+    if (hay('panel_alertas')) { tareas.push(Cargar_Alertas); }
+    if (hay('mi_resumen')) { tareas.push(Cargar_Mi_Resumen); }
+    if (hay('indicadores_dia')) { tareas.push(Cargar_Indicadores_Dia); }
+    if (hay('grafico_ventas_semana')) { tareas.push(Cargar_Grafico_Ventas_Semana); }
+    if (hay('resumen_mes_productos')) { tareas.push(Cargar_Ventas_Mes); }
+    if (hay('grafico_combustibles')) { tareas.push(Cargar_Grafico_Combustibles); }
+    if (hay('grafico_metodos_pago')) { tareas.push(Cargar_Grafico_Metodos_Pago); }
+    if (hay('grafico_turnos')) { tareas.push(Cargar_Grafico_Turnos); }
+    if (hay('tabla_desempeno_griferos')) { tareas.push(Cargar_Desempeno_Griferos); }
+    if (hay('mes_total_creditos')) { tareas.push(Cargar_Creditos_Mes); }
+    Ejecutar_En_Cola(tareas.concat(extras || []), 2);
+}
+
+/**
+ * Ejecuta las cargas de a pocas a la vez. Un hosting compartido limita los procesos PHP simultáneos
+ * y responde 503 a los que pasan del límite: esas se reintentan hasta tres veces con una pausa creciente.
+ * Cada tarea devuelve su petición AJAX.
+ */
+function Ejecutar_En_Cola(tareas, simultaneas) {
+    var pendientes = tareas.slice();
+    var siguiente = function () {
+        var tarea = pendientes.shift();
+        if (!tarea) { return; }
+        var intentar = function (intento) {
+            var peticion = tarea();
+            if (!peticion || typeof peticion.always !== 'function') { siguiente(); return; }
+            peticion.fail(function (xhr) {
+                if ((xhr.status === 503 || xhr.status === 429 || xhr.status === 0) && intento < 3) {
+                    setTimeout(function () { intentar(intento + 1); }, 700 * (intento + 1));
+                } else {
+                    siguiente();
+                }
+            }).done(siguiente);
+        };
+        intentar(0);
+    };
+    for (var i = 0; i < simultaneas; i++) { siguiente(); }
 }
 
 // RESUMEN PROPIO DEL GRIFERO
 function Cargar_Mi_Resumen() {
-    $.post('../controller/inicio/controlador_mi_resumen.php', function (r) {
+    return $.post('../controller/inicio/controlador_mi_resumen.php', function (r) {
         if (!r || !r.success) { return; }
         var m = r.mes;
         var tarjeta = function (titulo, valor, ayuda, clase) {
@@ -52,7 +80,7 @@ function Cargar_Mi_Resumen() {
 
 // INDICADORES DEL DÍA
 function Cargar_Indicadores_Dia() {
-    $.ajax({
+    return $.ajax({
         url: '../controller/reportes/controlador_indicadores_dia.php',
         type: 'POST'
     }).done(function(resp) {
@@ -69,7 +97,7 @@ function Cargar_Indicadores_Dia() {
 
 // GRÁFICO VENTAS ÚLTIMOS 7 DÍAS
 function Cargar_Grafico_Ventas_Semana() {
-    $.ajax({
+    return $.ajax({
         url: '../controller/reportes/controlador_ventas_semana.php',
         type: 'POST'
     }).done(function(resp) {
@@ -149,7 +177,7 @@ function Cargar_Grafico_Ventas_Semana() {
 
 // VENTAS DEL MES
 function Cargar_Ventas_Mes() {
-    $.ajax({
+    return $.ajax({
         url: '../controller/reportes/controlador_ventas_mes.php',
         type: 'POST'
     }).done(function(resp) {
@@ -173,7 +201,7 @@ function Cargar_Ventas_Mes() {
 
 // GRÁFICO COMBUSTIBLES
 function Cargar_Grafico_Combustibles() {
-    $.ajax({
+    return $.ajax({
         url: '../controller/reportes/controlador_ventas_mes.php',
         type: 'POST'
     }).done(function(resp) {
@@ -221,7 +249,7 @@ function Cargar_Grafico_Combustibles() {
 
 // GRÁFICO MÉTODOS DE PAGO
 function Cargar_Grafico_Metodos_Pago() {
-    $.ajax({
+    return $.ajax({
         url: '../controller/reportes/controlador_metodos_pago.php',
         type: 'POST'
     }).done(function(resp) {
@@ -264,7 +292,7 @@ function Cargar_Grafico_Metodos_Pago() {
 
 // GRÁFICO TURNOS
 function Cargar_Grafico_Turnos() {
-    $.ajax({
+    return $.ajax({
         url: '../controller/reportes/controlador_ventas_turno.php',
         type: 'POST'
     }).done(function(resp) {
@@ -324,7 +352,7 @@ function Cargar_Grafico_Turnos() {
 
 // DESEMPEÑO GRIFEROS
 function Cargar_Desempeno_Griferos() {
-    $.ajax({
+    return $.ajax({
         url: '../controller/reportes/controlador_desempeno_griferos.php',
         type: 'POST'
     }).done(function(resp) {
@@ -341,7 +369,7 @@ function Cargar_Desempeno_Griferos() {
 
 // CRÉDITOS DEL MES
 function Cargar_Creditos_Mes() {
-    $.ajax({
+    return $.ajax({
         url: '../controller/reportes/controlador_creditos_mes.php',
         type: 'POST'
     }).done(function(resp) {
