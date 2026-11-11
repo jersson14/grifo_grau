@@ -143,21 +143,31 @@ class Modelo_Configuracion extends conexionBD
         $query = $c->prepare('UPDATE modulos SET activo = ?, actualizado_en = NOW() WHERE codigo = ?');
         $query->execute([$activo ? 1 : 0, $codigo]);
         $this->Auditar($c, $idUsuario, $activo ? 'MODULO_ACTIVADO' : 'MODULO_DESACTIVADO', $codigo);
+        self::$modulos = null;
         return $query->rowCount() > 0;
     }
 
+    /** Estado de los módulos, leído una sola vez por petición. */
+    private static ?array $modulos = null;
+
+    /**
+     * Una pantalla pregunta por muchos módulos. Antes cada pregunta abría su propia conexión
+     * (unas 18 al cargar el panel), y un hosting compartido que limita las conexiones por segundo
+     * rechazaba las peticiones con 503. Ahora se leen todos en una consulta y se recuerdan.
+     */
     public static function Modulo_Activo(string $codigo): bool
     {
         if (in_array($codigo, bloqueos_demo()['modulos'], true)) {
             return false;
         }
-        $c = conexionBD::conexionPDO();
-        if ($c === null) {
-            return false;
+        if (self::$modulos === null) {
+            $c = conexionBD::conexionPDO();
+            if ($c === null) {
+                return false;
+            }
+            self::$modulos = array_map('intval', $c->query('SELECT codigo, activo FROM modulos')->fetchAll(PDO::FETCH_KEY_PAIR));
         }
-        $query = $c->prepare('SELECT activo FROM modulos WHERE codigo = ?');
-        $query->execute([$codigo]);
-        return (bool) $query->fetchColumn();
+        return !empty(self::$modulos[$codigo]);
     }
 
     private function Auditar(PDO $c, int $idUsuario, string $accion, string $detalle): void
