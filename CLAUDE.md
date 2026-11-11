@@ -25,7 +25,7 @@ Rules for this work:
 - Invoicing depends on Nubefact only through `model/facturacion/proveedor_nubefact.php`. A sale is saved before its document is sent, and a retry keeps the same number.
 - Configurable behavior belongs in the database and the admin UI, not in code.
 - Optional modules (electronic invoicing, AI chatbot) stay behind an on/off switch and must never block core shift operations.
-- Demo mode: `MODO_DEMO=1` in the server's `.env` blocks the routes and modules listed in `config/demo.php` for everyone, administrator included (users, roles, menu, configuration, audit, analysis, invoicing, chatbot, personnel). It lives outside the database on purpose so a demo visitor can't turn it off. Branches `demo` and `venta` hold the same code as `grifo2`; only the `.env` differs. Run `php tests/demo.php` after changing access rules.
+- Demo mode: `MODO_DEMO=1` in the server's `.env` blocks the routes and modules listed in `config/demo.php` for everyone, administrator included (users, roles, menu, configuration, audit, analysis, invoicing, chatbot, personnel). It lives outside the database on purpose so a demo visitor can't turn it off. Branches `demo` and `venta` hold the same code as `grifo2`; only the `.env` differs. The login lists the test accounts from `cuentas` in `config/demo.php` (only active users) with a one-click «Entrar». `php database/demo_datos.php` fills a fresh `migrate.php --demo` install with 60 days of consistent data (shifts, credits, purchases, cash, expenses, shop), dated relative to today; `--reiniciar` drops and rebuilds the whole database and only runs with `MODO_DEMO=1` (nightly cron on the demo server). Local demo database: `grifo_demo`. Run `php tests/demo.php` after changing access rules.
 
 ## Running the Application
 

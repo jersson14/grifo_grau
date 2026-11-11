@@ -81,6 +81,7 @@ foreach (['view/usuario/view_usuario.php', 'view/configuracion/view_configuracio
     comprobar("abre $ruta", $admin->pedir($ruta)['codigo'] === 200);
 }
 comprobar('sin la etiqueta «Demostración»', strpos($admin->pedir('view/index.php')['cuerpo'], 'g-demo') === false);
+comprobar('el acceso no muestra cuentas de prueba', strpos((new Cliente($base))->pedir('login.php')['cuerpo'], 'data-usuario=') === false);
 
 echo "\n2. Con MODO_DEMO=1: bloqueado incluso para el administrador\n";
 poner_demo($envOriginal, $archivoEnv, true);
@@ -115,6 +116,12 @@ comprobar('no creó ningún usuario', (int) $pdo->query("SELECT COUNT(*) FROM us
 comprobar('no cambió la configuración', $pdo->query("SELECT valor FROM configuracion WHERE clave = 'credito_dias'")->fetchColumn() !== '45');
 $r = $admin->pedir('view/reportes/view_analisis.php');
 comprobar('explica que es una demostración', strpos($r['cuerpo'], 'demostración') !== false, $r['cuerpo']);
+
+$acceso = (new Cliente($base))->pedir('login.php')['cuerpo'];
+comprobar('el acceso muestra las cuentas de prueba', strpos($acceso, 'data-usuario="admin" data-clave="admin123"') !== false && strpos($acceso, 'data-usuario="grifero1" data-clave="grifero123"') !== false);
+$pdo->exec("UPDATE usuario SET usu_estatus = 'INACTIVO' WHERE usu_usuario = 'grifero1'");
+comprobar('una cuenta inactiva no se ofrece', strpos((new Cliente($base))->pedir('login.php')['cuerpo'], 'data-usuario="grifero1"') === false);
+$pdo->exec("UPDATE usuario SET usu_estatus = 'ACTIVO' WHERE usu_usuario = 'grifero1'");
 
 $indice = $admin->pedir('view/index.php')['cuerpo'];
 comprobar('muestra la etiqueta «Demostración»', strpos($indice, 'g-demo') !== false);

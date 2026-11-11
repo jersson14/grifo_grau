@@ -26,6 +26,19 @@ try {
     error_log('Login: no se pudo leer la empresa: ' . $e->getMessage());
 }
 $e = fn($texto) => htmlspecialchars((string) $texto, ENT_QUOTES, 'UTF-8');
+
+// Demostración: cuentas de prueba para entrar con un clic (config/demo.php). Solo las que existen y están activas.
+$cuentasDemo = [];
+if (modo_demo()) {
+    $cuentasDemo = (require __DIR__ . '/config/demo.php')['cuentas'] ?? [];
+    try {
+        $activos = conexionBD::conexionPDO()->query("SELECT usu_usuario FROM usuario WHERE usu_estatus = 'ACTIVO'")->fetchAll(PDO::FETCH_COLUMN);
+        $cuentasDemo = array_values(array_filter($cuentasDemo, fn($c) => in_array($c['usuario'], $activos, true)));
+    } catch (Throwable $error) {
+        error_log('Login: no se pudieron leer las cuentas de demostración: ' . $error->getMessage());
+        $cuentasDemo = [];
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -220,6 +233,20 @@ $e = fn($texto) => htmlspecialchars((string) $texto, ENT_QUOTES, 'UTF-8');
       .acceso-imagen-frase { font-size: 24px; }
       .acceso-lado { padding: 48px; }
     }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+    /* Cuentas de prueba (solo en modo demostración). */
+    .demo { margin-top: 24px; border: 1px solid #bfdbfe; border-radius: 10px; background: #eff6ff; overflow: hidden; }
+    .demo-cabeza { display: flex; align-items: center; gap: 8px; padding: 12px 14px; font-size: 14px; font-weight: 600; color: #1e40af; }
+    .demo-cabeza span { font-weight: 400; color: #1d4ed8; }
+    .demo table { width: 100%; border-collapse: collapse; background: #fff; font-size: 13px; }
+    .demo th { padding: 8px 14px; text-align: left; font-size: 12px; font-weight: 500; color: var(--suave); background: #fafafa; border-top: 1px solid var(--borde); }
+    .demo td { padding: 10px 14px; border-top: 1px solid var(--borde); vertical-align: middle; }
+    .demo td small { display: block; margin-top: 2px; color: var(--suave); font-size: 12px; line-height: 1.35; }
+    .demo code { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 13px; background: var(--tenue); padding: 2px 6px; border-radius: 4px; white-space: nowrap; }
+    .demo-usar { min-height: 36px; padding: 0 12px; border: 1px solid var(--borde); border-radius: 6px; background: #fff; color: var(--texto); font: inherit; font-size: 13px; font-weight: 500; cursor: pointer; white-space: nowrap; }
+    .demo-usar:hover { background: var(--tenue); }
+    .demo-usar:focus-visible { outline: 2px solid var(--foco); outline-offset: 2px; }
+    @media (max-width: 420px) { .demo .col-clave { display: none; } }
     @media (prefers-reduced-motion: reduce) {
       * { transition: none !important; }
     }
@@ -274,6 +301,24 @@ $e = fn($texto) => htmlspecialchars((string) $texto, ENT_QUOTES, 'UTF-8');
           <i class="fas fa-sign-in-alt" aria-hidden="true"></i>Ingresar
         </button>
 
+        <?php if ($cuentasDemo): ?>
+        <section class="demo" aria-labelledby="demo_titulo">
+          <p class="demo-cabeza" id="demo_titulo"><i class="fas fa-flask" aria-hidden="true"></i>Accesos de demostración <span>· elige un perfil</span></p>
+          <table>
+            <thead><tr><th scope="col">Perfil</th><th scope="col" class="col-clave">Usuario / clave</th><th scope="col"><span class="sr-only">Entrar</span></th></tr></thead>
+            <tbody>
+              <?php foreach ($cuentasDemo as $c): ?>
+              <tr>
+                <td><strong><?php echo $e($c['perfil']); ?></strong><?php if (!empty($c['detalle'])): ?><small><?php echo $e($c['detalle']); ?></small><?php endif; ?></td>
+                <td class="col-clave"><code><?php echo $e($c['usuario']); ?></code><br><code style="margin-top:4px;display:inline-block"><?php echo $e($c['clave']); ?></code></td>
+                <td><button type="button" class="demo-usar" data-usuario="<?php echo $e($c['usuario']); ?>" data-clave="<?php echo $e($c['clave']); ?>" aria-label="Entrar como <?php echo $e($c['perfil']); ?>">Entrar</button></td>
+              </tr>
+              <?php endforeach; ?>
+            </tbody>
+          </table>
+        </section>
+        <?php endif; ?>
+
         <p class="acceso-pie">&copy; <?php echo date('Y') . ' ' . $e($empresa['nombre']); ?></p>
         <?php if (modulo_activo('pagina_publica')): ?><a class="volver" href="index.php"><i class="fas fa-arrow-left" aria-hidden="true"></i> Volver a la página del grifo</a><?php endif; ?>
       </form>
@@ -308,6 +353,16 @@ $e = fn($texto) => htmlspecialchars((string) $texto, ENT_QUOTES, 'UTF-8');
     } catch (e) {}
 
     (usuarioInput.value ? passInput : usuarioInput).focus();
+
+    // Demostración: «Entrar» llena el usuario y la clave de ese perfil e inicia sesión.
+    document.querySelectorAll('.demo-usar').forEach(function (boton) {
+      boton.addEventListener('click', function () {
+        usuarioInput.value = boton.getAttribute('data-usuario');
+        passInput.value = boton.getAttribute('data-clave');
+        rmcheck.checked = false;
+        Iniciar_Sesion();
+      });
+    });
 
     document.getElementById('form_acceso').addEventListener('submit', function (evento) {
       evento.preventDefault();

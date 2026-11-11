@@ -5,8 +5,17 @@
  *
  *  modulos  Se tratan como desactivados aunque la tabla `modulos` diga otra cosa: desaparecen del menú y no responden.
  *  rutas    No responden para nadie, ni para el administrador.
+ *  cuentas  Se muestran en el acceso para entrar con un clic. Solo salen las que existen y están activas;
+ *           en la demo nadie puede cambiar contraseñas, así que siguen sirviendo.
  */
 return [
+    'cuentas' => [
+        ['usuario' => 'admin', 'clave' => 'admin123', 'perfil' => 'Administrador', 'detalle' => 'Ve todo: tablero, reportes, caja, créditos y flotas'],
+        ['usuario' => 'supervisor1', 'clave' => 'supervisor123', 'perfil' => 'Supervisor', 'detalle' => 'Turnos, caja, inventario y flotas'],
+        ['usuario' => 'contador1', 'clave' => 'contador123', 'perfil' => 'Contador', 'detalle' => 'Reportes, créditos, gastos y compras'],
+        ['usuario' => 'grifero1', 'clave' => 'grifero123', 'perfil' => 'Grifero', 'detalle' => 'Abre y cierra su turno y registra ventas'],
+    ],
+
     'modulos' => ['facturacion', 'chatbot_ia', 'personal'],
 
     'rutas' => [
